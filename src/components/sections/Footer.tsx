@@ -1,7 +1,4 @@
-import { useEffect, useRef } from "react";
-import gsap from "gsap";
 import Logo from "../Logo";
-import { useReducedMotion } from "../../hooks/useReducedMotion";
 
 const EMAIL = "saar.cohen@develeap.com";
 const SOCIALS = [
@@ -11,22 +8,6 @@ const SOCIALS = [
 ];
 
 export default function Footer() {
-  const marquee = useRef<HTMLDivElement>(null);
-  const reduced = useReducedMotion();
-
-  useEffect(() => {
-    if (reduced || !marquee.current) return;
-    const ctx = gsap.context(() => {
-      gsap.to(marquee.current, {
-        xPercent: -50,
-        ease: "none",
-        duration: 24,
-        repeat: -1,
-      });
-    });
-    return () => ctx.revert();
-  }, [reduced]);
-
   return (
     <footer id="contact" className="relative overflow-hidden px-6 py-28 md:px-10">
       {/* soft scrim only - let the monolith reform behind */}
@@ -56,24 +37,8 @@ export default function Footer() {
           </a>
         </div>
 
-        {/* marquee */}
-        <div className="relative mt-24 overflow-hidden">
-          <div ref={marquee} className="flex whitespace-nowrap will-change-transform">
-            {Array.from({ length: 2 }).map((_, i) => (
-              <span
-                key={i}
-                className="font-display text-5xl uppercase tracking-tight text-cloud/[0.06] md:text-7xl"
-                aria-hidden={i === 1}
-              >
-                BRING ORDER TO ENGINEERING CHAOS&nbsp;&bull;&nbsp;BRING ORDER TO ENGINEERING
-                CHAOS&nbsp;&bull;&nbsp;
-              </span>
-            ))}
-          </div>
-        </div>
-
         {/* footer bar */}
-        <div className="mt-20 flex flex-col gap-6 border-t border-slate pt-8 md:flex-row md:items-center md:justify-between">
+        <div className="mt-28 flex flex-col gap-6 border-t border-slate pt-8 md:flex-row md:items-center md:justify-between">
           <Logo variant="lockup" />
 
           <div className="flex items-center gap-2 font-mono text-xs text-muted">

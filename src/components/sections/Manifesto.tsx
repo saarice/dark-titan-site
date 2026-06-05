@@ -12,11 +12,6 @@ export default function Manifesto() {
       id="manifesto"
       className="relative flex min-h-screen items-center overflow-hidden px-6 py-32 md:px-10"
     >
-      {/* full-height seam spine */}
-      <div
-        className="seam-line glow-seam pointer-events-none absolute left-1/2 top-0 h-full w-[2px] -translate-x-1/2 opacity-60"
-        aria-hidden
-      />
       {/* readability scrim */}
       <div
         className="pointer-events-none absolute inset-0 -z-[1]"

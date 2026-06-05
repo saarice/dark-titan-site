@@ -1,6 +1,6 @@
 import { useMemo, useRef } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
-import { Grid } from "@react-three/drei";
+import { Grid, RoundedBox, Edges, Environment, Lightformer } from "@react-three/drei";
 import * as THREE from "three";
 import { sceneStateFor, smoothstep } from "../../lib/choreography";
 
@@ -17,16 +17,24 @@ export default function Monolith({
 }) {
   const { camera } = useThree();
   const group = useRef<THREE.Group>(null);
-  const leftSlab = useRef<THREE.Mesh>(null);
-  const rightSlab = useRef<THREE.Mesh>(null);
+  const leftSlab = useRef<THREE.Group>(null);
+  const rightSlab = useRef<THREE.Group>(null);
   const seam = useRef<THREE.Mesh>(null);
   const debrisRef = useRef<THREE.InstancedMesh>(null);
   const rotY = useRef(0);
   const rotX = useRef(0);
 
-  const seamMat = useMemo(() => new THREE.MeshBasicMaterial({ color: "#C79BFF", transparent: true }), []);
+  const seamMat = useMemo(() => new THREE.MeshBasicMaterial({ color: "#CBA6FF", transparent: true }), []);
+  // Polished dark metal so the monument catches light/reflections on its faces
+  // and bevels instead of reading as a flat black rectangle.
   const slabMat = useMemo(
-    () => new THREE.MeshStandardMaterial({ color: "#15131c", metalness: 0.5, roughness: 0.55 }),
+    () =>
+      new THREE.MeshStandardMaterial({
+        color: "#0C0B12",
+        metalness: 0.92,
+        roughness: 0.26,
+        envMapIntensity: 1.15,
+      }),
     [],
   );
 
@@ -55,11 +63,11 @@ export default function Monolith({
 
     const recede = Math.max(s.constellation, s.rivers);
     const open = (1 - s.form) * 1.2 + s.debris * 0.3;
-    if (leftSlab.current) leftSlab.current.position.x = -1.05 - open;
-    if (rightSlab.current) rightSlab.current.position.x = 1.05 + open;
+    if (leftSlab.current) leftSlab.current.position.x = -1.0 - open;
+    if (rightSlab.current) rightSlab.current.position.x = 1.0 + open;
 
     if (seam.current) {
-      seam.current.scale.y = 0.2 + s.form * 1.0 + s.order * 0.3;
+      seam.current.scale.y = 0.2 + s.seamOpacity * 1.05;
       (seam.current.material as THREE.MeshBasicMaterial).opacity = s.seamOpacity;
     }
 
@@ -79,10 +87,11 @@ export default function Monolith({
     }
 
     const pt = reduced ? { x: 0, y: 0 } : ptr.current ?? { x: 0, y: 0 };
-    const sway = reduced ? 0 : Math.sin(t * 0.25) * 0.16;
-    const targetY = sway + p * 0.6 + pt.x * 0.18;
+    const sway = reduced ? 0 : Math.sin(t * 0.25) * 0.12;
+    // Calm rotation so the monument reads centered through the text sections.
+    const targetY = sway + p * 0.32 + pt.x * 0.16;
     rotY.current = THREE.MathUtils.damp(rotY.current, targetY, 3, delta);
-    rotX.current = THREE.MathUtils.damp(rotX.current, pt.y * 0.1, 3, delta);
+    rotX.current = THREE.MathUtils.damp(rotX.current, pt.y * 0.08, 3, delta);
 
     if (group.current) {
       group.current.rotation.y = rotY.current;
@@ -100,21 +109,32 @@ export default function Monolith({
 
   return (
     <group ref={group}>
-      <mesh ref={leftSlab} material={slabMat} position={[-1.05, 0, 0]} rotation={[0, 0.18, 0]}>
-        <boxGeometry args={[1.1, 3.2, 0.5]} />
+      {/* left half of the monument */}
+      <group ref={leftSlab} position={[-1.0, 0, 0]} rotation={[0, 0.16, 0]}>
+        <RoundedBox args={[0.98, 3.5, 0.58]} radius={0.05} smoothness={4} material={slabMat}>
+          <Edges threshold={18} color="#5B3FA8" />
+        </RoundedBox>
+      </group>
+
+      {/* right half of the monument */}
+      <group ref={rightSlab} position={[1.0, 0, 0]} rotation={[0, -0.16, 0]}>
+        <RoundedBox args={[0.98, 3.5, 0.58]} radius={0.05} smoothness={4} material={slabMat}>
+          <Edges threshold={18} color="#5B3FA8" />
+        </RoundedBox>
+      </group>
+
+      {/* the seam */}
+      <mesh ref={seam} material={seamMat} position={[0, 0, 0.32]}>
+        <boxGeometry args={[0.06, 3.3, 0.06]} />
       </mesh>
-      <mesh ref={rightSlab} material={slabMat} position={[1.05, 0, 0]} rotation={[0, -0.18, 0]}>
-        <boxGeometry args={[1.1, 3.2, 0.5]} />
-      </mesh>
-      <mesh ref={seam} material={seamMat} position={[0, 0, 0.3]}>
-        <boxGeometry args={[0.07, 3.2, 0.07]} />
-      </mesh>
+
       <instancedMesh ref={debrisRef} args={[undefined, undefined, DEBRIS]}>
         <octahedronGeometry args={[1, 0]} />
-        <meshStandardMaterial color="#3a3350" metalness={0.3} roughness={0.7} />
+        <meshStandardMaterial color="#3a3350" metalness={0.4} roughness={0.6} envMapIntensity={0.8} />
       </instancedMesh>
+
       <Grid
-        position={[0, -2.4, 0]}
+        position={[0, -2.45, 0]}
         args={[40, 40]}
         cellSize={0.6}
         cellThickness={0.6}
@@ -125,6 +145,15 @@ export default function Monolith({
         fadeStrength={3}
         infiniteGrid
       />
+
+      {/* inline reflection environment (no network fetch) — gives the metal its
+          violet/steel highlights so the monument has depth, not a paint-flat face. */}
+      <Environment resolution={256} frames={1}>
+        <Lightformer intensity={2.4} color="#B338FF" position={[-3.5, 2, 3]} scale={[3, 7, 1]} />
+        <Lightformer intensity={1.4} color="#6020D9" position={[3.5, 0.5, 2.5]} scale={[3, 7, 1]} />
+        <Lightformer intensity={0.7} color="#AEB4C7" position={[0, 4, -3]} scale={[8, 4, 1]} />
+        <Lightformer intensity={0.5} color="#ffffff" position={[2, -2, 4]} scale={[2, 3, 1]} />
+      </Environment>
     </group>
   );
 }
