@@ -8,6 +8,7 @@ import Chaos from "./components/sections/Chaos";
 import Factory from "./components/sections/Factory";
 import Agents from "./components/sections/Agents";
 import Rivers from "./components/sections/Rivers";
+import Tempo from "./components/sections/Tempo";
 import Proof from "./components/sections/Proof";
 import Manifesto from "./components/sections/Manifesto";
 import Footer from "./components/sections/Footer";
@@ -32,6 +33,7 @@ export default function App() {
         <Factory />
         <Agents />
         <Rivers />
+        <Tempo />
         <Proof />
         <Manifesto />
         <Footer />
