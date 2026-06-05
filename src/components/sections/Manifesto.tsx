@@ -14,11 +14,22 @@ export default function Manifesto() {
     >
       {/* readability scrim */}
       <div
-        className="pointer-events-none absolute inset-0 -z-[1]"
+        className="pointer-events-none absolute inset-0 -z-[2]"
         style={{
           background:
             "radial-gradient(80% 70% at 50% 50%, rgba(10,10,12,0.9), rgba(10,10,12,0.4) 80%)",
         }}
+      />
+
+      {/* the seam, continued — the monolith's violet light line runs dead-center
+          through the manifesto, growing from the middle out as the words land */}
+      <motion.div
+        aria-hidden
+        className="seam-line glow-seam pointer-events-none absolute left-1/2 top-0 -z-[1] h-full w-[2px] -translate-x-1/2"
+        initial={{ scaleY: 0, opacity: 0 }}
+        whileInView={{ scaleY: 1, opacity: 0.65 }}
+        viewport={{ once: true, margin: "-20%" }}
+        transition={{ duration: 1.1, ease: [0.22, 1, 0.36, 1] }}
       />
 
       <div className="mx-auto w-full max-w-[1100px] text-center">
