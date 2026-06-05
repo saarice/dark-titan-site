@@ -2,8 +2,8 @@ import { useEffect, useRef } from "react";
 import { gsap } from "gsap";
 
 const TRUST = [
-  ["AKAMAI TMA", "Potential Impact"],
-  ["FIREFLY (INTERNAL)", "Autonomous Build"],
+  ["SPEC TO PRODUCTION", "One Continuous Flow"],
+  ["AGENTS IN PARALLEL", "Coordinated, Not Chaotic"],
   ["BUILT FOR CONTROL", "Not Demos"],
   ["NO HYPE", "Just Results"],
 ];
