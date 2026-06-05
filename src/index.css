@@ -1,0 +1,64 @@
+@import url('https://fonts.googleapis.com/css2?family=Archivo:ital,wght@0,400;0,600;0,700;0,800;1,600&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* Dark Titan brand tokens (from one-pager) */
+  --bg:          #09080a;
+  --bg-elev:     #131016;
+  --surface:     #181320;
+  --border:      #2a2430;
+  --fg:          #f6f2ef;
+  --fg-muted:    #a9a2ad;
+  --fg-faint:    #6c6473;
+  --accent:      #a855f7;
+  --accent-lo:   #7c3aed;
+  --accent-hi:   #c79bff;
+  --accent-glow: rgba(168, 85, 247, 0.22);
+  --grid:        rgba(168, 85, 247, 0.05);
+  --accent-soft: #b06bff;
+}
+
+* { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: 'IBM Plex Sans', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+/* Accent gradient (purple) used on rings, borders, bars */
+.accent-gradient {
+  background: linear-gradient(90deg, var(--accent-hi) 0%, var(--accent-lo) 100%);
+}
+
+/* Animated gradient border helper */
+.gradient-border-animated {
+  background: linear-gradient(90deg, var(--accent-hi), var(--accent), var(--accent-lo), var(--accent));
+  background-size: 300% 100%;
+  animation: gradient-shift 6s ease infinite;
+}
+
+/* Dark Titan grid + glow backdrop (the "poster" motif) */
+.titan-backdrop {
+  background-color: var(--bg);
+  background-image:
+    repeating-linear-gradient(0deg,  var(--grid) 0 1px, transparent 1px 38px),
+    repeating-linear-gradient(90deg, var(--grid) 0 1px, transparent 1px 38px),
+    radial-gradient(ellipse 80% 50% at 50% -10%, var(--accent-glow), transparent 60%),
+    radial-gradient(ellipse 70% 50% at 100% 110%, rgba(124, 58, 237, 0.10), transparent 60%);
+}
+
+::selection { background: var(--accent); color: #0a0908; }
+
+::-webkit-scrollbar { width: 10px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 6px; }
+::-webkit-scrollbar-thumb:hover { background: var(--accent-lo); }
