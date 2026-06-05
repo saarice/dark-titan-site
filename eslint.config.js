@@ -19,4 +19,14 @@ export default defineConfig([
       globals: globals.browser,
     },
   },
+  {
+    // react-three-fiber drives the render loop by mutating refs/camera inside
+    // useFrame and seeds instanced geometry with Math.random in useMemo. Those
+    // are idiomatic for r3f but trip the React Compiler purity/immutability rules.
+    files: ['src/components/three/**/*.{ts,tsx}'],
+    rules: {
+      'react-hooks/purity': 'off',
+      'react-hooks/immutability': 'off',
+    },
+  },
 ])

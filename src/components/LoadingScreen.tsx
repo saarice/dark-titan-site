@@ -8,27 +8,28 @@ export default function LoadingScreen({ onComplete }: { onComplete: () => void }
   const [wordIndex, setWordIndex] = useState(0);
 
   useEffect(() => {
-    const duration = 2700;
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const duration = reduced ? 600 : 2400;
     const start = performance.now();
     let raf = 0;
     const tick = (now: number) => {
       const t = Math.min((now - start) / duration, 1);
       setCount(Math.round(t * 100));
       if (t < 1) raf = requestAnimationFrame(tick);
-      else setTimeout(onComplete, 400);
+      else setTimeout(onComplete, 350);
     };
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
   }, [onComplete]);
 
   useEffect(() => {
-    const id = setInterval(() => setWordIndex((i) => (i + 1) % WORDS.length), 900);
+    const id = setInterval(() => setWordIndex((i) => (i + 1) % WORDS.length), 800);
     return () => clearInterval(id);
   }, []);
 
   return (
     <motion.div
-      className="fixed inset-0 z-[9999] bg-bg titan-backdrop"
+      className="fixed inset-0 z-[9999] bg-obsidian"
       exit={{ opacity: 0 }}
       transition={{ duration: 0.5 }}
     >
@@ -41,6 +42,9 @@ export default function LoadingScreen({ onComplete }: { onComplete: () => void }
         Dark Titan
       </motion.div>
 
+      {/* seam spine */}
+      <div className="seam-line glow-seam pointer-events-none absolute left-1/2 top-0 h-full w-[2px] -translate-x-1/2 opacity-50" />
+
       <div className="flex h-full items-center justify-center">
         <AnimatePresence mode="wait">
           <motion.span
@@ -48,24 +52,24 @@ export default function LoadingScreen({ onComplete }: { onComplete: () => void }
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: -20, opacity: 0 }}
-            transition={{ duration: 0.45 }}
-            className="font-display text-4xl font-semibold text-text-primary/80 md:text-6xl lg:text-7xl"
+            transition={{ duration: 0.4 }}
+            className="font-display text-4xl text-cloud/80 md:text-6xl lg:text-7xl"
           >
             {WORDS[wordIndex]}
           </motion.span>
         </AnimatePresence>
       </div>
 
-      <div className="absolute bottom-6 right-6 font-display tabular-nums text-6xl text-text-primary md:bottom-10 md:right-10 md:text-8xl lg:text-9xl">
+      <div className="absolute bottom-6 right-6 font-display tabular-nums text-6xl text-cloud md:bottom-10 md:right-10 md:text-8xl lg:text-9xl">
         {String(count).padStart(3, "0")}
       </div>
 
-      <div className="absolute bottom-0 left-0 h-[3px] w-full bg-stroke/50">
+      <div className="absolute bottom-0 left-0 h-[3px] w-full bg-slate">
         <div
-          className="accent-gradient h-full origin-left"
+          className="h-full origin-left bg-gradient-to-r from-violet to-lavender"
           style={{
             transform: `scaleX(${count / 100})`,
-            boxShadow: "0 0 8px rgba(168,85,247,0.45)",
+            boxShadow: "0 0 8px rgba(138,86,247,0.5)",
           }}
         />
       </div>
