@@ -4,7 +4,7 @@ import { Grid, RoundedBox, Edges, Environment, Lightformer } from "@react-three/
 import * as THREE from "three";
 import { sceneStateFor, smoothstep } from "../../lib/choreography";
 
-const DEBRIS = 1400;
+const DEBRIS = 1050;
 
 export default function Monolith({
   scroll,
@@ -62,7 +62,8 @@ export default function Monolith({
     const s = sceneStateFor(p);
 
     const recede = Math.max(s.constellation, s.rivers);
-    const open = (1 - s.form) * 1.2 + s.debris * 0.3;
+    // Gentler open/close so the two halves don't lunge back and forth as you scroll.
+    const open = (1 - s.form) * 0.65 + s.debris * 0.15;
     if (leftSlab.current) leftSlab.current.position.x = -1.0 - open;
     if (rightSlab.current) rightSlab.current.position.x = 1.0 + open;
 
@@ -73,7 +74,7 @@ export default function Monolith({
 
     if (debrisRef.current) {
       const k = s.order;
-      const sc = (0.015 + 0.085 * s.debris) * (1 - s.reform);
+      const sc = (0.008 + 0.045 * s.debris) * (1 - s.reform);
       for (let i = 0; i < DEBRIS; i++) {
         const h = debrisHome[i];
         dummy.position.set(h.x * (1 - k), h.y * (1 - k * 0.85), h.z * (1 - k));
@@ -87,7 +88,7 @@ export default function Monolith({
     }
 
     const pt = reduced ? { x: 0, y: 0 } : ptr.current ?? { x: 0, y: 0 };
-    const sway = reduced ? 0 : Math.sin(t * 0.25) * 0.12;
+    const sway = reduced ? 0 : Math.sin(t * 0.25) * 0.07;
     // Calm rotation so the monument reads centered through the text sections.
     const targetY = sway + p * 0.32 + pt.x * 0.16;
     rotY.current = THREE.MathUtils.damp(rotY.current, targetY, 3, delta);

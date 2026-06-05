@@ -28,10 +28,13 @@ export default function Chaos() {
             className="relative mt-12"
           >
             <div
-              className="pointer-events-none absolute -inset-x-8 -inset-y-6 -z-[1]"
-              style={{ background: "radial-gradient(60% 70% at 30% 50%, rgba(10,10,12,0.9), rgba(10,10,12,0) 75%)" }}
+              className="pointer-events-none absolute -inset-x-10 -inset-y-8 -z-[1]"
+              style={{ background: "radial-gradient(60% 75% at 30% 50%, rgba(10,10,12,0.96), rgba(10,10,12,0) 78%)" }}
             />
-            <p className="font-display text-4xl leading-[1.04] tracking-tight text-violet md:text-6xl">
+            <p
+              className="font-display text-4xl leading-[1.04] tracking-tight text-lavender md:text-6xl"
+              style={{ textShadow: "0 0 28px rgba(179,56,255,0.55), 0 0 60px rgba(138,86,247,0.35)" }}
+            >
               We bring order.
             </p>
             <p className="mt-6 max-w-md font-body text-base leading-relaxed text-muted">
