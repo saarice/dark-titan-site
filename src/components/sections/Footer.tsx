@@ -39,7 +39,7 @@ export default function Footer() {
 
         {/* footer bar */}
         <div className="mt-28 flex flex-col gap-6 border-t border-slate pt-8 md:flex-row md:items-center md:justify-between">
-          <Logo variant="lockup" />
+          <Logo variant="mark" className="h-12 w-12" />
 
           <div className="flex items-center gap-2 font-mono text-xs text-muted">
             <span className="h-2 w-2 animate-pulse-dot rounded-full bg-sig-green" />
