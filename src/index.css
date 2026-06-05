@@ -52,6 +52,14 @@ body {
   animation: gradient-shift 6s ease infinite;
 }
 
+/* Data-river flow — slow, continuous dash drift */
+.river-dash {
+  animation: river-flow 2.8s linear infinite;
+}
+@keyframes river-flow {
+  to { stroke-dashoffset: -120; }
+}
+
 ::selection { background: var(--violet); color: #0a0a0c; }
 
 ::-webkit-scrollbar { width: 10px; }
@@ -62,4 +70,5 @@ body {
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   .gradient-border-animated { animation: none; }
+  .river-dash { animation: none; }
 }

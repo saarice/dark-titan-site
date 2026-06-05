@@ -1,0 +1,84 @@
+import { useEffect, useRef } from "react";
+import { gsap } from "gsap";
+
+const TRUST = [
+  ["AKAMAI TMA", "Potential Impact"],
+  ["FIREFLY (INTERNAL)", "Autonomous Build"],
+  ["BUILT FOR CONTROL", "Not Demos"],
+  ["NO HYPE", "Just Results"],
+];
+
+export default function Hero() {
+  const root = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (reduced) return;
+    const ctx = gsap.context(() => {
+      const tl = gsap.timeline({ defaults: { ease: "power3.out" } });
+      tl.fromTo(".h-eyebrow", { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.8, delay: 0.15 })
+        .fromTo(".h-line", { opacity: 0, y: 40 }, { opacity: 1, y: 0, duration: 1, stagger: 0.12 }, "-=0.3")
+        .fromTo(".h-sub", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.8 }, "-=0.4")
+        .fromTo(".h-cta", { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.7 }, "-=0.4")
+        .fromTo(".h-trust", { opacity: 0 }, { opacity: 1, duration: 0.9 }, "-=0.3");
+    }, root);
+    return () => ctx.revert();
+  }, []);
+
+  return (
+    <section
+      id="home"
+      ref={root}
+      className="relative flex min-h-screen flex-col justify-center overflow-hidden px-6 pt-28 md:px-10"
+    >
+      {/* left-anchored readability scrim so copy stays crisp over the gateway */}
+      <div
+        className="pointer-events-none absolute inset-0"
+        style={{ background: "linear-gradient(90deg, rgba(10,10,12,0.92) 0%, rgba(10,10,12,0.55) 42%, rgba(10,10,12,0) 70%)" }}
+      />
+
+      <div className="relative z-10 mx-auto w-full max-w-[1200px]">
+        <div className="max-w-2xl">
+          <p className="h-eyebrow mb-6 font-mono text-xs uppercase tracking-[0.35em] text-violet">
+            The AI Agent Factory
+          </p>
+
+          <h1 className="font-display text-5xl leading-[0.92] tracking-tight text-cloud md:text-7xl">
+            <span className="h-line block">BRING ORDER</span>
+            <span className="h-line block">TO ENGINEERING</span>
+            <span className="h-line block text-violet">CHAOS.</span>
+          </h1>
+
+          <p className="h-sub mt-7 max-w-md text-base leading-relaxed text-muted">
+            The AI Agent Factory that builds, runs, and operates software at scale. Intelligence
+            without chaos. Control without friction.
+          </p>
+
+          <div className="h-cta mt-9 flex flex-wrap items-center gap-4">
+            <a
+              href="#factory"
+              className="rounded-full bg-violet px-7 py-3.5 font-mono text-sm uppercase tracking-[0.12em] text-obsidian transition-colors hover:bg-lavender focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet"
+            >
+              Start Building
+            </a>
+            <a
+              href="#factory"
+              className="rounded-full border border-steel px-7 py-3.5 font-mono text-sm uppercase tracking-[0.12em] text-cloud transition-colors hover:border-violet focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet"
+            >
+              See the Factory
+            </a>
+          </div>
+        </div>
+
+        <div className="h-trust mt-20 grid max-w-3xl grid-cols-2 gap-x-8 gap-y-5 border-t border-slate pt-6 md:grid-cols-4">
+          {TRUST.map(([title, sub]) => (
+            <div key={title}>
+              <p className="font-mono text-[11px] uppercase tracking-[0.12em] text-cloud">{title}</p>
+              <p className="mt-1 font-mono text-[11px] uppercase tracking-[0.1em] text-faint">{sub}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
