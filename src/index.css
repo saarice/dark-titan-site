@@ -1,24 +1,27 @@
-@import url('https://fonts.googleapis.com/css2?family=Archivo:ital,wght@0,400;0,600;0,700;0,800;1,600&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Archivo+Black&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
-  /* Dark Titan brand tokens (from one-pager) */
-  --bg:          #09080a;
-  --bg-elev:     #131016;
-  --surface:     #181320;
-  --border:      #2a2430;
-  --fg:          #f6f2ef;
-  --fg-muted:    #a9a2ad;
-  --fg-faint:    #6c6473;
-  --accent:      #a855f7;
-  --accent-lo:   #7c3aed;
-  --accent-hi:   #c79bff;
-  --accent-glow: rgba(168, 85, 247, 0.22);
-  --grid:        rgba(168, 85, 247, 0.05);
-  --accent-soft: #b06bff;
+  /* Dark Titan brand tokens */
+  --obsidian:  #0A0A0C;   /* page bg */
+  --charcoal:  #111216;   /* raised surface */
+  --slate:     #1E1E24;   /* hairline border */
+  --steel:     #2A2A33;   /* stronger border */
+  --violet:    #8A56F7;   /* primary accent */
+  --violet-dp: #6020D9;   /* deep accent */
+  --lavender:  #B338FF;   /* bright / seam highlight */
+  --cloud:     #F7F7F7;   /* primary text */
+  --fg-muted:  #9A9AA6;
+  --fg-faint:  #6F6F7D;
+  /* product-only signal colors */
+  --sig-cyan:  #22D3EE;
+  --sig-amber: #FFB100;
+  --sig-red:   #EF4444;
+  --sig-green: #22C55E;
+  --seam-glow: rgba(138, 86, 247, 0.45);
 }
 
 * { box-sizing: border-box; }
@@ -27,38 +30,36 @@ html { scroll-behavior: smooth; }
 
 body {
   margin: 0;
-  background: var(--bg);
-  color: var(--fg);
+  background: var(--obsidian);
+  color: var(--cloud);
   font-family: 'IBM Plex Sans', system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   overflow-x: hidden;
 }
 
-/* Accent gradient (purple) used on rings, borders, bars */
-.accent-gradient {
-  background: linear-gradient(90deg, var(--accent-hi) 0%, var(--accent-lo) 100%);
+/* The seam — vertical light line motif */
+.seam-line {
+  background: linear-gradient(180deg, transparent, var(--lavender) 30%, #E6D4FF 50%, var(--violet) 70%, transparent);
+}
+.glow-seam {
+  filter: drop-shadow(0 0 6px var(--violet)) drop-shadow(0 0 16px var(--seam-glow));
 }
 
-/* Animated gradient border helper */
+/* Animated gradient border helper (violet) */
 .gradient-border-animated {
-  background: linear-gradient(90deg, var(--accent-hi), var(--accent), var(--accent-lo), var(--accent));
+  background: linear-gradient(90deg, var(--lavender), var(--violet), var(--violet-dp), var(--violet));
   background-size: 300% 100%;
   animation: gradient-shift 6s ease infinite;
 }
 
-/* Dark Titan grid + glow backdrop (the "poster" motif) */
-.titan-backdrop {
-  background-color: var(--bg);
-  background-image:
-    repeating-linear-gradient(0deg,  var(--grid) 0 1px, transparent 1px 38px),
-    repeating-linear-gradient(90deg, var(--grid) 0 1px, transparent 1px 38px),
-    radial-gradient(ellipse 80% 50% at 50% -10%, var(--accent-glow), transparent 60%),
-    radial-gradient(ellipse 70% 50% at 100% 110%, rgba(124, 58, 237, 0.10), transparent 60%);
-}
-
-::selection { background: var(--accent); color: #0a0908; }
+::selection { background: var(--violet); color: #0a0a0c; }
 
 ::-webkit-scrollbar { width: 10px; }
-::-webkit-scrollbar-track { background: var(--bg); }
-::-webkit-scrollbar-thumb { background: var(--border); border-radius: 6px; }
-::-webkit-scrollbar-thumb:hover { background: var(--accent-lo); }
+::-webkit-scrollbar-track { background: var(--obsidian); }
+::-webkit-scrollbar-thumb { background: var(--steel); border-radius: 6px; }
+::-webkit-scrollbar-thumb:hover { background: var(--violet-dp); }
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .gradient-border-animated { animation: none; }
+}
