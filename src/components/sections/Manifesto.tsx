@@ -1,0 +1,57 @@
+import { motion } from "framer-motion";
+
+const LINES = [
+  "INTELLIGENCE WITHOUT CHAOS.",
+  "AUTOMATION WITHOUT SURRENDER.",
+  "CONTROL WITHOUT FRICTION.",
+];
+
+export default function Manifesto() {
+  return (
+    <section
+      id="manifesto"
+      className="relative flex min-h-screen items-center overflow-hidden px-6 py-32 md:px-10"
+    >
+      {/* full-height seam spine */}
+      <div
+        className="seam-line glow-seam pointer-events-none absolute left-1/2 top-0 h-full w-[2px] -translate-x-1/2 opacity-60"
+        aria-hidden
+      />
+      {/* readability scrim */}
+      <div
+        className="pointer-events-none absolute inset-0 -z-[1]"
+        style={{
+          background:
+            "radial-gradient(80% 70% at 50% 50%, rgba(10,10,12,0.9), rgba(10,10,12,0.4) 80%)",
+        }}
+      />
+
+      <div className="mx-auto w-full max-w-[1100px] text-center">
+        <div className="space-y-1 md:space-y-2">
+          {LINES.map((line, i) => (
+            <motion.h2
+              key={line}
+              className="font-display text-[2rem] leading-[1.02] tracking-tight text-cloud sm:text-5xl md:text-7xl"
+              initial={{ opacity: 0, y: 26 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-20%" }}
+              transition={{ delay: i * 0.18, duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+            >
+              {line}
+            </motion.h2>
+          ))}
+          <motion.h2
+            className="pt-6 font-display text-[2rem] leading-[1.02] tracking-tight text-lavender sm:text-5xl md:text-7xl"
+            initial={{ opacity: 0, y: 26 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-20%" }}
+            transition={{ delay: LINES.length * 0.18 + 0.1, duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+            style={{ textShadow: "0 0 30px rgba(179,56,255,0.4)" }}
+          >
+            LIGHTS OFF. CODE OUT.
+          </motion.h2>
+        </div>
+      </div>
+    </section>
+  );
+}
