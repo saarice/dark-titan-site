@@ -21,7 +21,7 @@ export default function App() {
         {loading && <LoadingScreen onComplete={() => setLoading(false)} />}
       </AnimatePresence>
 
-      {/* fixed WebGL backdrop — decorative, behind everything */}
+      {/* fixed WebGL backdrop - decorative, behind everything */}
       <Scene3D />
 
       <Nav />

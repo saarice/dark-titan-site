@@ -1,5 +1,5 @@
 /**
- * Dark Titan logo — the angular titan crest split by a glowing vertical seam.
+ * Dark Titan logo - the angular titan crest split by a glowing vertical seam.
  * Single source of truth / swap-point for the designer's final SVG.
  * Do-not rules (per brand board): no stretch, no extra glow, no recolor, no stroke, no rotate.
  */

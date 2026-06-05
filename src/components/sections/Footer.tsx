@@ -29,7 +29,7 @@ export default function Footer() {
 
   return (
     <footer id="contact" className="relative overflow-hidden px-6 py-28 md:px-10">
-      {/* soft scrim only — let the monolith reform behind */}
+      {/* soft scrim only - let the monolith reform behind */}
       <div
         className="pointer-events-none absolute inset-0 -z-[1]"
         style={{

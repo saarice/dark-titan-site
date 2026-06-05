@@ -70,7 +70,8 @@ export default function Monolith({
         const h = debrisHome[i];
         dummy.position.set(h.x * (1 - k), h.y * (1 - k * 0.85), h.z * (1 - k));
         dummy.scale.setScalar(Math.max(0.0001, sc));
-        dummy.rotation.set(t * 0.1 + i, t * 0.13 + i, 0);
+        // freeze rotation under reduced motion (static, per-instance varied)
+        dummy.rotation.set(reduced ? i : t * 0.1 + i, reduced ? i : t * 0.13 + i, 0);
         dummy.updateMatrix();
         debrisRef.current.setMatrixAt(i, dummy.matrix);
       }
@@ -78,7 +79,8 @@ export default function Monolith({
     }
 
     const pt = reduced ? { x: 0, y: 0 } : ptr.current ?? { x: 0, y: 0 };
-    const targetY = Math.sin(t * 0.25) * 0.16 + p * 0.6 + pt.x * 0.18;
+    const sway = reduced ? 0 : Math.sin(t * 0.25) * 0.16;
+    const targetY = sway + p * 0.6 + pt.x * 0.18;
     rotY.current = THREE.MathUtils.damp(rotY.current, targetY, 3, delta);
     rotX.current = THREE.MathUtils.damp(rotX.current, pt.y * 0.1, 3, delta);
 

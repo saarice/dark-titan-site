@@ -79,7 +79,7 @@ export default function Factory() {
           </div>
         </div>
         <p className="mt-3 text-center font-mono text-[10px] uppercase tracking-[0.15em] text-faint">
-          Sample data — illustrative dashboard
+          Sample data: illustrative dashboard
         </p>
       </div>
     </Section>

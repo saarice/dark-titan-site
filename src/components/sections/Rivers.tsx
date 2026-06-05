@@ -8,7 +8,7 @@ const STOPS = [
   },
   {
     title: "The agents build it",
-    body: "Spec, code, review, test — coordinated, in parallel.",
+    body: "Spec, code, review, test: coordinated, in parallel.",
   },
   {
     title: "It runs in production",
