@@ -3,7 +3,7 @@ import Logo from "./Logo";
 
 const LINKS: [string, string][] = [
   ["Factory", "#factory"],
-  ["Agents", "#agents"],
+  ["Pipeline", "#pipeline"],
   ["Tempo", "#tempo"],
   ["Trust", "#trust"],
 ];

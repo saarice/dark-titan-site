@@ -6,7 +6,7 @@ import Nav from "./components/Nav";
 import Hero from "./components/sections/Hero";
 import Chaos from "./components/sections/Chaos";
 import Factory from "./components/sections/Factory";
-import Agents from "./components/sections/Agents";
+import Pipeline from "./components/sections/Pipeline";
 import Rivers from "./components/sections/Rivers";
 import Tempo from "./components/sections/Tempo";
 import Proof from "./components/sections/Proof";
@@ -32,7 +32,7 @@ export default function App() {
         <Hero />
         <Chaos />
         <Factory />
-        <Agents />
+        <Pipeline />
         <Rivers />
         <Tempo />
         <Proof />
