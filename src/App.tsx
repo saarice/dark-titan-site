@@ -8,7 +8,8 @@ import Nav from "./components/Nav";
 function initialVersion(): MonolithVersion {
   if (typeof window === "undefined") return "d";
   const v = new URLSearchParams(window.location.search).get("v");
-  return v === "e" || v === "f" || v === "g" ? v : "d";
+  const all: MonolithVersion[] = ["d", "e", "f", "g", "h", "i", "j", "k"];
+  return all.includes(v as MonolithVersion) ? (v as MonolithVersion) : "d";
 }
 import Hero from "./components/sections/Hero";
 import Chaos from "./components/sections/Chaos";

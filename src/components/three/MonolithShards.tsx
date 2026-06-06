@@ -36,7 +36,7 @@ import { sceneStateFor, smoothstep, clamp } from "../../lib/choreography";
  *  - g "Basalt"     obelisk, rough hewn basalt, heavy relief, grazing light.
  */
 
-export type Version = "d" | "e" | "f" | "g";
+export type Version = "d" | "e" | "f" | "g" | "h" | "i" | "j" | "k";
 
 const K = 9; // number of vertical shards
 const COL_W = 1.18; // total tower width (slim)
@@ -68,6 +68,13 @@ type Preset = {
   seamOpacity: number;
   poolOpacity: number;
   reflectiveFloor: boolean;
+  /** glowing fracture veins across the stone (emissive crack network) */
+  emissiveColor?: string;
+  emissiveIntensity?: number;
+  /** use MeshPhysicalMaterial with a clearcoat for a polished gemstone look */
+  physical?: boolean;
+  clearcoat?: number;
+  clearcoatRoughness?: number;
 };
 
 const PRESETS: Record<Version, Preset> = {
@@ -135,6 +142,79 @@ const PRESETS: Record<Version, Preset> = {
     poolOpacity: 0.5,
     reflectiveFloor: false,
   },
+  // Veined: dark granite shot through with a glowing violet fracture network.
+  h: {
+    shape: "obelisk",
+    tex: "stone",
+    color: "#1b1528",
+    metalness: 0.3,
+    roughness: 0.8,
+    normalScale: 1.2,
+    envMapIntensity: 1.5,
+    tileX: 1.25,
+    tileY: 2.4,
+    displacement: 0,
+    seamColor: "#CDB0FF",
+    seamOpacity: 0.95,
+    poolOpacity: 0.8,
+    reflectiveFloor: false,
+    emissiveColor: "#9C5BFF",
+    emissiveIntensity: 2.1,
+  },
+  // Iron: dark machined ore, high metalness, industrial titan.
+  i: {
+    shape: "obelisk",
+    tex: "rock",
+    color: "#2b2740",
+    metalness: 0.92,
+    roughness: 0.43,
+    normalScale: 1.35,
+    envMapIntensity: 1.9,
+    tileX: 1.4,
+    tileY: 2.2,
+    displacement: 0,
+    seamColor: "#B28AFF",
+    seamOpacity: 0.85,
+    poolOpacity: 0.55,
+    reflectiveFloor: false,
+  },
+  // Amethyst: polished violet gemstone, clearcoat sheen, deep internal color.
+  j: {
+    shape: "obelisk",
+    tex: "stone",
+    color: "#4b2f93",
+    metalness: 0.12,
+    roughness: 0.13,
+    normalScale: 0.55,
+    envMapIntensity: 2.5,
+    tileX: 1.0,
+    tileY: 2.0,
+    displacement: 0,
+    seamColor: "#E6D4FF",
+    seamOpacity: 1.0,
+    poolOpacity: 0.7,
+    reflectiveFloor: true,
+    physical: true,
+    clearcoat: 1,
+    clearcoatRoughness: 0.08,
+  },
+  // Alabaster: pale luminous honed stone, bright against the black.
+  k: {
+    shape: "obelisk",
+    tex: "stone",
+    color: "#d9d0ec",
+    metalness: 0.0,
+    roughness: 0.32,
+    normalScale: 0.6,
+    envMapIntensity: 1.6,
+    tileX: 1.1,
+    tileY: 2.2,
+    displacement: 0,
+    seamColor: "#C6A6FF",
+    seamOpacity: 0.9,
+    poolOpacity: 0.72,
+    reflectiveFloor: true,
+  },
 };
 
 type Shard = {
@@ -178,6 +258,60 @@ function useGlowTexture() {
     g.fillRect(0, 0, 256, 256);
     const tex = new THREE.CanvasTexture(c);
     tex.colorSpace = THREE.SRGBColorSpace;
+    return tex;
+  }, []);
+}
+
+/**
+ * Procedural fracture-vein emissive map (no network fetch). Black background so
+ * only the cracks emit; a branching network of bright violet lines that bloom
+ * picks up as glowing veins running through the stone.
+ */
+function useCrackTexture() {
+  return useMemo(() => {
+    const S = 512;
+    const c = document.createElement("canvas");
+    c.width = c.height = S;
+    const g = c.getContext("2d")!;
+    g.fillStyle = "#000";
+    g.fillRect(0, 0, S, S);
+    g.lineCap = "round";
+    g.shadowColor = "#b884ff";
+
+    const branch = (x: number, y: number, ang: number, len: number, width: number, depth: number) => {
+      if (depth <= 0 || len < 6) return;
+      const steps = Math.max(2, Math.floor(len / 14));
+      let cx = x;
+      let cy = y;
+      let ca = ang;
+      g.lineWidth = width;
+      g.shadowBlur = width * 3;
+      g.strokeStyle = `rgba(${190 + Math.random() * 50}, ${130 + Math.random() * 60}, 255, 0.95)`;
+      g.beginPath();
+      g.moveTo(cx, cy);
+      const seg = len / steps;
+      for (let s = 0; s < steps; s++) {
+        ca += (Math.random() - 0.5) * 0.7;
+        cx += Math.cos(ca) * seg;
+        cy += Math.sin(ca) * seg;
+        g.lineTo(cx, cy);
+        if (Math.random() < 0.35) {
+          branch(cx, cy, ca + (Math.random() < 0.5 ? 1 : -1) * (0.5 + Math.random() * 0.6), len * 0.55, width * 0.6, depth - 1);
+        }
+      }
+      g.stroke();
+    };
+
+    // Seed a handful of trunks that drift mostly vertically so veins read as
+    // tension running the height of the monolith; edges wrap for tiling.
+    for (let i = 0; i < 7; i++) {
+      const x = (S / 7) * (i + 0.5) + (Math.random() - 0.5) * 30;
+      branch(x, -10, Math.PI / 2 + (Math.random() - 0.5) * 0.5, S * (0.9 + Math.random() * 0.5), 3.2, 4);
+    }
+
+    const tex = new THREE.CanvasTexture(c);
+    tex.colorSpace = THREE.SRGBColorSpace;
+    tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
     return tex;
   }, []);
 }
@@ -236,6 +370,7 @@ export default function MonolithShards({
 
   const shards = useMemo(() => buildShards(), []);
   const glow = useGlowTexture();
+  const cracks = useCrackTexture();
   const maps = useRockMaps();
   const source: MapSet = preset.tex === "stone" ? maps.stone : maps.rock;
 
@@ -264,7 +399,7 @@ export default function MonolithShards({
       const map = clone(source.map);
       map.colorSpace = THREE.SRGBColorSpace;
 
-      const mat = new THREE.MeshStandardMaterial({
+      const params: THREE.MeshStandardMaterialParameters = {
         map,
         normalMap: clone(source.normalMap),
         roughnessMap: clone(source.roughnessMap),
@@ -278,11 +413,24 @@ export default function MonolithShards({
         envMapIntensity: preset.envMapIntensity,
         normalScale: new THREE.Vector2(preset.normalScale, preset.normalScale),
         aoMapIntensity: 1,
-      });
+        ...(preset.emissiveColor
+          ? { emissiveMap: clone(cracks), emissive: new THREE.Color(preset.emissiveColor), emissiveIntensity: preset.emissiveIntensity ?? 1.5 }
+          : {}),
+      };
+
+      // Amethyst-style readings use a physical material so a clearcoat gives
+      // the stone a wet, gem-polished sheen on top of the rock micro-relief.
+      const mat = preset.physical
+        ? new THREE.MeshPhysicalMaterial({
+            ...params,
+            clearcoat: preset.clearcoat ?? 1,
+            clearcoatRoughness: preset.clearcoatRoughness ?? 0.1,
+          })
+        : new THREE.MeshStandardMaterial(params);
       materials.push(mat);
     }
     return { geometries, materials };
-  }, [shards, preset, source]);
+  }, [shards, preset, source, cracks]);
 
   // Dispose GPU resources when the version (and thus built set) changes.
   useEffect(() => {
@@ -295,6 +443,7 @@ export default function MonolithShards({
         m.roughnessMap?.dispose();
         m.aoMap?.dispose();
         m.displacementMap?.dispose();
+        m.emissiveMap?.dispose();
         m.dispose();
       });
     };

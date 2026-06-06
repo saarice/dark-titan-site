@@ -19,10 +19,10 @@ export default function Scene3D({ version = "d" }: { version?: MonolithVersion }
   const isMobile = typeof window !== "undefined" && window.innerWidth < 768;
 
   // Atmosphere per version: storm behind the dramatic readings, clean air for
-  // the polished obsidian, bare calm for the restrained monument.
-  const stormy = (version === "d" || version === "g") && !reduced;
+  // the polished stones, bare calm for the restrained monument.
+  const stormy = ["d", "g", "h", "i"].includes(version) && !reduced;
   const sparkly = version !== "e" && !reduced;
-  const lush = version === "d" || version === "f"; // richer light + bloom
+  const lush = ["d", "f", "h", "j", "k"].includes(version); // richer light + bloom
 
   return (
     <div className="fixed inset-0" style={{ zIndex: 0, pointerEvents: "none" }} aria-hidden>
