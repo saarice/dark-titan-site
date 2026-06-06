@@ -43,7 +43,7 @@ export default function Scene3D() {
       <Canvas
         camera={{ position: [0, 0, 6.4], fov: 50 }}
         gl={{ antialias: !isMobile, powerPreference: "high-performance" }}
-        dpr={isMobile ? [1, 1.5] : [1, 2]}
+        dpr={isMobile ? [1, 1.25] : [1, 1.5]}
       >
         <color attach="background" args={["#0A0A0C"]} />
         <fog attach="fog" args={["#0A0A0C", 8, 30]} />

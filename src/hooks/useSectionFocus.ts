@@ -20,7 +20,7 @@ const MOBILE_PARK = 2.2;
 export function useMonolithX(track: TrackStop[]) {
   const x = useRef(track[0]?.x ?? 0);
   useEffect(() => {
-    const update = () => {
+    const compute = () => {
       if (window.innerWidth < 768) {
         x.current = MOBILE_PARK;
         return;
@@ -44,12 +44,25 @@ export function useMonolithX(track: TrackStop[]) {
       wsum += rest;
       x.current = wsum > 0 ? xsum / wsum : 0;
     };
-    update();
-    window.addEventListener("scroll", update, { passive: true });
-    window.addEventListener("resize", update);
+    // Throttle to one read per animation frame. Scroll events can fire many
+    // times per frame, and reading layout right after the page mutates the DOM
+    // on scroll forces a synchronous reflow each time (layout thrash). Batching
+    // into a single rAF keeps it to one clean layout read per frame.
+    let raf = 0;
+    const onScroll = () => {
+      if (raf) return;
+      raf = requestAnimationFrame(() => {
+        raf = 0;
+        compute();
+      });
+    };
+    compute();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll);
     return () => {
-      window.removeEventListener("scroll", update);
-      window.removeEventListener("resize", update);
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+      if (raf) cancelAnimationFrame(raf);
     };
   }, [track]);
   return x;

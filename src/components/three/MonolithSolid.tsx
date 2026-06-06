@@ -291,6 +291,9 @@ export default function MonolithSolid({
         />
       </mesh>
 
+      {/* Baked once (frames={1}): the shadow lives inside this group, so it
+          rides along as the stone translates - no need to re-render the depth
+          pass every frame, which is a big per-frame GPU saving. */}
       <ContactShadows
         position={[0, -HALF_H + 0.01, 0]}
         scale={9}
@@ -298,6 +301,7 @@ export default function MonolithSolid({
         blur={2.6}
         opacity={0.55}
         far={5}
+        frames={1}
         color="#05040a"
       />
 
