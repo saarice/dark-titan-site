@@ -1,6 +1,6 @@
 import Logo from "../Logo";
 
-const EMAIL = "saar.cohen@darktitan.develeap.com";
+const EMAIL = "darktitan@develeap.com";
 const SOCIALS = [
   { label: "Twitter", href: "#" },
   { label: "LinkedIn", href: "#" },
