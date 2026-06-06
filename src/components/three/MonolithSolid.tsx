@@ -25,7 +25,8 @@ import { sceneStateFor, smoothstep } from "../../lib/choreography";
  *
  * Down the centre there is no bright seam line. Instead the block is split by a
  * narrow vertical GAP: a dark recess behind it reads as shadowed depth, and a
- * soft, blurred pink glow bleeds out of the slot - present, not a laser.
+ * soft, blurred violet glow (F's seam colour #D4BBFF, the same family as the
+ * shadowed interior) bleeds out of the slot - present, not a laser.
  */
 
 const SLAB_H = 3.7; // monolith height
@@ -47,9 +48,9 @@ function useSlotGlow() {
     c.height = h;
     const g = c.getContext("2d")!;
     const vg = g.createLinearGradient(0, 0, 0, h);
-    vg.addColorStop(0, "rgba(255,170,220,0)");
-    vg.addColorStop(0.5, "rgba(255,170,220,1)");
-    vg.addColorStop(1, "rgba(255,170,220,0)");
+    vg.addColorStop(0, "rgba(212,187,255,0)");
+    vg.addColorStop(0.5, "rgba(212,187,255,1)");
+    vg.addColorStop(1, "rgba(212,187,255,0)");
     g.fillStyle = vg;
     g.fillRect(0, 0, w, h);
     // carve the horizontal edges away so the glow is soft, not a hard bar
@@ -73,9 +74,9 @@ function usePoolGlow() {
     c.width = c.height = 256;
     const g = c.getContext("2d")!;
     const grad = g.createRadialGradient(128, 128, 0, 128, 128, 128);
-    grad.addColorStop(0, "rgba(255,170,220,0.8)");
-    grad.addColorStop(0.4, "rgba(220,120,200,0.3)");
-    grad.addColorStop(1, "rgba(220,120,200,0)");
+    grad.addColorStop(0, "rgba(212,187,255,0.8)");
+    grad.addColorStop(0.4, "rgba(155,109,255,0.3)");
+    grad.addColorStop(1, "rgba(155,109,255,0)");
     g.fillStyle = grad;
     g.fillRect(0, 0, 256, 256);
     const tex = new THREE.CanvasTexture(c);
@@ -218,7 +219,7 @@ export default function MonolithSolid({
         <planeGeometry args={[GAP * 2.6, SLAB_H * 0.97]} />
         <meshBasicMaterial
           map={slotGlow}
-          color="#FFB0DC"
+          color="#D4BBFF"
           transparent
           opacity={0.55}
           depthWrite={false}

@@ -1,16 +1,8 @@
 import { useState } from "react";
 import { AnimatePresence, MotionConfig } from "framer-motion";
 import LoadingScreen from "./components/LoadingScreen";
-import Scene3D, { type MonolithVersion } from "./components/three/Scene3D";
-import VersionSwitcher from "./components/VersionSwitcher";
+import Scene3D from "./components/three/Scene3D";
 import Nav from "./components/Nav";
-
-function initialVersion(): MonolithVersion {
-  if (typeof window === "undefined") return "main2";
-  const v = new URLSearchParams(window.location.search).get("v");
-  const all: MonolithVersion[] = ["main2", "f"];
-  return all.includes(v as MonolithVersion) ? (v as MonolithVersion) : "main2";
-}
 import Hero from "./components/sections/Hero";
 import Chaos from "./components/sections/Chaos";
 import Factory from "./components/sections/Factory";
@@ -24,7 +16,6 @@ import Footer from "./components/sections/Footer";
 
 export default function App() {
   const [loading, setLoading] = useState(true);
-  const [version, setVersion] = useState<MonolithVersion>(initialVersion);
 
   return (
     <MotionConfig reducedMotion="user">
@@ -33,8 +24,7 @@ export default function App() {
       </AnimatePresence>
 
       {/* fixed WebGL backdrop - decorative, behind everything */}
-      <Scene3D version={version} />
-      <VersionSwitcher version={version} onChange={setVersion} />
+      <Scene3D />
 
       <Nav />
 
