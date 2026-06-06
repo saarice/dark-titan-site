@@ -1,0 +1,238 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="noindex" />
+    <title>Dark Titan - Monolith Catalog</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=IBM+Plex+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --obsidian: #0a0a0c;
+        --charcoal: #111216;
+        --slate: #1e1e24;
+        --steel: #2a2a33;
+        --violet: #9b6dff;
+        --lavender: #c57aff;
+        --cloud: #f7f7f7;
+        --muted: #a6a6b4;
+        --faint: #828294;
+      }
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      html { -webkit-text-size-adjust: 100%; }
+      body {
+        background: var(--obsidian);
+        color: var(--cloud);
+        font-family: "IBM Plex Mono", ui-monospace, monospace;
+        min-height: 100vh;
+        position: relative;
+        overflow-x: hidden;
+        -webkit-font-smoothing: antialiased;
+      }
+      /* atmosphere: violet glow + faint grid + grain */
+      body::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        background:
+          radial-gradient(70% 50% at 50% -10%, rgba(155, 109, 255, 0.22), transparent 70%),
+          radial-gradient(50% 40% at 100% 100%, rgba(197, 122, 255, 0.1), transparent 70%);
+        pointer-events: none;
+        z-index: 0;
+      }
+      body::after {
+        content: "";
+        position: fixed;
+        inset: 0;
+        background-image:
+          linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
+        background-size: 48px 48px;
+        mask-image: radial-gradient(120% 90% at 50% 0%, #000 30%, transparent 80%);
+        -webkit-mask-image: radial-gradient(120% 90% at 50% 0%, #000 30%, transparent 80%);
+        pointer-events: none;
+        z-index: 0;
+      }
+      .wrap {
+        position: relative;
+        z-index: 1;
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: clamp(2.5rem, 7vw, 5rem) clamp(1.25rem, 5vw, 3rem) 5rem;
+      }
+      .eyebrow {
+        font-size: 11px;
+        letter-spacing: 0.32em;
+        text-transform: uppercase;
+        color: var(--violet);
+        opacity: 0;
+        animation: rise 0.7s cubic-bezier(0.2, 0.8, 0.2, 1) 0.05s forwards;
+      }
+      h1 {
+        font-family: "Archivo Black", system-ui, sans-serif;
+        font-weight: 400;
+        font-size: clamp(2.4rem, 9vw, 5rem);
+        line-height: 0.9;
+        letter-spacing: -0.02em;
+        margin: 0.5rem 0 0.9rem;
+        opacity: 0;
+        animation: rise 0.7s cubic-bezier(0.2, 0.8, 0.2, 1) 0.12s forwards;
+      }
+      h1 .stroke {
+        -webkit-text-stroke: 1.5px var(--lavender);
+        color: transparent;
+        text-stroke: 1.5px var(--lavender);
+      }
+      .lede {
+        max-width: 40ch;
+        color: var(--muted);
+        font-size: 14px;
+        line-height: 1.6;
+        opacity: 0;
+        animation: rise 0.7s cubic-bezier(0.2, 0.8, 0.2, 1) 0.2s forwards;
+      }
+      .grid {
+        margin-top: clamp(2rem, 5vw, 3.25rem);
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+        gap: 14px;
+      }
+      .card {
+        position: relative;
+        display: block;
+        text-decoration: none;
+        color: inherit;
+        border: 1px solid var(--slate);
+        border-radius: 18px;
+        background: linear-gradient(160deg, var(--charcoal), #0c0c0f);
+        padding: 1.25rem 1.25rem 1.4rem;
+        overflow: hidden;
+        isolation: isolate;
+        opacity: 0;
+        transform: translateY(14px);
+        animation: rise 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+        transition: border-color 0.25s, transform 0.25s, box-shadow 0.25s;
+      }
+      /* per-card stone tint, set inline via --tint */
+      .card::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(120% 90% at 80% -10%, var(--tint), transparent 60%);
+        opacity: 0.5;
+        z-index: -1;
+        transition: opacity 0.3s;
+      }
+      .card:hover,
+      .card:focus-visible {
+        border-color: var(--violet);
+        transform: translateY(-4px);
+        box-shadow: 0 18px 50px -20px var(--tint), 0 0 0 1px rgba(155, 109, 255, 0.25);
+        outline: none;
+      }
+      .card:hover::before,
+      .card:focus-visible::before { opacity: 0.85; }
+      .card .letter {
+        font-family: "Archivo Black", system-ui, sans-serif;
+        font-size: 3.4rem;
+        line-height: 1;
+        letter-spacing: -0.03em;
+      }
+      .card .name {
+        margin-top: 0.65rem;
+        font-size: 13px;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: var(--cloud);
+      }
+      .card .desc {
+        margin-top: 0.3rem;
+        font-size: 12px;
+        line-height: 1.55;
+        color: var(--faint);
+      }
+      .card .go {
+        margin-top: 1rem;
+        font-size: 10px;
+        letter-spacing: 0.22em;
+        text-transform: uppercase;
+        color: var(--violet);
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+      }
+      .card .go span { transition: transform 0.25s; }
+      .card:hover .go span { transform: translateX(4px); }
+      footer {
+        margin-top: 3rem;
+        font-size: 11px;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: var(--faint);
+        opacity: 0;
+        animation: rise 0.7s ease 0.7s forwards;
+      }
+      footer a { color: var(--muted); text-decoration: none; border-bottom: 1px solid var(--steel); }
+      footer a:hover { color: var(--lavender); border-color: var(--lavender); }
+      @keyframes rise {
+        to { opacity: 1; transform: translateY(0); }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        * { animation: none !important; }
+        .eyebrow, h1, .lede, .card, footer { opacity: 1; transform: none; }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="wrap">
+      <p class="eyebrow">Dark Titan / Hero Monolith</p>
+      <h1>Eight <span class="stroke">readings</span><br />of one stone.</h1>
+      <p class="lede">
+        The same monolith, rendered eight ways. Tap one to open it full-screen, then
+        use your browser's back button to return here and compare.
+      </p>
+
+      <div class="grid" id="grid"></div>
+
+      <footer>
+        Pick a favourite, then tell Claude &mdash; <a href="./">back to the live site</a>
+      </footer>
+    </main>
+
+    <script>
+      // One source of truth for the readings. Keep in sync with VersionSwitcher.
+      var READINGS = [
+        { id: "d", name: "Cinematic", desc: "Storm-lit drama, deepest atmosphere.", tint: "rgba(155,109,255,0.30)" },
+        { id: "e", name: "Monument", desc: "Bare, restrained, civic calm.", tint: "rgba(130,130,148,0.22)" },
+        { id: "f", name: "Obsidian", desc: "Polished volcanic glass, clean air.", tint: "rgba(120,90,200,0.28)" },
+        { id: "g", name: "Basalt", desc: "Raw columnar rock, matte grain.", tint: "rgba(90,80,120,0.26)" },
+        { id: "h", name: "Veined", desc: "Glowing violet cracks through dark stone.", tint: "rgba(156,91,255,0.40)" },
+        { id: "i", name: "Iron", desc: "Sleek dark metal, single bright seam.", tint: "rgba(120,120,160,0.30)" },
+        { id: "j", name: "Amethyst", desc: "Glossy gemstone over a reflective floor.", tint: "rgba(150,90,255,0.42)" },
+        { id: "k", name: "Alabaster", desc: "Pale carved stone, sculptural grain.", tint: "rgba(217,208,236,0.30)" },
+      ];
+
+      var grid = document.getElementById("grid");
+      READINGS.forEach(function (r, i) {
+        var a = document.createElement("a");
+        a.className = "card";
+        a.href = "./?v=" + r.id;
+        a.style.setProperty("--tint", r.tint);
+        a.style.animationDelay = 0.28 + i * 0.05 + "s";
+        a.setAttribute("aria-label", r.name + " - " + r.desc);
+        a.innerHTML =
+          '<div class="letter">' + r.id.toUpperCase() + "</div>" +
+          '<div class="name">' + r.name + "</div>" +
+          '<div class="desc">' + r.desc + "</div>" +
+          '<div class="go">View reading <span>&rarr;</span></div>';
+        grid.appendChild(a);
+      });
+    </script>
+  </body>
+</html>
