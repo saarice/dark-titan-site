@@ -1,9 +1,14 @@
 import { useEffect, useRef } from "react";
 
 /** One stop on the monolith's journey: which section, and where the stone sits
- *  (in world X) while that section owns the frame. `x` is desktop, `xm` mobile.
+ *  (in world X) while that section owns the frame, on desktop.
  *  Positive = right of centre, negative = left, 0 = centred. */
-export type TrackStop = { id: string; x: number; xm: number };
+export type TrackStop = { id: string; x: number };
+
+/** On phones every section is a single full-width column, so sliding the stone
+ *  across would drop its glow behind the copy. Instead it parks just off the
+ *  right edge as a subtle accent the whole way down. */
+const MOBILE_PARK = 2.2;
 
 /**
  * Blends a target world-X for the fixed monolith from the sections currently on
@@ -16,8 +21,11 @@ export function useMonolithX(track: TrackStop[]) {
   const x = useRef(track[0]?.x ?? 0);
   useEffect(() => {
     const update = () => {
+      if (window.innerWidth < 768) {
+        x.current = MOBILE_PARK;
+        return;
+      }
       const vh = window.innerHeight;
-      const mobile = window.innerWidth < 768;
       let wsum = 0;
       let xsum = 0;
       for (const t of track) {
@@ -29,7 +37,7 @@ export function useMonolithX(track: TrackStop[]) {
         const cover = Math.max(0, Math.min(1, (bottom - top) / vh));
         if (cover <= 0) continue;
         wsum += cover;
-        xsum += cover * (mobile ? t.xm : t.x);
+        xsum += cover * t.x;
       }
       // Any viewport not covered by a tracked section pulls toward centre (0).
       const rest = Math.max(0, 1 - wsum);

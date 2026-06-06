@@ -14,16 +14,16 @@ import { useReducedMotion } from "../../hooks/useReducedMotion";
  * so the flow diagram owns the right column.
  */
 const TRACK: TrackStop[] = [
-  { id: "home", x: 1.9, xm: 1.9 }, // hero: copy left, stone right
-  { id: "chaos", x: -2.4, xm: -1.4 },
-  { id: "factory", x: 1.9, xm: 1.2 },
-  { id: "pipeline", x: -3, xm: -1.6 }, // diagram owns the right column
-  { id: "how", x: 1.9, xm: 1.2 },
-  { id: "tempo", x: -1.9, xm: -1.2 },
-  { id: "proof", x: 1.9, xm: 1.2 },
-  { id: "trust", x: -1.9, xm: -1.2 },
-  { id: "manifesto", x: 0, xm: 0 }, // centred climax
-  { id: "contact", x: 0, xm: 0 },
+  { id: "home", x: 1.9 }, // hero: copy left, stone right
+  { id: "chaos", x: -2.4 }, // copy moved to right column
+  { id: "factory", x: 1.9 },
+  { id: "pipeline", x: -3 }, // diagram owns the right column
+  { id: "how", x: 1.9 },
+  { id: "tempo", x: -1.9 },
+  { id: "proof", x: 1.9 },
+  { id: "trust", x: -1.9 },
+  { id: "manifesto", x: 0 }, // centred climax
+  { id: "contact", x: 0 },
 ];
 
 /**
