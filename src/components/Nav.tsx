@@ -20,7 +20,7 @@ export default function Nav() {
     >
       <nav className="mx-auto flex max-w-[1200px] items-center justify-between px-6 py-4 md:px-10">
         <a href="#home" aria-label="Dark Titan home" className="block">
-          <Logo variant="mark" className="h-12 w-12" />
+          <Logo variant="lockup" />
         </a>
         <div className="hidden items-center gap-8 md:flex">
           {LINKS.map((l) => (

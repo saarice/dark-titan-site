@@ -12,24 +12,14 @@ export default function Manifesto() {
       id="manifesto"
       className="relative flex min-h-screen items-center overflow-hidden px-6 py-32 md:px-10"
     >
-      {/* readability scrim */}
+      {/* readability scrim (the seam intentionally does NOT run through here —
+          it lives only at the start of the page, through the Factory beat) */}
       <div
-        className="pointer-events-none absolute inset-0 -z-[2]"
+        className="pointer-events-none absolute inset-0 -z-[1]"
         style={{
           background:
             "radial-gradient(80% 70% at 50% 50%, rgba(10,10,12,0.9), rgba(10,10,12,0.4) 80%)",
         }}
-      />
-
-      {/* the seam, continued — the monolith's violet light line runs dead-center
-          through the manifesto, growing from the middle out as the words land */}
-      <motion.div
-        aria-hidden
-        className="seam-line glow-seam pointer-events-none absolute left-1/2 top-0 -z-[1] h-full w-[2px] -translate-x-1/2"
-        initial={{ scaleY: 0, opacity: 0 }}
-        whileInView={{ scaleY: 1, opacity: 0.65 }}
-        viewport={{ once: true, margin: "-20%" }}
-        transition={{ duration: 1.1, ease: [0.22, 1, 0.36, 1] }}
       />
 
       <div className="mx-auto w-full max-w-[1100px] text-center">
@@ -54,7 +44,22 @@ export default function Manifesto() {
             transition={{ delay: LINES.length * 0.18 + 0.1, duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
             style={{ textShadow: "0 0 30px rgba(179,56,255,0.4)" }}
           >
-            LIGHTS OFF. CODE OUT.
+            LIGHTS OFF. CODE{" "}
+            {/* "OUT." flickers on like a neon tube and keeps a bright glow */}
+            <motion.span
+              className="neon-out"
+              initial={{ opacity: 0.15 }}
+              whileInView={{ opacity: [0.15, 1, 0.25, 1, 0.6, 1] }}
+              viewport={{ once: true, margin: "-20%" }}
+              transition={{
+                delay: LINES.length * 0.18 + 0.55,
+                duration: 1.1,
+                times: [0, 0.18, 0.32, 0.5, 0.7, 1],
+                ease: "easeOut",
+              }}
+            >
+              OUT.
+            </motion.span>
           </motion.h2>
         </div>
       </div>

@@ -31,9 +31,10 @@ export function sceneStateFor(p: number): SceneState {
   const constellation = smoothstep(0.45, 0.6, p) * (1 - smoothstep(0.62, 0.74, p));
   const rivers = smoothstep(0.62, 0.74, p) * (1 - smoothstep(0.78, 0.9, p));
   const cameraZ = 6.4 + p * 0.85;
-  // Seam is brightest at the hero, fades through the middle, and does NOT
-  // blast back at the footer (only a faint reform glow). Driven by `hero`, not
-  // `form`, so the reform bookend stays calm instead of returning stronger.
-  const seamOpacity = hero * 0.9 + order * 0.45 + reform * 0.12;
+  // Seam lives only at the start of the journey: brightest at the hero, with a
+  // last appearance during the Factory "ordering" beat. It does NOT return
+  // anywhere after that — no faint footer/reform glow — so the back half of the
+  // page (agents -> rivers -> tempo -> proof -> manifesto -> footer) is seamless.
+  const seamOpacity = hero * 0.9 + order * 0.45;
   return { form, debris, order, constellation, rivers, reform, cameraZ, seamOpacity: clamp(seamOpacity) };
 }
