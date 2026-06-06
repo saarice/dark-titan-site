@@ -4,9 +4,10 @@ const LINES = ["MORE NOISE.", "MORE ALERTS.", "MORE TOOLS.", "MORE COMPLEXITY."]
 
 export default function Chaos() {
   return (
-    <section className="relative flex min-h-screen flex-col justify-center px-6 py-32 md:px-10">
+    <section id="chaos" className="relative flex min-h-screen flex-col justify-center px-6 py-32 md:px-10">
       <div className="mx-auto w-full max-w-[1200px]">
-        <div className="max-w-3xl">
+        {/* Copy lives in the right column so the stone (sent left here) has room. */}
+        <div className="max-w-3xl md:ml-auto md:w-[54%] md:max-w-none">
           {LINES.map((l, i) => (
             <motion.p
               key={l}

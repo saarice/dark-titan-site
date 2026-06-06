@@ -3,9 +3,28 @@ import { Canvas } from "@react-three/fiber";
 import { EffectComposer, Bloom } from "@react-three/postprocessing";
 import MonolithSolid from "./MonolithSolid";
 import { useScrollProgress } from "../../hooks/useScrollProgress";
-import { useSectionFocus } from "../../hooks/useSectionFocus";
+import { useMonolithX, type TrackStop } from "../../hooks/useSectionFocus";
 import { usePointer } from "../../hooks/usePointer";
 import { useReducedMotion } from "../../hooks/useReducedMotion";
+
+/**
+ * The monolith's journey down the page: it slides right -> left -> centre from
+ * section to section, always landing opposite that section's copy. Passing
+ * between two sections it glides through centre. The Pipeline pulls it hard left
+ * so the flow diagram owns the right column.
+ */
+const TRACK: TrackStop[] = [
+  { id: "home", x: 1.9, xm: 1.9 }, // hero: copy left, stone right
+  { id: "chaos", x: -2.4, xm: -1.4 },
+  { id: "factory", x: 1.9, xm: 1.2 },
+  { id: "pipeline", x: -3, xm: -1.6 }, // diagram owns the right column
+  { id: "how", x: 1.9, xm: 1.2 },
+  { id: "tempo", x: -1.9, xm: -1.2 },
+  { id: "proof", x: 1.9, xm: 1.2 },
+  { id: "trust", x: -1.9, xm: -1.2 },
+  { id: "manifesto", x: 0, xm: 0 }, // centred climax
+  { id: "contact", x: 0, xm: 0 },
+];
 
 /**
  * Fixed full-screen WebGL layer behind all content, driven by scroll.
@@ -13,7 +32,7 @@ import { useReducedMotion } from "../../hooks/useReducedMotion";
  */
 export default function Scene3D() {
   const scroll = useScrollProgress();
-  const pipeline = useSectionFocus("pipeline");
+  const posX = useMonolithX(TRACK);
   const ptr = usePointer();
   const reduced = useReducedMotion();
   // Phones get a lighter render budget: lower max DPR and softer bloom.
@@ -35,7 +54,7 @@ export default function Scene3D() {
         <pointLight position={[0, 1.5, -6]} intensity={16} color="#9B6DFF" distance={28} />
 
         <Suspense fallback={null}>
-          <MonolithSolid scroll={scroll} pipeline={pipeline} ptr={ptr} reduced={reduced} />
+          <MonolithSolid scroll={scroll} posX={posX} ptr={ptr} reduced={reduced} />
         </Suspense>
 
         <EffectComposer>

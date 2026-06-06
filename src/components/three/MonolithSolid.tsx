@@ -88,12 +88,12 @@ function usePoolGlow() {
 
 export default function MonolithSolid({
   scroll,
-  pipeline,
+  posX,
   ptr,
   reduced,
 }: {
   scroll: React.RefObject<number>;
-  pipeline: React.RefObject<number>;
+  posX: React.RefObject<number>;
   ptr: React.RefObject<{ x: number; y: number }>;
   reduced: boolean;
 }) {
@@ -213,12 +213,9 @@ export default function MonolithSolid({
     rotY.current = THREE.MathUtils.damp(rotY.current, sway + p * 0.28 + ptX * 0.16, 3, delta);
     rotX.current = THREE.MathUtils.damp(rotX.current, ptY * 0.07, 3, delta);
 
-    const heroOnly = 1 - smoothstep(0.05, 0.16, p);
-    // While the Pipeline section fills the frame, slide the stone aside to the
-    // left so the flow diagram owns the right half of the screen.
-    const pipe = reduced ? 0 : pipeline.current ?? 0;
-    const posXTarget =
-      (isMobile ? 1.4 + heroOnly * 1.7 : heroOnly * 1.9) - pipe * (isMobile ? 1.4 : 3);
+    // Lateral position is choreographed per section (right -> centre -> left ...)
+    // by useMonolithX. Reduced motion parks the stone at its hero spot.
+    const posXTarget = reduced ? 1.9 : posX.current ?? 0;
     const posYTarget = 0.4 * (1 - smoothstep(0, 0.9, p));
     posXCur.current = THREE.MathUtils.damp(posXCur.current, posXTarget, 3, delta);
     posYCur.current = THREE.MathUtils.damp(posYCur.current, posYTarget, 3, delta);

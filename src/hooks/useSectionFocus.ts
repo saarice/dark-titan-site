@@ -1,25 +1,40 @@
 import { useEffect, useRef } from "react";
 
+/** One stop on the monolith's journey: which section, and where the stone sits
+ *  (in world X) while that section owns the frame. `x` is desktop, `xm` mobile.
+ *  Positive = right of centre, negative = left, 0 = centred. */
+export type TrackStop = { id: string; x: number; xm: number };
+
 /**
- * Tracks how fully a section fills the viewport, as 0..1 in a ref (no re-renders).
- * 1 means the section covers the whole screen height; ramps to 0 as it scrolls
- * past the top or bottom edge. Used to choreograph the fixed WebGL monolith per
- * section (e.g. slide it aside while a section's content takes the frame).
+ * Blends a target world-X for the fixed monolith from the sections currently on
+ * screen. Each tracked section contributes by how much of the viewport it covers
+ * (0..1); uncovered space pulls toward centre. The result is a single ref that
+ * glides the stone right -> centre -> left -> centre... as you scroll, so it
+ * "travels" behind the page from section to section. No re-renders.
  */
-export function useSectionFocus(id: string) {
-  const focus = useRef(0);
+export function useMonolithX(track: TrackStop[]) {
+  const x = useRef(track[0]?.x ?? 0);
   useEffect(() => {
     const update = () => {
-      const el = document.getElementById(id);
-      if (!el) {
-        focus.current = 0;
-        return;
-      }
-      const r = el.getBoundingClientRect();
       const vh = window.innerHeight;
-      const top = Math.max(r.top, 0);
-      const bottom = Math.min(r.bottom, vh);
-      focus.current = Math.max(0, Math.min(1, (bottom - top) / vh));
+      const mobile = window.innerWidth < 768;
+      let wsum = 0;
+      let xsum = 0;
+      for (const t of track) {
+        const el = document.getElementById(t.id);
+        if (!el) continue;
+        const r = el.getBoundingClientRect();
+        const top = Math.max(r.top, 0);
+        const bottom = Math.min(r.bottom, vh);
+        const cover = Math.max(0, Math.min(1, (bottom - top) / vh));
+        if (cover <= 0) continue;
+        wsum += cover;
+        xsum += cover * (mobile ? t.xm : t.x);
+      }
+      // Any viewport not covered by a tracked section pulls toward centre (0).
+      const rest = Math.max(0, 1 - wsum);
+      wsum += rest;
+      x.current = wsum > 0 ? xsum / wsum : 0;
     };
     update();
     window.addEventListener("scroll", update, { passive: true });
@@ -28,6 +43,6 @@ export function useSectionFocus(id: string) {
       window.removeEventListener("scroll", update);
       window.removeEventListener("resize", update);
     };
-  }, [id]);
-  return focus;
+  }, [track]);
+  return x;
 }
