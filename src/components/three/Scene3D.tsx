@@ -3,6 +3,7 @@ import { Canvas } from "@react-three/fiber";
 import { EffectComposer, Bloom } from "@react-three/postprocessing";
 import MonolithSolid from "./MonolithSolid";
 import { useScrollProgress } from "../../hooks/useScrollProgress";
+import { useSectionFocus } from "../../hooks/useSectionFocus";
 import { usePointer } from "../../hooks/usePointer";
 import { useReducedMotion } from "../../hooks/useReducedMotion";
 
@@ -12,6 +13,7 @@ import { useReducedMotion } from "../../hooks/useReducedMotion";
  */
 export default function Scene3D() {
   const scroll = useScrollProgress();
+  const pipeline = useSectionFocus("pipeline");
   const ptr = usePointer();
   const reduced = useReducedMotion();
   // Phones get a lighter render budget: lower max DPR and softer bloom.
@@ -33,7 +35,7 @@ export default function Scene3D() {
         <pointLight position={[0, 1.5, -6]} intensity={16} color="#9B6DFF" distance={28} />
 
         <Suspense fallback={null}>
-          <MonolithSolid scroll={scroll} ptr={ptr} reduced={reduced} />
+          <MonolithSolid scroll={scroll} pipeline={pipeline} ptr={ptr} reduced={reduced} />
         </Suspense>
 
         <EffectComposer>

@@ -148,7 +148,7 @@ export default function Pipeline() {
       {/* readability scrim over the WebGL backdrop */}
       <div
         className="pointer-events-none absolute inset-0 -z-[1]"
-        style={{ background: "radial-gradient(70% 55% at 50% 45%, rgba(10,10,12,0.9), rgba(10,10,12,0) 75%)" }}
+        style={{ background: "radial-gradient(70% 55% at 68% 45%, rgba(10,10,12,0.9), rgba(10,10,12,0) 75%)" }}
       />
 
       {/* tall scroll region; pinned stage inside */}
@@ -160,6 +160,9 @@ export default function Pipeline() {
               : "sticky top-0 flex min-h-screen flex-col justify-center overflow-hidden px-6 py-20 md:px-10"
           }
         >
+          {/* On desktop the stone slides left, so the whole flow lives in a
+              right-side column. On mobile it stays full-width and centered. */}
+          <div className="w-full md:ml-auto md:w-[56%] md:pr-[2vw]">
           {/* readout */}
           <div className="mx-auto mb-10 w-full max-w-[880px] text-center">
             <p className="mb-3 font-mono text-xs uppercase tracking-[0.2em] text-violet">
@@ -274,6 +277,7 @@ export default function Pipeline() {
                 </div>
               );
             })}
+          </div>
           </div>
         </div>
       </div>
