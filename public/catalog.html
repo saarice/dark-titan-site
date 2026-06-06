@@ -97,12 +97,46 @@
         opacity: 0;
         animation: rise 0.7s cubic-bezier(0.2, 0.8, 0.2, 1) 0.2s forwards;
       }
+      .section-label {
+        display: flex;
+        align-items: center;
+        gap: 0.9rem;
+        margin-top: clamp(2.25rem, 5vw, 3.25rem);
+        font-size: 11px;
+        letter-spacing: 0.26em;
+        text-transform: uppercase;
+        color: var(--lavender);
+        opacity: 0;
+        animation: rise 0.7s ease 0.24s forwards;
+      }
+      .section-label::after {
+        content: "";
+        flex: 1;
+        height: 1px;
+        background: linear-gradient(90deg, var(--steel), transparent);
+      }
+      .section-label .count { color: var(--faint); letter-spacing: 0.18em; }
       .grid {
-        margin-top: clamp(2rem, 5vw, 3.25rem);
+        margin-top: 14px;
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
         gap: 14px;
       }
+      /* "direction" cards read a touch larger / framed */
+      .card.dir { border-color: var(--steel); }
+      .card .badge {
+        position: absolute;
+        top: 1.1rem;
+        right: 1.2rem;
+        font-size: 10px;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        color: var(--faint);
+        border: 1px solid var(--slate);
+        border-radius: 999px;
+        padding: 0.25rem 0.6rem;
+      }
+      .card.live .badge { color: var(--lavender); border-color: rgba(197, 122, 255, 0.4); }
       .card {
         position: relative;
         display: block;
@@ -191,21 +225,39 @@
   </head>
   <body>
     <main class="wrap">
-      <p class="eyebrow">Dark Titan / Hero Monolith</p>
-      <h1>Eight <span class="stroke">readings</span><br />of one stone.</h1>
+      <p class="eyebrow">Dark Titan / Design Lab</p>
+      <h1>Pick a <span class="stroke">direction.</span><br />Pick a stone.</h1>
       <p class="lede">
-        The same monolith, rendered eight ways. Tap one to open it full-screen, then
-        use your browser's back button to return here and compare.
+        Two choices to make. First the overall site direction, then the hero
+        monolith reading. Tap any card to open it full-screen, then use your
+        browser's back button to return here. Tell Claude the combination you like.
       </p>
 
+      <div class="section-label">
+        Site directions <span class="count" id="dir-count"></span>
+      </div>
+      <div class="grid" id="directions"></div>
+
+      <div class="section-label">
+        Monolith readings <span class="count" id="read-count"></span>
+      </div>
       <div class="grid" id="grid"></div>
 
       <footer>
-        Pick a favourite, then tell Claude &mdash; <a href="./">back to the live site</a>
+        Pick a direction + a stone, then tell Claude &mdash;
+        <a href="./">open the live site</a>
       </footer>
     </main>
 
     <script>
+      // Full site directions: the live React build + the three static concepts.
+      var DIRECTIONS = [
+        { tag: "Main", name: "Live Site", desc: "The current React build with the 3D monolith hero.", href: "./", tint: "rgba(197,122,255,0.34)", live: true },
+        { tag: "A", name: "Operator Console", desc: "Dense control-room dashboard energy.", href: "./concepts/a-operator-console.html", tint: "rgba(120,140,200,0.30)" },
+        { tag: "B", name: "Editorial Spec", desc: "Typographic, magazine-style spec sheet.", href: "./concepts/b-editorial-spec.html", tint: "rgba(160,150,140,0.26)" },
+        { tag: "C", name: "Cinematic Signal", desc: "Big, filmic, high-contrast statement.", href: "./concepts/c-cinematic-signal.html", tint: "rgba(156,91,255,0.36)" },
+      ];
+
       // One source of truth for the readings. Keep in sync with VersionSwitcher.
       var READINGS = [
         { id: "d", name: "Cinematic", desc: "Storm-lit drama, deepest atmosphere.", tint: "rgba(155,109,255,0.30)" },
@@ -218,13 +270,30 @@
         { id: "k", name: "Alabaster", desc: "Pale carved stone, sculptural grain.", tint: "rgba(217,208,236,0.30)" },
       ];
 
+      var dirGrid = document.getElementById("directions");
+      DIRECTIONS.forEach(function (d, i) {
+        var a = document.createElement("a");
+        a.className = "card dir" + (d.live ? " live" : "");
+        a.href = d.href;
+        a.style.setProperty("--tint", d.tint);
+        a.style.animationDelay = 0.28 + i * 0.05 + "s";
+        a.setAttribute("aria-label", d.name + " - " + d.desc);
+        a.innerHTML =
+          '<div class="badge">' + (d.live ? "Live" : "Concept") + "</div>" +
+          '<div class="letter">' + d.tag + "</div>" +
+          '<div class="name">' + d.name + "</div>" +
+          '<div class="desc">' + d.desc + "</div>" +
+          '<div class="go">' + (d.live ? "Open site" : "View concept") + ' <span>&rarr;</span></div>';
+        dirGrid.appendChild(a);
+      });
+
       var grid = document.getElementById("grid");
       READINGS.forEach(function (r, i) {
         var a = document.createElement("a");
         a.className = "card";
         a.href = "./?v=" + r.id;
         a.style.setProperty("--tint", r.tint);
-        a.style.animationDelay = 0.28 + i * 0.05 + "s";
+        a.style.animationDelay = 0.5 + i * 0.045 + "s";
         a.setAttribute("aria-label", r.name + " - " + r.desc);
         a.innerHTML =
           '<div class="letter">' + r.id.toUpperCase() + "</div>" +
@@ -233,6 +302,9 @@
           '<div class="go">View reading <span>&rarr;</span></div>';
         grid.appendChild(a);
       });
+
+      document.getElementById("dir-count").textContent = DIRECTIONS.length + " options";
+      document.getElementById("read-count").textContent = READINGS.length + " stones";
     </script>
   </body>
 </html>
