@@ -147,13 +147,14 @@ type Shard = {
   dirX: number;
 };
 
-function buildShards(shape: Shape): Shard[] {
+// Shards are shape-independent now: both the obelisk and the slab use a
+// flat-top shaft (a height taper turns the discrete shards into a jagged
+// staircase). The obelisk gets its point from a single full-width pyramidion
+// cap instead, which reads as one clean carved tip.
+function buildShards(): Shard[] {
   const base = Array.from({ length: K }, (_, i) => {
     const restX = -COL_W / 2 + SHARD_W * (i + 0.5);
     const dist = Math.abs(i - CENTER) / CENTER;
-    // Flat-top shaft for both shapes: a height taper turns the discrete shards
-    // into a jagged staircase. The obelisk gets its point from a single
-    // full-width pyramidion cap instead, which reads as one clean carved tip.
     const height = H;
     return { i, restX, dist, height, yOffset: height / 2 - HALF_H, dirX: Math.sign(restX) };
   });
@@ -233,7 +234,7 @@ export default function MonolithShards({
   const seam = useRef<THREE.Mesh>(null);
   const pool = useRef<THREE.Mesh>(null);
 
-  const shards = useMemo(() => buildShards(preset.shape), [preset.shape]);
+  const shards = useMemo(() => buildShards(), []);
   const glow = useGlowTexture();
   const maps = useRockMaps();
   const source: MapSet = preset.tex === "stone" ? maps.stone : maps.rock;
