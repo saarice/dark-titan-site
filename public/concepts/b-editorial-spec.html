@@ -1,0 +1,416 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>DarkTitan — Editorial Spec</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&family=IBM+Plex+Mono:wght@400;500;600&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#EDE8DD; --paper2:#E4DECF; --ink:#16140F; --ink2:#33302A;
+  --mut:#6B665B; --faint:#928C7E; --line:#16140F;
+  --accent:#5B2BE0; --accent2:#7C4AF0; --accent-l:#B28AFF;
+  --red:#D63A2F;
+  --disp:'Bricolage Grotesque',sans-serif; --mono:'IBM Plex Mono',monospace; --serif:'Instrument Serif',serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--paper);color:var(--ink);font-family:var(--mono);-webkit-font-smoothing:antialiased;overflow-x:hidden;line-height:1.5}
+body::before{content:"";position:fixed;inset:0;z-index:9998;pointer-events:none;opacity:.5;mix-blend-mode:multiply;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.06'/%3E%3C/svg%3E")}
+::selection{background:var(--accent);color:var(--paper)}
+a{color:inherit;text-decoration:none}
+.wrap{max-width:1240px;margin:0 auto;padding:0 30px}
+.disp{font-family:var(--disp)}
+.serif-it{font-family:var(--serif);font-style:italic;font-weight:400}
+
+/* register/spec top rule */
+.topbar{position:fixed;top:0;left:0;right:0;z-index:100;background:var(--ink);color:var(--paper);
+  font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;
+  display:flex;gap:0;align-items:stretch}
+.topbar .seg{padding:9px 16px;border-right:1px solid rgba(237,232,221,.18);white-space:nowrap}
+.topbar .seg.flex{flex:1}
+.topbar .blink{color:var(--accent-l)}
+@media(max-width:760px){.topbar .hideS{display:none}}
+
+nav{position:fixed;top:36px;left:0;right:0;z-index:99;display:flex;justify-content:space-between;align-items:center;
+  padding:16px 30px;background:linear-gradient(var(--paper),rgba(237,232,221,0));mix-blend-mode:normal}
+.brand{font-family:var(--disp);font-weight:800;font-size:21px;letter-spacing:-.02em;display:flex;align-items:center;gap:10px}
+.brand .mk{width:18px;height:18px;background:var(--ink);position:relative}
+.brand .mk::after{content:"";position:absolute;inset:4px 4px auto auto;width:6px;height:6px;background:var(--accent)}
+.navlinks{display:flex;gap:24px;font-size:12px;letter-spacing:.04em;text-transform:uppercase;color:var(--ink2)}
+.navlinks a{padding-bottom:3px;border-bottom:1.5px solid transparent}
+.navlinks a:hover{border-color:var(--accent)}
+.navcta{font-family:var(--mono);font-size:11.5px;text-transform:uppercase;letter-spacing:.08em;background:var(--ink);color:var(--paper);padding:10px 16px;transition:.2s}
+.navcta:hover{background:var(--accent)}
+@media(max-width:760px){.navlinks{display:none}}
+
+/* hero */
+header{padding:150px 0 70px;border-bottom:2px solid var(--ink);position:relative}
+.kicker{display:flex;justify-content:space-between;font-family:var(--mono);font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--mut);border-bottom:1px solid var(--ink);padding-bottom:12px;margin-bottom:30px}
+h1.big{font-family:var(--disp);font-weight:800;font-size:clamp(3.2rem,15vw,12rem);line-height:.82;letter-spacing:-.04em;text-transform:uppercase}
+h1.big .o{color:transparent;-webkit-text-stroke:2px var(--ink)}
+.hero-row{display:grid;grid-template-columns:1.3fr .9fr;gap:40px;margin-top:34px;align-items:end}
+.hero-lead{font-family:var(--disp);font-weight:400;font-size:clamp(1.3rem,2.4vw,1.9rem);line-height:1.25;letter-spacing:-.01em}
+.hero-lead .serif-it{color:var(--accent)}
+.hero-side{font-size:13px;color:var(--mut);line-height:1.7;border-left:2px solid var(--ink);padding-left:18px}
+.hero-cta{display:flex;gap:14px;margin-top:40px;flex-wrap:wrap}
+.btn{font-family:var(--mono);font-size:13px;letter-spacing:.06em;text-transform:uppercase;padding:15px 26px;border:2px solid var(--ink);transition:.18s;display:inline-flex;gap:10px;align-items:center}
+.btn.prim{background:var(--ink);color:var(--paper)}
+.btn.prim:hover{background:var(--accent);border-color:var(--accent)}
+.btn.ghost:hover{background:var(--ink);color:var(--paper)}
+.btn .a{transition:.2s}.btn:hover .a{transform:translate(3px,-3px)}
+@media(max-width:840px){.hero-row{grid-template-columns:1fr}}
+
+/* reveal */
+.rv{opacity:0;transform:translateY(24px);transition:opacity .8s cubic-bezier(.22,1,.36,1),transform .8s cubic-bezier(.22,1,.36,1)}
+.rv.in{opacity:1;transform:none}
+.d1{transition-delay:.07s}.d2{transition-delay:.15s}.d3{transition-delay:.23s}.d4{transition-delay:.31s}
+
+/* section header spec style */
+section{padding:90px 0;border-bottom:2px solid var(--ink)}
+.shead{display:grid;grid-template-columns:120px 1fr;gap:24px;align-items:baseline;border-bottom:1px solid var(--ink);padding-bottom:18px;margin-bottom:44px}
+.shead .no{font-family:var(--mono);font-size:13px;letter-spacing:.1em;color:var(--accent)}
+.shead h2{font-family:var(--disp);font-weight:800;font-size:clamp(2rem,5.5vw,4rem);line-height:.95;letter-spacing:-.03em;text-transform:uppercase}
+.shead h2 .serif-it{text-transform:none;font-weight:400}
+.shead .meta{grid-column:2;font-size:13px;color:var(--mut);margin-top:14px;max-width:600px;line-height:1.7}
+@media(max-width:680px){.shead{grid-template-columns:1fr;gap:8px}.shead .meta{grid-column:1}}
+
+/* glossary / problem */
+.gloss{display:grid;grid-template-columns:repeat(3,1fr);border-top:1px solid var(--ink)}
+.gloss .term{border-right:1px solid var(--ink);border-bottom:1px solid var(--ink);padding:26px 22px}
+.gloss .term:nth-child(3n){border-right:none}
+.gloss .term .t{font-family:var(--disp);font-weight:800;font-size:26px;letter-spacing:-.01em}
+.gloss .term .d{font-size:13px;color:var(--mut);margin-top:10px;line-height:1.65}
+.gloss .term .tag{font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);display:block;margin-bottom:12px}
+@media(max-width:760px){.gloss{grid-template-columns:1fr}.gloss .term{border-right:none}}
+
+/* SIGNATURE: horizontal pipeline band */
+.pipe-wrap{position:relative;height:360vh}
+.pipe-sticky{position:sticky;top:0;height:100vh;display:flex;flex-direction:column;justify-content:center;overflow:hidden}
+.pipe-head{display:flex;justify-content:space-between;align-items:flex-end;border-bottom:2px solid var(--ink);padding:0 30px 16px;margin-bottom:0}
+.pipe-head .h{font-family:var(--disp);font-weight:800;font-size:clamp(1.6rem,4vw,3rem);text-transform:uppercase;letter-spacing:-.02em;line-height:.95}
+.pipe-head .h .serif-it{text-transform:none;font-weight:400;color:var(--accent)}
+.pipe-head .c{font-family:var(--mono);font-size:12px;color:var(--mut);letter-spacing:.1em;text-align:right}
+.pipe-track{display:flex;gap:0;will-change:transform;padding:60px 30px;align-items:stretch}
+.pcard{flex:0 0 min(78vw,520px);border:2px solid var(--ink);background:var(--paper);margin-right:28px;display:flex;flex-direction:column;
+  transition:background .3s,transform .3s,box-shadow .3s}
+.pcard .top{display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid var(--ink);padding:14px 18px;font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase}
+.pcard .top .st{display:flex;align-items:center;gap:8px;color:var(--mut)}
+.pcard .top .st .d{width:8px;height:8px;border-radius:50%;background:var(--faint)}
+.pcard .num{font-family:var(--disp);font-weight:800;font-size:clamp(3.5rem,7vw,6rem);line-height:.8;letter-spacing:-.04em;padding:26px 18px 0}
+.pcard .name{font-family:var(--disp);font-weight:600;font-size:24px;padding:8px 18px 0;letter-spacing:-.01em}
+.pcard .body{padding:12px 18px 22px;font-size:13.5px;color:var(--ink2);line-height:1.7;flex:1}
+.pcard .yml{font-family:var(--mono);font-size:11.5px;color:var(--paper);background:var(--ink);padding:14px 16px;line-height:1.7;white-space:pre;overflow:auto}
+.pcard .yml .k{color:var(--accent-l)}.pcard .yml .v{color:#9ED0FF}.pcard .yml .c{color:#8a8578}
+.pcard.on{background:var(--paper2);box-shadow:10px 10px 0 var(--accent)}
+.pcard.on .top .st .d{background:var(--accent);box-shadow:0 0 0 3px rgba(91,43,224,.2)}
+.pcard.on .top .st{color:var(--accent)}
+.pcard.done .top .st .d{background:var(--ink)}
+.pipe-progress{padding:0 30px}
+.pipe-progress .rail{height:3px;background:var(--paper2);border:1px solid var(--ink);position:relative}
+.pipe-progress .rail i{position:absolute;inset:0;width:0;background:var(--accent)}
+@media(max-width:680px){.pcard{flex-basis:84vw}}
+
+/* how it works numbered */
+.how{display:grid;grid-template-columns:repeat(3,1fr);gap:0;border-top:1px solid var(--ink)}
+.how .c{border-right:1px solid var(--ink);padding:30px 24px}
+.how .c:last-child{border-right:none}
+.how .c .n{font-family:var(--disp);font-weight:800;font-size:64px;line-height:.8;color:transparent;-webkit-text-stroke:1.5px var(--ink)}
+.how .c h3{font-family:var(--disp);font-weight:600;font-size:21px;margin:18px 0 10px}
+.how .c p{font-size:13.5px;color:var(--mut);line-height:1.7}
+.how .c code{display:block;font-family:var(--mono);font-size:11.5px;background:var(--ink);color:var(--accent-l);padding:9px 12px;margin-top:16px;white-space:pre-wrap}
+@media(max-width:760px){.how{grid-template-columns:1fr}.how .c{border-right:none;border-bottom:1px solid var(--ink)}}
+
+/* capabilities index list */
+.idxlist{border-top:2px solid var(--ink)}
+.idxrow{display:grid;grid-template-columns:80px 1fr 2fr;gap:24px;align-items:center;border-bottom:1px solid var(--ink);padding:26px 6px;transition:.25s;cursor:default}
+.idxrow:hover{background:var(--paper2);padding-left:22px}
+.idxrow .ix{font-family:var(--mono);font-size:13px;color:var(--accent)}
+.idxrow .nm{font-family:var(--disp);font-weight:800;font-size:clamp(1.4rem,3.4vw,2.4rem);letter-spacing:-.02em;text-transform:uppercase;line-height:.95}
+.idxrow .ds{font-size:14px;color:var(--mut);line-height:1.65}
+@media(max-width:760px){.idxrow{grid-template-columns:50px 1fr}.idxrow .ds{grid-column:2}}
+
+/* cli */
+.cli{display:grid;grid-template-columns:1fr 1fr;gap:0;border-top:1px solid var(--ink)}
+.cli .l{padding:30px 30px 30px 0;border-right:1px solid var(--ink)}
+.cli .l h3{font-family:var(--disp);font-weight:800;font-size:clamp(1.6rem,3.4vw,2.4rem);text-transform:uppercase;letter-spacing:-.02em;line-height:.95}
+.cli .l p{font-size:14px;color:var(--mut);margin-top:16px;line-height:1.7}
+.cli .l ul{list-style:none;margin-top:20px;display:flex;flex-direction:column;gap:12px}
+.cli .l li{font-size:13px;color:var(--ink2);display:flex;gap:10px}
+.cli .l li b{font-family:var(--mono);color:var(--accent)}
+.cli .r{padding:30px 0 30px 30px}
+.term{background:var(--ink);color:var(--paper);font-family:var(--mono);font-size:13px;line-height:2;padding:22px 22px}
+.term .p{color:var(--accent-l)}.term .o{color:#a39d8f}.term .ok{color:#8FE6B0}
+.term div{white-space:pre-wrap}
+@media(max-width:760px){.cli{grid-template-columns:1fr}.cli .l{border-right:none;padding-right:0;border-bottom:1px solid var(--ink);padding-bottom:30px}.cli .r{padding-left:0}}
+
+/* trust */
+.trust{display:grid;grid-template-columns:repeat(2,1fr);border-top:1px solid var(--ink)}
+.trust .c{border-right:1px solid var(--ink);border-bottom:1px solid var(--ink);padding:30px 26px}
+.trust .c:nth-child(2n){border-right:none}
+.trust .c .tg{font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--accent)}
+.trust .c h3{font-family:var(--disp);font-weight:600;font-size:22px;margin:14px 0 10px;letter-spacing:-.01em}
+.trust .c p{font-size:13.5px;color:var(--mut);line-height:1.7}
+@media(max-width:680px){.trust{grid-template-columns:1fr}.trust .c{border-right:none}}
+
+/* final */
+.final{text-align:center;padding:130px 0;border-bottom:none}
+.final .k{font-family:var(--mono);font-size:13px;letter-spacing:.2em;text-transform:uppercase;color:var(--mut)}
+.final h2{font-family:var(--disp);font-weight:800;font-size:clamp(3rem,13vw,10rem);line-height:.82;letter-spacing:-.04em;text-transform:uppercase;margin-top:22px}
+.final h2 .o{color:transparent;-webkit-text-stroke:2px var(--ink)}
+.final p{font-family:var(--disp);font-weight:400;font-size:clamp(1.1rem,2vw,1.5rem);color:var(--ink2);margin:26px auto 0;max-width:520px;line-height:1.35}
+.final .hero-cta{justify-content:center}
+footer{background:var(--ink);color:var(--paper);padding:40px 0}
+footer .row{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px;font-family:var(--mono);font-size:12px;letter-spacing:.06em;color:#a39d8f}
+footer .brand{color:var(--paper)}
+footer .brand .mk{background:var(--paper)}footer .brand .mk::after{background:var(--accent-l)}
+@media(max-width:680px){footer .row{flex-direction:column;text-align:center}}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <span class="seg">DARKTITAN — AUTONOMOUS SOFTWARE FACTORY</span>
+  <span class="seg hideS">SPEC v1</span>
+  <span class="seg flex hideS"></span>
+  <span class="seg hideS">STATUS: <span class="blink">BETA</span></span>
+  <span class="seg">LIGHTS OFF · CODE OUT</span>
+</div>
+
+<nav>
+  <a href="#top" class="brand"><span class="mk"></span>DARKTITAN</a>
+  <div class="navlinks">
+    <a href="#pipeline">Pipeline</a><a href="#how">Method</a><a href="#caps">Capabilities</a><a href="#cli">CLI</a><a href="#trust">Control</a>
+  </div>
+  <a href="#start" class="navcta">Start project</a>
+</nav>
+
+<header id="top">
+  <div class="wrap">
+    <div class="kicker"><span>Fig. 00 — Identity</span><span>Develeap · since 2014</span><span class="hideS">Now in Beta</span></div>
+    <h1 class="big rv in">LIGHTS&nbsp;OFF<br><span class="o">CODE&nbsp;OUT</span></h1>
+    <div class="hero-row">
+      <p class="hero-lead rv in d2">The autonomous software factory. You <span class="serif-it">define what to build</span>; DarkTitan's AI pipeline plans, builds, reviews, and ships it.</p>
+      <div class="hero-side rv in d3">A multi-stage system of AI agents that delivers production-grade code — greenfield or legacy — with a full audit trail, end to end.</div>
+    </div>
+    <div class="hero-cta rv in d4">
+      <a href="#start" class="btn prim">Start your project <span class="a">↗</span></a>
+      <a href="#pipeline" class="btn ghost">Read the spec <span class="a">↓</span></a>
+    </div>
+  </div>
+</header>
+
+<!-- GLOSSARY / problem framed as definitions -->
+<section id="why">
+  <div class="wrap">
+    <div class="shead">
+      <span class="no">§ 01</span>
+      <h2>The <span class="serif-it">vocabulary</span> of the factory</h2>
+      <p class="meta">Six primitives. Learn these and you know how DarkTitan thinks.</p>
+    </div>
+    <div class="gloss">
+      <div class="term rv"><span class="tag">noun · 01</span><div class="t">Flow</div><div class="d">A YAML file defining the full pipeline — a named sequence of stages with prompts, gates, and loops.</div></div>
+      <div class="term rv d1"><span class="tag">noun · 02</span><div class="t">Stage</div><div class="d">A single unit of work. Each stage runs one Claude Code agent with a specific prompt.</div></div>
+      <div class="term rv d2"><span class="tag">noun · 03</span><div class="t">Gate</div><div class="d">A quality checkpoint between stages — AI-evaluated, human-approved, or test-passing.</div></div>
+      <div class="term rv"><span class="tag">noun · 04</span><div class="t">Loop</div><div class="d">Automatic retry logic that re-runs a stage, up to a limit, until its gate passes.</div></div>
+      <div class="term rv d1"><span class="tag">noun · 05</span><div class="t">Agent</div><div class="d">A Claude Code subprocess spawned per stage. Runs autonomously inside your codebase.</div></div>
+      <div class="term rv d2"><span class="tag">noun · 06</span><div class="t">Project</div><div class="d">A named workspace pointing to a local directory. Flows are assigned to projects before running.</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- SIGNATURE: horizontal pipeline band -->
+<section id="pipeline" style="padding:0">
+  <div class="pipe-wrap">
+    <div class="pipe-sticky">
+      <div class="pipe-head">
+        <div class="h">§ 02 — One <span class="serif-it">flow</span>, executed</div>
+        <div class="c" id="pipeStatus">FLOW: implement-and-review<br>scroll →</div>
+      </div>
+      <div class="pipe-track" id="pipeTrack">
+        <div class="pcard" data-i="0">
+          <div class="top"><span>STAGE 01 / IMPLEMENT</span><span class="st"><span class="d"></span><i id="s0">queued</i></span></div>
+          <div class="num">01</div><div class="name">implement</div>
+          <div class="body">A Claude Code agent reads <b>TASK.md</b> and writes the feature, following the patterns already in your repo. Clean, tested code.</div>
+          <div class="yml"><span class="k">name</span>: implement
+<span class="k">prompt</span>: |
+  <span class="c">Implement TASK.md.</span>
+  <span class="c">Write clean, tested code.</span></div>
+        </div>
+        <div class="pcard" data-i="1">
+          <div class="top"><span>STAGE 02 / REVIEW</span><span class="st"><span class="d"></span><i id="s1">queued</i></span></div>
+          <div class="num">02</div><div class="name">review</div>
+          <div class="body">A second agent reviews the implementation for correctness, edge cases, and quality — before anything is allowed to advance.</div>
+          <div class="yml"><span class="k">name</span>: review
+<span class="k">gate_type</span>: <span class="v">ai-evaluation</span></div>
+        </div>
+        <div class="pcard" data-i="2">
+          <div class="top"><span>GATE / LOOP</span><span class="st"><span class="d"></span><i id="s2">queued</i></span></div>
+          <div class="num">↻</div><div class="name">gate · loop</div>
+          <div class="body">The gate fails the first pass. The flow loops automatically, re-running the stage within <b>max_iterations: 3</b> until it clears.</div>
+          <div class="yml"><span class="k">max_iterations</span>: <span class="v">3</span>
+<span class="c"># iter 1 → fail</span>
+<span class="c"># iter 2 → pass ✓</span></div>
+        </div>
+        <div class="pcard" data-i="3">
+          <div class="top"><span>ESCALATION / PAUSE</span><span class="st"><span class="d"></span><i id="s3">queued</i></span></div>
+          <div class="num">⏸</div><div class="name">pause</div>
+          <div class="body">By design, promotion waits for a human. The flow escalates and hands you the final decision.</div>
+          <div class="yml"><span class="k">escalation</span>: <span class="v">pause</span>
+<span class="c"># awaiting sign-off</span></div>
+        </div>
+        <div class="pcard" data-i="4">
+          <div class="top"><span>PROMOTE / SHIP</span><span class="st"><span class="d"></span><i id="s4">queued</i></span></div>
+          <div class="num">✓</div><div class="name">shipped</div>
+          <div class="body">Approved and promoted to production — with a complete audit trail of every prompt, change, and gate decision.</div>
+          <div class="yml"><span class="c"># promoted → production</span>
+<span class="c"># audit trail recorded</span></div>
+        </div>
+      </div>
+      <div class="pipe-progress"><div class="rail"><i id="pipeBar"></i></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW -->
+<section id="how">
+  <div class="wrap">
+    <div class="shead"><span class="no">§ 03</span><h2>From intent to <span class="serif-it">production</span></h2><p class="meta">Three moves. The first two are yours; the third runs without you.</p></div>
+    <div class="how">
+      <div class="c rv"><div class="n">01</div><h3>Define the outcome</h3><p>Describe what to build or modernize in a plain TASK.md.</p><code>$ vim TASK.md</code></div>
+      <div class="c rv d1"><div class="n">02</div><h3>Configure the pipeline</h3><p>Set the flow — stages, prompts, gates, loops, escalation.</p><code>$ darktitan import flow implement.yaml</code></div>
+      <div class="c rv d2"><div class="n">03</div><h3>Run the factory</h3><p>Launch and watch it ship production-grade code.</p><code>$ darktitan run implement.yaml my-app</code></div>
+    </div>
+  </div>
+</section>
+
+<!-- CAPABILITIES as index -->
+<section id="caps">
+  <div class="wrap">
+    <div class="shead"><span class="no">§ 04</span><h2>Built to ship software <span class="serif-it">that ships</span></h2><p class="meta">Engineered for serious work — not demos.</p></div>
+    <div class="idxlist">
+      <div class="idxrow rv"><span class="ix">01</span><span class="nm">Multi-Stage Pipelines</span><span class="ds">Chain agents into named stages — plan, implement, test, review, deploy — each with its own prompt.</span></div>
+      <div class="idxrow rv"><span class="ix">02</span><span class="nm">Quality Gates</span><span class="ds">AI-evaluated, human-approved, or test-passing checkpoints decide whether work advances, loops, or escalates.</span></div>
+      <div class="idxrow rv"><span class="ix">03</span><span class="nm">Full Observability</span><span class="ds">Every prompt, change, gate decision, and deploy is logged. A complete audit trail by default.</span></div>
+      <div class="idxrow rv"><span class="ix">04</span><span class="nm">Pause &amp; Resume</span><span class="ds">Stop a run mid-flight, inspect, intervene, and pick up exactly where it left off.</span></div>
+      <div class="idxrow rv"><span class="ix">05</span><span class="nm">Legacy Modernization</span><span class="ds">Point the factory at existing code. It reads patterns, refactors, and migrates with the same rigor.</span></div>
+      <div class="idxrow rv"><span class="ix">06</span><span class="nm">Greenfield Delivery</span><span class="ds">From a blank repo to a deployed, tested service — defined once, delivered end to end.</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- CLI -->
+<section id="cli">
+  <div class="wrap">
+    <div class="shead"><span class="no">§ 05</span><h2>Engineered for <span class="serif-it">serious work</span></h2></div>
+    <div class="cli">
+      <div class="l rv">
+        <h3>It runs in your codebase</h3>
+        <p>DarkTitan spawns Claude Code agents as subprocesses, right where your code lives. One CLI drives the entire lifecycle.</p>
+        <ul>
+          <li><b>init / new / import / run —</b> stand up a project and launch a flow.</li>
+          <li><b>status / logs &lt;flow-id&gt; —</b> see exactly what every agent did.</li>
+          <li><b>pause / resume / stop —</b> take the wheel at any moment.</li>
+          <li><b>ui —</b> open the live console to watch the factory work.</li>
+        </ul>
+      </div>
+      <div class="r rv d1">
+        <div class="term">
+<div><span class="p">$</span> darktitan init</div>
+<div class="o">  ✓ workspace ready</div>
+<div><span class="p">$</span> darktitan new project my-app</div>
+<div class="o">  ✓ project · ./my-app</div>
+<div><span class="p">$</span> darktitan import flow implement.yaml my-app</div>
+<div class="o">  ✓ registered · implement-and-review</div>
+<div><span class="p">$</span> darktitan run implement.yaml my-app</div>
+<div class="o">  ▸ implement … <span class="ok">done</span></div>
+<div class="o">  ▸ review (ai-evaluation) … <span class="ok">pass</span></div>
+<div class="o">  ⏸ pause — awaiting approval</div>
+<div><span class="p">$</span> darktitan ui</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TRUST -->
+<section id="trust">
+  <div class="wrap">
+    <div class="shead"><span class="no">§ 06</span><h2>Autonomous, never <span class="serif-it">unsupervised</span></h2><p class="meta">Machine speed, human authority. Built for teams that answer to security reviews and change boards.</p></div>
+    <div class="trust">
+      <div class="c rv"><div class="tg">Control</div><h3>A human holds the final say.</h3><p>Set a gate to escalation: pause and nothing promotes without sign-off. Stop or steer any run mid-flight.</p></div>
+      <div class="c rv d1"><div class="tg">Security</div><h3>Guardrails, not guesswork.</h3><p>Agents run inside the scopes and stop conditions you define. Every plan, change, and deploy is logged.</p></div>
+      <div class="c rv"><div class="tg">Scale</div><h3>Many agents, one console.</h3><p>Run flows in parallel across projects without losing the thread. The same controls hold at any size.</p></div>
+      <div class="c rv d1"><div class="tg">Enterprise</div><h3>Runs in your environment.</h3><p>Against your repositories, under your identity and review process. Your code stays yours.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- FINAL -->
+<section class="final" id="start">
+  <div class="wrap">
+    <div class="k rv">Ready to ship?</div>
+    <h2 class="rv d1">LIGHTS OFF<br><span class="o">CODE OUT</span></h2>
+    <p class="rv d2">Tell us what you're building or modernizing. We'll point the factory at it.</p>
+    <div class="hero-cta rv d3">
+      <a href="mailto:darktitan@develeap.com" class="btn prim">Start your project <span class="a">↗</span></a>
+      <a href="https://darktitan.develeap.com/docs" class="btn ghost">Read the docs <span class="a">↗</span></a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap row">
+    <a href="#top" class="brand"><span class="mk"></span>DARKTITAN</a>
+    <span>The autonomous software factory · Built by Develeap since 2014</span>
+    <span>© 2026 · darktitan.io</span>
+  </div>
+</footer>
+
+<script>
+const io=new IntersectionObserver((es)=>{es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}})},{threshold:.15});
+document.querySelectorAll('.rv:not(.in)').forEach(el=>io.observe(el));
+
+// horizontal pipeline scrub
+const wrap=document.querySelector('.pipe-wrap');
+const track=document.getElementById('pipeTrack');
+const bar=document.getElementById('pipeBar');
+const cards=[...document.querySelectorAll('.pcard')];
+const statuses=['s0','s1','s2','s3','s4'].map(id=>document.getElementById(id));
+const stStatus=document.getElementById('pipeStatus');
+const STxt=[
+  ['queued','running agent…','passed ✓'],
+  ['queued','running agent…','passed ✓'],
+  ['queued','loop 2/3 ↻','passed ✓'],
+  ['queued','awaiting sign-off','approved ✓'],
+  ['queued','promoting…','shipped ✓'],
+];
+function frame(){
+  const total=wrap.offsetHeight-window.innerHeight;
+  let p=Math.min(1,Math.max(0,(-wrap.getBoundingClientRect().top)/total));
+  bar.style.width=(p*100)+'%';
+  // translate track so all cards pass through
+  const maxShift=track.scrollWidth-window.innerWidth+60;
+  track.style.transform='translateX('+(-p*Math.max(0,maxShift))+'px)';
+  // activate cards based on viewport center
+  const cx=window.innerWidth/2;
+  cards.forEach((c,i)=>{
+    const r=c.getBoundingClientRect();
+    const center=r.left+r.width/2;
+    const active=center<cx+r.width*.35 && r.right>cx-r.width*.2;
+    const passed=r.right<cx-r.width*.2;
+    c.classList.toggle('on',active&&!passed);
+    c.classList.toggle('done',passed);
+    statuses[i].textContent = passed?STxt[i][2] : (active?STxt[i][1]:STxt[i][0]);
+  });
+  const stage=Math.min(4,Math.floor(p*5)+1);
+  stStatus.innerHTML='FLOW: implement-and-review<br>'+Math.round(p*100)+'% · stage '+Math.min(5,stage)+'/5';
+}
+window.addEventListener('scroll',frame,{passive:true});
+window.addEventListener('resize',frame); frame();
+</script>
+</body>
+</html>

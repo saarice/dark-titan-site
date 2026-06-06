@@ -1,0 +1,500 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>DarkTitan — Operator Console</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#05060A; --bg2:#080A11; --panel:#0B0E16; --panel2:#0E121C;
+  --line:#19202E; --line2:#222C40;
+  --ink:#EAF0FF; --mut:#8A93A8; --faint:#5A6378;
+  --sig:#9B6DFF; --sig-d:#7C4AF0; --sig-l:#C5A6FF;
+  --ok:#3DDC84; --warn:#FFC65C; --run:#5BC8FF;
+  --mono:'JetBrains Mono',ui-monospace,monospace;
+  --disp:'Chakra Petch',sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  background:var(--bg); color:var(--ink); font-family:var(--mono);
+  -webkit-font-smoothing:antialiased; overflow-x:hidden; line-height:1.5;
+}
+body::before{ /* grain */
+  content:""; position:fixed; inset:0; z-index:9998; pointer-events:none; opacity:.035;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  mix-blend-mode:overlay;
+}
+body::after{ /* scanlines */
+  content:""; position:fixed; inset:0; z-index:9997; pointer-events:none; opacity:.4;
+  background:repeating-linear-gradient(to bottom, transparent 0 3px, rgba(0,0,0,.18) 3px 4px);
+}
+::selection{background:var(--sig);color:#fff}
+a{color:inherit;text-decoration:none}
+.wrap{max-width:1180px;margin:0 auto;padding:0 24px}
+.mono-label{font-family:var(--mono);font-size:11px;letter-spacing:.28em;text-transform:uppercase;color:var(--sig-l)}
+.disp{font-family:var(--disp);font-weight:700;letter-spacing:-.01em;line-height:.98}
+
+/* ---------- top status bar ---------- */
+.statusbar{
+  position:fixed;top:0;left:0;right:0;z-index:100;height:34px;
+  display:flex;align-items:center;gap:18px;padding:0 22px;
+  background:rgba(5,6,10,.86);backdrop-filter:blur(10px);
+  border-bottom:1px solid var(--line);font-size:11px;color:var(--faint);letter-spacing:.12em
+}
+.statusbar .dot{width:7px;height:7px;border-radius:50%;background:var(--ok);box-shadow:0 0 8px 1px var(--ok);animation:blink 2.4s infinite}
+@keyframes blink{0%,92%,100%{opacity:1}96%{opacity:.35}}
+.statusbar .sep{flex:1}
+.statusbar b{color:var(--mut);font-weight:500}
+@media(max-width:680px){.statusbar .hideS{display:none}}
+
+/* ---------- nav ---------- */
+nav{position:fixed;top:34px;left:0;right:0;z-index:99;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 24px;background:linear-gradient(to bottom,rgba(5,6,10,.9),rgba(5,6,10,0));
+}
+.brand{display:flex;align-items:center;gap:11px;font-family:var(--disp);font-weight:700;font-size:17px;letter-spacing:.02em}
+.brand .glyph{width:22px;height:22px;border:1.5px solid var(--sig);position:relative;transform:rotate(45deg)}
+.brand .glyph::after{content:"";position:absolute;inset:4px;background:var(--sig);box-shadow:0 0 12px 2px var(--sig)}
+.navlinks{display:flex;gap:26px;font-size:12.5px;color:var(--mut);letter-spacing:.06em}
+.navlinks a:hover{color:var(--ink)}
+.navcta{font-family:var(--mono);font-size:12px;border:1px solid var(--line2);padding:9px 16px;color:var(--ink);letter-spacing:.08em;transition:.2s;background:rgba(155,109,255,.06)}
+.navcta:hover{border-color:var(--sig);box-shadow:0 0 22px -4px var(--sig);transform:translateY(-1px)}
+@media(max-width:680px){.navlinks{display:none}}
+
+/* ---------- hero ---------- */
+header{position:relative;min-height:100vh;display:flex;align-items:center;padding-top:90px;overflow:hidden}
+.grid-bg{position:absolute;inset:0;z-index:0;
+  background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);
+  background-size:54px 54px;
+  mask-image:radial-gradient(ellipse 80% 75% at 30% 35%,#000 0%,transparent 78%);
+  opacity:.5}
+.hero-glow{position:absolute;z-index:0;width:760px;height:760px;left:-160px;top:-120px;
+  background:radial-gradient(circle,rgba(124,74,240,.22),transparent 62%);filter:blur(20px)}
+.hero-glow.two{left:auto;right:-220px;top:auto;bottom:-260px;width:680px;height:680px;
+  background:radial-gradient(circle,rgba(91,200,255,.10),transparent 62%)}
+.hero-inner{position:relative;z-index:2;width:100%}
+.beta{display:inline-flex;align-items:center;gap:9px;border:1px solid var(--line2);
+  padding:6px 13px;font-size:11px;letter-spacing:.2em;color:var(--mut);margin-bottom:30px;text-transform:uppercase}
+.beta .d{width:6px;height:6px;border-radius:50%;background:var(--run);box-shadow:0 0 8px 1px var(--run)}
+h1.hero{font-family:var(--disp);font-weight:700;font-size:clamp(3rem,11vw,8.2rem);line-height:.86;letter-spacing:-.03em}
+h1.hero .l2{display:block;color:transparent;-webkit-text-stroke:1.4px var(--sig-l);position:relative}
+h1.hero .l2 span{color:var(--sig-l);text-shadow:0 0 34px rgba(155,109,255,.55)}
+.hero-sub{max-width:540px;margin:32px 0 0;color:var(--mut);font-size:15.5px;line-height:1.7}
+.hero-sub b{color:var(--ink);font-weight:500}
+.hero-cta{display:flex;gap:14px;margin-top:38px;flex-wrap:wrap}
+.btn{font-family:var(--mono);font-size:13px;letter-spacing:.06em;padding:14px 24px;border:1px solid var(--line2);
+  transition:.2s;display:inline-flex;align-items:center;gap:10px}
+.btn.prim{background:var(--sig);border-color:var(--sig);color:#0a0612;font-weight:700;
+  box-shadow:0 0 0 0 rgba(155,109,255,.6)}
+.btn.prim:hover{transform:translateY(-2px);box-shadow:0 14px 40px -10px var(--sig)}
+.btn.ghost:hover{border-color:var(--sig-l);color:#fff}
+.btn .arr{transition:.2s}.btn:hover .arr{transform:translate(3px,-3px)}
+.hero-meta{position:absolute;bottom:34px;left:24px;right:24px;z-index:2;display:flex;
+  justify-content:space-between;font-size:11px;color:var(--faint);letter-spacing:.14em;border-top:1px solid var(--line);padding-top:14px}
+@media(max-width:680px){.hero-meta .hideS{display:none}}
+
+/* reveal */
+.rv{opacity:0;transform:translateY(26px);transition:opacity .8s cubic-bezier(.22,1,.36,1),transform .8s cubic-bezier(.22,1,.36,1)}
+.rv.in{opacity:1;transform:none}
+.d1{transition-delay:.06s}.d2{transition-delay:.14s}.d3{transition-delay:.22s}.d4{transition-delay:.3s}.d5{transition-delay:.38s}
+
+/* ---------- section frame ---------- */
+section{position:relative;padding:120px 0;border-top:1px solid var(--line)}
+.sec-head{display:flex;align-items:baseline;gap:16px;margin-bottom:14px}
+.sec-head .idx{font-size:12px;color:var(--sig);letter-spacing:.2em}
+.sec-title{font-family:var(--disp);font-weight:700;font-size:clamp(2rem,5vw,3.4rem);letter-spacing:-.02em;line-height:1}
+.sec-lead{max-width:560px;color:var(--mut);margin-top:18px;font-size:15px;line-height:1.7}
+
+/* ---------- problem strip ---------- */
+.prob{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line);border:1px solid var(--line);margin-top:48px}
+.prob .cell{background:var(--bg2);padding:30px 26px}
+.prob .cell .n{font-family:var(--disp);font-size:30px;color:var(--ink)}
+.prob .cell p{color:var(--mut);font-size:13px;margin-top:10px;line-height:1.65}
+@media(max-width:760px){.prob{grid-template-columns:1fr}}
+
+/* ---------- THE FLOW (signature) ---------- */
+#flow{padding:0;border-top:1px solid var(--line)}
+.flow-scroll{position:relative;height:420vh}
+.flow-sticky{position:sticky;top:0;height:100vh;display:flex;align-items:center;overflow:hidden}
+.flow-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.05fr);gap:30px;width:100%;align-items:center}
+.flow-caption{max-width:420px}
+.flow-step-label{font-family:var(--disp);font-size:clamp(1.7rem,3.4vw,2.6rem);line-height:1.02;letter-spacing:-.02em;min-height:2.2em}
+.flow-step-sub{color:var(--mut);margin-top:14px;font-size:14px;line-height:1.7;min-height:4.5em}
+.flow-progress{margin-top:26px;height:2px;background:var(--line2);position:relative;overflow:hidden}
+.flow-progress i{position:absolute;left:0;top:0;bottom:0;width:0;background:linear-gradient(90deg,var(--sig-d),var(--sig-l));box-shadow:0 0 12px var(--sig)}
+.flow-pct{font-size:11px;color:var(--faint);letter-spacing:.18em;margin-top:10px}
+
+/* code + runner panel */
+.panel{background:var(--panel);border:1px solid var(--line2);position:relative;box-shadow:0 40px 120px -40px #000}
+.panel-bar{display:flex;align-items:center;gap:8px;padding:11px 14px;border-bottom:1px solid var(--line);font-size:11px;color:var(--faint);letter-spacing:.1em}
+.panel-bar .tl{display:flex;gap:6px;margin-right:8px}
+.panel-bar .tl i{width:9px;height:9px;border-radius:50%;background:var(--line2)}
+.panel-bar .tl i:nth-child(1){background:#ff5f56}.panel-bar .tl i:nth-child(2){background:#ffbd2e}.panel-bar .tl i:nth-child(3){background:#27c93f}
+.code{padding:18px 18px 20px;font-size:12.5px;line-height:1.85;overflow:auto;max-height:60vh}
+.code .ln{display:block;white-space:pre;color:var(--mut);transition:.4s;padding-left:10px;border-left:2px solid transparent}
+.code .ln .k{color:var(--sig-l)}.code .ln .s{color:var(--ok)}.code .ln .c{color:var(--faint)}.code .ln .v{color:var(--run)}
+.code .ln.hot{color:var(--ink);border-left-color:var(--sig);background:rgba(155,109,255,.06)}
+
+/* runner */
+.runner .panel-bar .tag{margin-left:auto;display:flex;align-items:center;gap:7px;color:var(--mut)}
+.runner .panel-bar .tag .d{width:6px;height:6px;border-radius:50%;background:var(--faint)}
+.runner.live .panel-bar .tag .d{background:var(--run);box-shadow:0 0 8px var(--run);animation:blink 1.2s infinite}
+.stages{padding:14px}
+.stage{display:flex;align-items:center;gap:14px;padding:14px 14px;border:1px solid var(--line);background:var(--bg2);margin-bottom:10px;transition:.45s;opacity:.45;transform:translateX(8px)}
+.stage.active{opacity:1;transform:none;border-color:var(--sig-d);box-shadow:0 0 30px -10px var(--sig),inset 0 0 0 1px rgba(155,109,255,.1)}
+.stage.done{opacity:1;transform:none;border-color:var(--line2)}
+.stage .ic{width:30px;height:30px;flex:none;border:1px solid var(--line2);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;position:relative}
+.stage.active .ic{border-color:var(--run)}
+.stage.active .ic .spin{position:absolute;inset:-1px;border-radius:50%;border:1.5px solid transparent;border-top-color:var(--run);animation:rot .8s linear infinite}
+@keyframes rot{to{transform:rotate(360deg)}}
+.stage .ic .mark{opacity:0;transition:.3s}
+.stage.done .ic{border-color:var(--ok);color:var(--ok)}
+.stage.done .ic .mark{opacity:1}
+.stage .body{flex:1;min-width:0}
+.stage .nm{font-size:13.5px;color:var(--ink);font-weight:500;display:flex;align-items:center;gap:10px}
+.stage .nm .pill{font-size:9.5px;letter-spacing:.1em;padding:2px 7px;border:1px solid var(--line2);color:var(--faint);text-transform:uppercase}
+.stage .st{font-size:11.5px;color:var(--mut);margin-top:4px;font-family:var(--mono)}
+.stage.active .st{color:var(--run)}
+.stage.done .st{color:var(--ok)}
+.stage .gate{font-size:10.5px;color:var(--faint);text-align:right;flex:none;letter-spacing:.06em}
+.stage.loop .st{color:var(--warn)}
+/* pause card */
+.pause-card{margin:4px 14px 14px;border:1px solid var(--warn);background:rgba(255,198,92,.05);padding:16px;opacity:0;transform:translateY(8px);transition:.5s;pointer-events:none}
+.pause-card.show{opacity:1;transform:none}
+.pause-card .t{font-size:12px;color:var(--warn);letter-spacing:.14em;text-transform:uppercase;display:flex;align-items:center;gap:8px}
+.pause-card p{font-size:12.5px;color:var(--mut);margin:9px 0 13px;line-height:1.6}
+.pause-card .acts{display:flex;gap:9px}
+.pause-card .acts button{font-family:var(--mono);font-size:11.5px;padding:8px 15px;border:1px solid var(--line2);background:none;color:var(--ink);cursor:pointer;letter-spacing:.06em}
+.pause-card .acts .approve{background:var(--ok);border-color:var(--ok);color:#062a16;font-weight:700}
+.ship{margin:0 14px 14px;border:1px solid var(--ok);background:rgba(61,220,132,.06);padding:16px;display:flex;align-items:center;gap:12px;opacity:0;transform:translateY(8px);transition:.5s}
+.ship.show{opacity:1;transform:none}
+.ship .d{width:9px;height:9px;border-radius:50%;background:var(--ok);box-shadow:0 0 12px var(--ok)}
+.ship b{color:var(--ok)}
+@media(max-width:880px){.flow-grid{grid-template-columns:1fr;gap:18px}.flow-caption{order:-1}.code{max-height:32vh}.stage .gate{display:none}}
+
+/* ---------- how it works ---------- */
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line);border:1px solid var(--line);margin-top:48px}
+.step{background:var(--panel);padding:34px 28px;position:relative;transition:.3s}
+.step:hover{background:var(--panel2)}
+.step .num{font-family:var(--disp);font-size:13px;color:var(--sig);letter-spacing:.2em}
+.step h3{font-family:var(--disp);font-size:22px;margin:18px 0 10px;letter-spacing:-.01em}
+.step p{color:var(--mut);font-size:13.5px;line-height:1.7}
+.step .cmd{margin-top:16px;font-size:11.5px;color:var(--sig-l);background:var(--bg);border:1px solid var(--line);padding:9px 11px;display:inline-block}
+@media(max-width:760px){.steps{grid-template-columns:1fr}}
+
+/* ---------- capabilities ---------- */
+.caps{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line);border:1px solid var(--line);margin-top:48px}
+.cap{background:var(--bg2);padding:30px 26px;transition:.3s;position:relative;overflow:hidden}
+.cap:hover{background:var(--panel2)}
+.cap::before{content:"";position:absolute;left:0;top:0;bottom:0;width:2px;background:var(--sig);transform:scaleY(0);transform-origin:top;transition:.4s}
+.cap:hover::before{transform:scaleY(1)}
+.cap .cn{font-size:11px;color:var(--faint);letter-spacing:.2em}
+.cap h3{font-family:var(--disp);font-size:19px;margin:14px 0 9px}
+.cap p{color:var(--mut);font-size:13px;line-height:1.65}
+@media(max-width:860px){.caps{grid-template-columns:1fr 1fr}}
+@media(max-width:560px){.caps{grid-template-columns:1fr}}
+
+/* ---------- cli ---------- */
+.cli-wrap{display:grid;grid-template-columns:1fr 1fr;gap:30px;margin-top:48px;align-items:center}
+.term{background:#04050A;border:1px solid var(--line2);font-size:13px;box-shadow:0 40px 120px -50px #000}
+.term .body{padding:18px 20px;line-height:2}
+.term .p{color:var(--sig-l)}.term .o{color:var(--mut)}.term .ok{color:var(--ok)}
+.term .body div{white-space:pre-wrap}
+.cli-copy h3{font-family:var(--disp);font-size:clamp(1.5rem,3vw,2.2rem);letter-spacing:-.01em;line-height:1.05}
+.cli-copy p{color:var(--mut);margin-top:16px;font-size:14.5px;line-height:1.7}
+.cli-copy ul{list-style:none;margin-top:20px;display:flex;flex-direction:column;gap:11px}
+.cli-copy li{font-size:13px;color:var(--mut);display:flex;gap:11px;align-items:flex-start}
+.cli-copy li::before{content:"▹";color:var(--sig);margin-top:1px}
+.cli-copy li b{color:var(--ink);font-weight:500}
+@media(max-width:860px){.cli-wrap{grid-template-columns:1fr}}
+
+/* ---------- trust ---------- */
+.trust{display:grid;grid-template-columns:repeat(2,1fr);gap:1px;background:var(--line);border:1px solid var(--line);margin-top:48px}
+.tcell{background:var(--bg2);padding:32px 30px}
+.tcell .tg{display:flex;align-items:center;gap:9px;font-size:11px;letter-spacing:.2em;color:var(--sig);text-transform:uppercase}
+.tcell .tg .d{width:6px;height:6px;border-radius:50%;background:var(--sig);box-shadow:0 0 9px var(--sig)}
+.tcell h3{font-family:var(--disp);font-size:21px;margin:15px 0 10px;letter-spacing:-.01em}
+.tcell p{color:var(--mut);font-size:13.5px;line-height:1.7}
+@media(max-width:760px){.trust{grid-template-columns:1fr}}
+
+/* ---------- final cta ---------- */
+.final{text-align:center;padding:150px 0}
+.final h2{font-family:var(--disp);font-size:clamp(2.6rem,8vw,6.5rem);line-height:.92;letter-spacing:-.03em}
+.final h2 span{color:transparent;-webkit-text-stroke:1.3px var(--sig-l)}
+.final p{color:var(--mut);margin:24px auto 0;max-width:440px;font-size:15px;line-height:1.7}
+.final .hero-cta{justify-content:center}
+footer{border-top:1px solid var(--line);padding:40px 0;display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--faint);letter-spacing:.08em;flex-wrap:wrap;gap:14px}
+footer .brand{font-size:15px}
+@media(max-width:680px){footer{flex-direction:column;text-align:center}}
+</style>
+</head>
+<body>
+
+<div class="statusbar">
+  <span class="dot"></span><b>DARKTITAN</b>
+  <span class="hideS">factory: <b>online</b></span>
+  <span class="hideS">agents: <b>idle → ready</b></span>
+  <span class="sep"></span>
+  <span class="hideS">build: BETA</span>
+  <span>● lights off</span>
+</div>
+
+<nav>
+  <a href="#top" class="brand"><span class="glyph"></span>DARKTITAN</a>
+  <div class="navlinks">
+    <a href="#flow">The Flow</a>
+    <a href="#how">How it works</a>
+    <a href="#caps">Capabilities</a>
+    <a href="#cli">CLI</a>
+    <a href="#trust">Control</a>
+  </div>
+  <a href="#start" class="navcta">Start your project ↗</a>
+</nav>
+
+<header id="top">
+  <div class="grid-bg"></div>
+  <div class="hero-glow"></div>
+  <div class="hero-glow two"></div>
+  <div class="wrap hero-inner">
+    <div class="beta rv in"><span class="d"></span>Now in Beta · Built by Develeap</div>
+    <h1 class="hero">
+      <span class="rv in d1">LIGHTS OFF.</span>
+      <span class="l2 rv in d2"><span>CODE OUT.</span></span>
+    </h1>
+    <p class="hero-sub rv in d3">The autonomous software factory. <b>Define what to build</b> — DarkTitan's AI pipeline plans, builds, reviews, and ships it. Production-grade, with a full audit trail.</p>
+    <div class="hero-cta rv in d4">
+      <a href="#start" class="btn prim">Start your project <span class="arr">↗</span></a>
+      <a href="#flow" class="btn ghost">Watch a run <span class="arr">↓</span></a>
+    </div>
+  </div>
+  <div class="wrap hero-meta">
+    <span>v1 · darktitan.io</span>
+    <span class="hideS">FLOW → STAGE → GATE → LOOP → SHIP</span>
+    <span>scroll to run ↓</span>
+  </div>
+</header>
+
+<!-- PROBLEM -->
+<section id="why">
+  <div class="wrap">
+    <div class="sec-head"><span class="idx">01</span><h2 class="sec-title rv">Shipping is the bottleneck.</h2></div>
+    <p class="sec-lead rv d1">The plan is clear. The work is mechanical. Yet it still waits on people to wire it up, review it, and push it out. DarkTitan turns that backlog into throughput.</p>
+    <div class="prob">
+      <div class="cell rv d1"><div class="n">Define once</div><p>You write the intent in a TASK.md and the flow in YAML. No glue scripts, no babysitting.</p></div>
+      <div class="cell rv d2"><div class="n">Runs itself</div><p>Multi-stage agents plan, build, test, and review inside your codebase — start to finish.</p></div>
+      <div class="cell rv d3"><div class="n">You stay in command</div><p>Gates hold the line. Loops retry. It pauses and asks only when it should.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- THE FLOW: signature scroll -->
+<section id="flow">
+  <div class="flow-scroll">
+    <div class="flow-sticky">
+      <div class="wrap">
+        <div class="sec-head"><span class="idx">02</span><h2 class="sec-title">A real run, as you scroll.</h2></div>
+        <div class="flow-grid" style="margin-top:34px">
+          <!-- left: caption + code -->
+          <div>
+            <div class="flow-caption">
+              <div class="flow-step-label" id="stepLabel">This is a Flow.</div>
+              <div class="flow-step-sub" id="stepSub">A single YAML file defines the whole pipeline — named stages, the prompt each agent runs, and the gates between them. Keep scrolling to execute it.</div>
+              <div class="flow-progress"><i id="flowBar"></i></div>
+              <div class="flow-pct" id="flowPct">RUN 0% · implement-and-review.yaml</div>
+            </div>
+            <div class="panel" style="margin-top:24px">
+              <div class="panel-bar"><span class="tl"><i></i><i></i><i></i></span> implement-and-review.yaml</div>
+              <div class="code" id="codeBlock">
+<span class="ln" data-l="0"><span class="k">apiVersion</span>: darktitan.io/v1</span><span class="ln" data-l="0"><span class="k">kind</span>: Flow</span><span class="ln" data-l="0"><span class="k">metadata</span>:</span><span class="ln" data-l="0">  <span class="k">name</span>: implement-and-review</span><span class="ln" data-l="0"><span class="k">spec</span>:</span><span class="ln" data-l="0">  <span class="k">stages</span>:</span><span class="ln" data-l="1">    - <span class="k">name</span>: implement</span><span class="ln" data-l="1">      <span class="k">prompt</span>: |</span><span class="ln" data-l="1">        <span class="c">Implement the feature in TASK.md.</span></span><span class="ln" data-l="1">        <span class="c">Follow existing patterns; write tests.</span></span><span class="ln" data-l="2">    - <span class="k">name</span>: review</span><span class="ln" data-l="2">      <span class="k">prompt</span>: |</span><span class="ln" data-l="2">        <span class="c">Review the previous stage for</span></span><span class="ln" data-l="2">        <span class="c">correctness, edge cases, quality.</span></span><span class="ln" data-l="3">      <span class="k">gate_type</span>: <span class="v">ai-evaluation</span></span><span class="ln" data-l="3">      <span class="k">max_iterations</span>: <span class="v">3</span></span><span class="ln" data-l="4">      <span class="k">escalation</span>: <span class="v">pause</span></span>
+              </div>
+            </div>
+          </div>
+          <!-- right: runner -->
+          <div class="runner panel" id="runner">
+            <div class="panel-bar"><span class="tl"><i></i><i></i><i></i></span> darktitan run · live
+              <span class="tag"><span class="d"></span><span id="runnerState">idle</span></span></div>
+            <div class="stages">
+              <div class="stage" id="st-implement">
+                <div class="ic"><span class="spin"></span><span class="mark">✓</span></div>
+                <div class="body"><div class="nm">implement <span class="pill">agent</span></div><div class="st">queued</div></div>
+                <div class="gate">stage 1/2</div>
+              </div>
+              <div class="stage" id="st-review">
+                <div class="ic"><span class="spin"></span><span class="mark">✓</span></div>
+                <div class="body"><div class="nm">review <span class="pill">gate · ai-evaluation</span></div><div class="st">queued</div></div>
+                <div class="gate">max 3</div>
+              </div>
+            </div>
+            <div class="pause-card" id="pauseCard">
+              <div class="t"><span>⏸</span> escalation: pause</div>
+              <p>Review passed the gate. The flow escalates to a human before promotion — this is your sign-off.</p>
+              <div class="acts"><button class="approve">Approve & ship</button><button>Send back</button></div>
+            </div>
+            <div class="ship" id="shipCard"><span class="d"></span><div>Promoted to production · <b>shipped</b> — full audit trail recorded.</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW -->
+<section id="how">
+  <div class="wrap">
+    <div class="sec-head"><span class="idx">03</span><h2 class="sec-title rv">From intent to production. Autonomously.</h2></div>
+    <p class="sec-lead rv d1">Three moves. The first two are yours; the third runs without you.</p>
+    <div class="steps">
+      <div class="step rv d1"><div class="num">01 — DEFINE</div><h3>Define the outcome</h3><p>Describe what to build or modernize in a plain TASK.md. Intent in, no ceremony.</p><span class="cmd">$ vim TASK.md</span></div>
+      <div class="step rv d2"><div class="num">02 — CONFIGURE</div><h3>Configure the pipeline</h3><p>Set the flow: stages, prompts, the gates between them, retry loops, and escalation.</p><span class="cmd">$ darktitan import flow implement.yaml</span></div>
+      <div class="step rv d3"><div class="num">03 — RUN</div><h3>Run the factory</h3><p>Launch it and watch. Agents build, gates judge, loops retry, and it ships production-grade.</p><span class="cmd">$ darktitan run implement.yaml my-app</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- CAPABILITIES -->
+<section id="caps">
+  <div class="wrap">
+    <div class="sec-head"><span class="idx">04</span><h2 class="sec-title rv">Built to ship software that ships.</h2></div>
+    <p class="sec-lead rv d1">Engineered for serious work — not demos.</p>
+    <div class="caps">
+      <div class="cap rv d1"><div class="cn">/ 01</div><h3>Multi-Stage Pipelines</h3><p>Chain agents into named stages — plan, implement, test, review, deploy — each with its own prompt.</p></div>
+      <div class="cap rv d2"><div class="cn">/ 02</div><h3>Quality Gates</h3><p>AI-evaluated, human-approved, or test-passing checkpoints decide whether work advances, loops, or escalates.</p></div>
+      <div class="cap rv d3"><div class="cn">/ 03</div><h3>Full Observability</h3><p>Every prompt, change, gate decision, and deploy is logged. A complete audit trail by default.</p></div>
+      <div class="cap rv d1"><div class="cn">/ 04</div><h3>Pause &amp; Resume</h3><p>Stop a run mid-flight, inspect, intervene, and pick up exactly where it left off.</p></div>
+      <div class="cap rv d2"><div class="cn">/ 05</div><h3>Legacy Modernization</h3><p>Point the factory at existing code. It reads patterns, refactors, and migrates with the same rigor.</p></div>
+      <div class="cap rv d3"><div class="cn">/ 06</div><h3>Greenfield Delivery</h3><p>From a blank repo to a deployed, tested service — defined once, delivered end to end.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- CLI -->
+<section id="cli">
+  <div class="wrap">
+    <div class="sec-head"><span class="idx">05</span><h2 class="sec-title rv">Engineered for serious work.</h2></div>
+    <div class="cli-wrap">
+      <div class="term rv d1">
+        <div class="panel-bar"><span class="tl"><i></i><i></i><i></i></span> ~/my-app — darktitan</div>
+        <div class="body">
+<div><span class="p">$</span> darktitan init</div>
+<div class="o">  ✓ workspace ready</div>
+<div><span class="p">$</span> darktitan new project my-app</div>
+<div class="o">  ✓ project · ./my-app</div>
+<div><span class="p">$</span> darktitan import flow implement.yaml my-app</div>
+<div class="o">  ✓ flow registered · implement-and-review</div>
+<div><span class="p">$</span> darktitan run implement.yaml my-app</div>
+<div class="o">  ▸ stage implement … <span class="ok">done</span></div>
+<div class="o">  ▸ gate review (ai-evaluation) … <span class="ok">pass</span></div>
+<div class="o">  ⏸ escalation: pause — awaiting approval</div>
+<div><span class="p">$</span> darktitan ui<span style="opacity:.5">_</span></div>
+        </div>
+      </div>
+      <div class="cli-copy rv d2">
+        <h3>It runs in your codebase, under your control.</h3>
+        <p>DarkTitan spawns Claude Code agents as subprocesses, right where your code lives. You drive the whole lifecycle from one CLI:</p>
+        <ul>
+          <li><b>init / new / import / run</b> — stand up a project and launch a flow.</li>
+          <li><b>status &amp; logs &lt;flow-id&gt;</b> — see exactly what every agent did.</li>
+          <li><b>pause · resume · stop</b> — take the wheel at any moment.</li>
+          <li><b>ui</b> — open the live console to watch the factory work.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TRUST -->
+<section id="trust">
+  <div class="wrap">
+    <div class="sec-head"><span class="idx">06</span><h2 class="sec-title rv">Autonomous, never unsupervised.</h2></div>
+    <p class="sec-lead rv d1">Built for teams that answer to security reviews and change boards. Machine speed, human authority.</p>
+    <div class="trust">
+      <div class="tcell rv d1"><div class="tg"><span class="d"></span>Control</div><h3>A human holds the final say.</h3><p>Set a gate to escalation: pause and nothing promotes without your sign-off. Stop or steer any run mid-flight.</p></div>
+      <div class="tcell rv d2"><div class="tg"><span class="d"></span>Security</div><h3>Guardrails, not guesswork.</h3><p>Agents run inside the scopes and stop conditions you define. Every plan, change, and deploy is logged.</p></div>
+      <div class="tcell rv d1"><div class="tg"><span class="d"></span>Scale</div><h3>Many agents, one console.</h3><p>Run flows in parallel across projects without losing the thread. The same controls hold at any size.</p></div>
+      <div class="tcell rv d2"><div class="tg"><span class="d"></span>Enterprise</div><h3>Runs in your environment.</h3><p>Against your repositories, under your identity and review process. Your code stays yours.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- FINAL -->
+<section id="start" class="final">
+  <div class="wrap">
+    <div class="mono-label rv">Ready to ship?</div>
+    <h2 class="rv d1" style="margin-top:18px">LIGHTS OFF.<br><span>CODE OUT.</span></h2>
+    <p class="rv d2">Tell us what you're building or modernizing. We'll point the factory at it.</p>
+    <div class="hero-cta rv d3">
+      <a href="mailto:darktitan@develeap.com" class="btn prim">Start your project <span class="arr">↗</span></a>
+      <a href="https://darktitan.develeap.com/docs" class="btn ghost">Read the docs <span class="arr">↗</span></a>
+    </div>
+  </div>
+</section>
+
+<footer class="wrap" style="max-width:1180px">
+  <a href="#top" class="brand"><span class="glyph"></span>DARKTITAN</a>
+  <span>The autonomous software factory · Built by Develeap since 2014</span>
+  <span>© 2026 · darktitan.io</span>
+</footer>
+
+<script>
+// reveal on scroll
+const io=new IntersectionObserver((es)=>{es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}})},{threshold:.15});
+document.querySelectorAll('.rv:not(.in)').forEach(el=>io.observe(el));
+
+// ---- signature flow execution driven by scroll ----
+const scroll=document.querySelector('.flow-scroll');
+const bar=document.getElementById('flowBar'), pct=document.getElementById('flowPct');
+const label=document.getElementById('stepLabel'), sub=document.getElementById('stepSub');
+const runner=document.getElementById('runner'), rState=document.getElementById('runnerState');
+const stImpl=document.getElementById('st-implement'), stRev=document.getElementById('st-review');
+const pauseCard=document.getElementById('pauseCard'), shipCard=document.getElementById('shipCard');
+const lines=[...document.querySelectorAll('#codeBlock .ln')];
+
+const STEPS=[
+  {at:0.00,label:"This is a Flow.",sub:"One YAML file defines the whole pipeline — named stages, the prompt each agent runs, and the gates between them. Keep scrolling to execute it.",code:0,state:"idle"},
+  {at:0.16,label:"Stage 01 → implement.",sub:"DarkTitan spawns a Claude Code agent in your repo. It reads TASK.md and writes the feature, following existing patterns.",code:1,state:"running",impl:"run"},
+  {at:0.40,label:"Stage 02 → review.",sub:"A second agent reviews the work for correctness, edge cases, and quality before anything advances.",code:2,state:"running",impl:"done",rev:"run"},
+  {at:0.58,label:"Gate: ai-evaluation.",sub:"The review gate fails on the first pass. Within max_iterations, the flow loops automatically and re-runs the stage.",code:3,state:"looping",impl:"done",rev:"loop"},
+  {at:0.74,label:"Loop → pass.",sub:"Second iteration clears the gate. No human touched it — the loop did its job.",code:3,state:"running",impl:"done",rev:"done"},
+  {at:0.86,label:"escalation: pause.",sub:"By design, promotion waits for you. The flow pauses and hands you the decision.",code:4,state:"paused",impl:"done",rev:"done",pause:true},
+  {at:1.00,label:"Shipped.",sub:"Approved and promoted to production — with a complete audit trail of every prompt, change, and gate decision.",code:4,state:"shipped",impl:"done",rev:"done",ship:true},
+];
+
+function setStage(el,mode){
+  el.classList.remove('active','done','loop');
+  const st=el.querySelector('.st');
+  if(mode==='run'){el.classList.add('active');st.textContent='running agent…';}
+  else if(mode==='loop'){el.classList.add('active','loop');st.textContent='gate failed · loop 2/3 ↻';}
+  else if(mode==='done'){el.classList.add('done');st.textContent='passed ✓';}
+  else{st.textContent='queued';}
+}
+let cur=-1;
+function apply(i){
+  if(i===cur)return; cur=i; const s=STEPS[i];
+  label.textContent=s.label; sub.textContent=s.sub;
+  rState.textContent=s.state; runner.classList.toggle('live', s.state!=='idle'&&s.state!=='shipped');
+  lines.forEach(l=>l.classList.toggle('hot', +l.dataset.l===s.code));
+  setStage(stImpl,s.impl); setStage(stRev,s.rev);
+  pauseCard.classList.toggle('show',!!s.pause);
+  shipCard.classList.toggle('show',!!s.ship);
+}
+function onScroll(){
+  const r=scroll.getBoundingClientRect();
+  const total=scroll.offsetHeight-window.innerHeight;
+  let p=Math.min(1,Math.max(0,(-r.top)/total));
+  bar.style.width=(p*100)+'%';
+  pct.textContent='RUN '+Math.round(p*100)+'% · implement-and-review.yaml';
+  let idx=0; for(let i=0;i<STEPS.length;i++){if(p>=STEPS[i].at)idx=i;}
+  apply(idx);
+}
+window.addEventListener('scroll',onScroll,{passive:true});
+window.addEventListener('resize',onScroll); onScroll();
+
+// statusbar live agent count flavor
+const sbAgents=document.querySelector('.statusbar');
+</script>
+</body>
+</html>
