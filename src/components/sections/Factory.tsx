@@ -12,8 +12,8 @@ export default function Factory() {
     <Section id="factory" className="px-6 py-32 md:px-10" scrim>
       <div className="mx-auto w-full max-w-[1200px]">
         <div className="mb-12 max-w-2xl">
-          <p className="mb-4 font-mono text-xs uppercase tracking-[0.35em] text-violet">The Factory</p>
-          <h2 className="font-display text-4xl leading-[0.95] tracking-tight text-cloud md:text-6xl">
+          <p className="mb-4 font-mono text-xs uppercase tracking-[0.2em] text-violet">The Factory</p>
+          <h2 className="font-display text-h2 tracking-tight text-cloud">
             Watch the factory run.
           </h2>
           <p className="mt-5 max-w-lg text-base leading-relaxed text-muted">

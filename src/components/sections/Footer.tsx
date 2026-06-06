@@ -22,15 +22,15 @@ export default function Footer() {
       <div className="mx-auto w-full max-w-[1100px]">
         {/* closing CTA */}
         <div className="text-center">
-          <h2 className="mx-auto max-w-3xl font-display text-4xl leading-[1.02] tracking-tight text-cloud md:text-6xl">
+          <h2 className="mx-auto max-w-3xl font-display text-h2 tracking-tight text-cloud">
             Let&apos;s turn your vision into{" "}
-            <span className="text-lavender" style={{ textShadow: "0 0 30px rgba(179,56,255,0.4)" }}>
+            <span className="text-lavender" style={{ textShadow: "0 0 30px rgba(197,122,255,0.45)" }}>
               operational reality.
             </span>
           </h2>
           <a
             href={`mailto:${EMAIL}`}
-            className="mt-10 inline-flex items-center gap-3 rounded-full bg-violet px-7 py-3.5 font-mono text-sm text-cloud transition-all hover:bg-violet-dp hover:shadow-[0_0_30px_rgba(138,86,247,0.5)]"
+            className="mt-10 inline-flex items-center gap-3 rounded-full bg-violet px-7 py-3.5 font-mono text-sm text-obsidian transition-[transform,background-color,box-shadow] duration-200 hover:-translate-y-0.5 hover:bg-lavender hover:shadow-[0_0_30px_rgba(155,109,255,0.55)] active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet"
           >
             <span className="h-2 w-2 rounded-full bg-cloud" />
             {EMAIL}
@@ -48,7 +48,11 @@ export default function Footer() {
 
           <nav className="flex items-center gap-5 font-mono text-xs uppercase tracking-wider text-faint">
             {SOCIALS.map((s) => (
-              <a key={s.label} href={s.href} className="transition-colors hover:text-cloud">
+              <a
+                key={s.label}
+                href={s.href}
+                className="rounded py-1 transition-colors hover:text-cloud focus-visible:text-cloud focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-violet"
+              >
                 {s.label}
               </a>
             ))}

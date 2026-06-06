@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { AnimatePresence } from "framer-motion";
+import { AnimatePresence, MotionConfig } from "framer-motion";
 import LoadingScreen from "./components/LoadingScreen";
 import Scene3D from "./components/three/Scene3D";
 import Nav from "./components/Nav";
@@ -10,6 +10,7 @@ import Agents from "./components/sections/Agents";
 import Rivers from "./components/sections/Rivers";
 import Tempo from "./components/sections/Tempo";
 import Proof from "./components/sections/Proof";
+import Trust from "./components/sections/Trust";
 import Manifesto from "./components/sections/Manifesto";
 import Footer from "./components/sections/Footer";
 
@@ -17,7 +18,7 @@ export default function App() {
   const [loading, setLoading] = useState(true);
 
   return (
-    <>
+    <MotionConfig reducedMotion="user">
       <AnimatePresence>
         {loading && <LoadingScreen onComplete={() => setLoading(false)} />}
       </AnimatePresence>
@@ -27,7 +28,7 @@ export default function App() {
 
       <Nav />
 
-      <main className="relative z-10">
+      <main className="relative z-10 overflow-x-clip">
         <Hero />
         <Chaos />
         <Factory />
@@ -35,9 +36,10 @@ export default function App() {
         <Rivers />
         <Tempo />
         <Proof />
+        <Trust />
         <Manifesto />
         <Footer />
       </main>
-    </>
+    </MotionConfig>
   );
 }

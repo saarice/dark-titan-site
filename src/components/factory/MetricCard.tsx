@@ -5,9 +5,9 @@ export default function MetricCard({ metric }: { metric: Metric }) {
   const { ref, display } = useCountUp(metric.value, { decimals: metric.decimals ?? 0 });
   return (
     <div className="rounded-xl border border-steel bg-obsidian/60 p-4">
-      <p className="font-mono text-[10px] uppercase tracking-[0.15em] text-faint">{metric.label}</p>
-      <div className="mt-2 flex items-end justify-between">
-        <p className={`font-display text-3xl leading-none ${TONE_CLASS[metric.tone]}`}>
+      <p className="truncate font-mono text-[10px] uppercase tracking-[0.15em] text-faint">{metric.label}</p>
+      <div className="mt-2 flex flex-wrap items-end justify-between gap-x-2 gap-y-1">
+        <p className={`font-display text-2xl leading-none sm:text-3xl ${TONE_CLASS[metric.tone]}`}>
           <span ref={ref}>{display}</span>
           {metric.suffix ?? ""}
         </p>

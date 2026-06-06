@@ -85,8 +85,13 @@ export default function Board() {
           </span>
         </div>
 
-        {/* lane field — one positioning context so cards glide across lanes */}
-        <div ref={fieldRef} className="relative" style={{ height: FIELD_H }}>
+        {/* lane field — one positioning context so cards glide across lanes.
+            Wrapped in a horizontal scroller with a usable minimum width so the
+            lanes/cards stay legible on phones (swipe across) instead of being
+            squeezed into truncated slivers; on desktop the 1fr column is wider
+            than the minimum so no scrollbar appears. */}
+        <div className="-mx-1 overflow-x-auto overflow-y-hidden pb-1">
+        <div ref={fieldRef} className="relative mx-1" style={{ height: FIELD_H, minWidth: 470 }}>
           {/* lane columns (chrome) */}
           {LANES.map((lane, i) => {
             const active = lane.id === "progress";
@@ -139,6 +144,7 @@ export default function Board() {
               ))}
             </AnimatePresence>
           )}
+        </div>
         </div>
       </div>
 

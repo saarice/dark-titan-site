@@ -41,7 +41,7 @@ export default function Logo({
       <span className="inline-block h-9 w-9 shrink-0">{mark}</span>
       <span className="leading-none">
         <span className="block font-display text-cloud tracking-[0.25em] text-sm">DARK TITAN</span>
-        <span className="block font-mono text-violet text-[9px] tracking-[0.3em] mt-0.5">LIGHT OFF. CODE OUT.</span>
+        <span className="mt-0.5 hidden font-mono text-[9px] tracking-[0.3em] text-violet sm:block">LIGHT OFF. CODE OUT.</span>
       </span>
     </span>
   );

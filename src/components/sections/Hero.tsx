@@ -39,14 +39,14 @@ export default function Hero() {
 
       <div className="relative z-10 mx-auto w-full max-w-[1200px]">
         <div className="max-w-2xl">
-          <p className="h-eyebrow mb-6 font-mono text-xs uppercase tracking-[0.35em] text-violet">
+          <p className="h-eyebrow mb-6 font-mono text-xs uppercase tracking-[0.2em] text-violet">
             The AI Agent Factory
           </p>
 
-          <h1 className="font-display text-5xl leading-[0.92] tracking-tight text-cloud md:text-7xl">
+          <h1 className="font-display text-h1 text-cloud">
             <span className="h-line block">BRING ORDER</span>
             <span className="h-line block">TO ENGINEERING</span>
-            <span className="h-line block text-violet">CHAOS.</span>
+            <span className="h-line block text-lavender text-glow-violet">CHAOS.</span>
           </h1>
 
           <p className="h-sub mt-7 max-w-md text-base leading-relaxed text-muted">
@@ -57,13 +57,13 @@ export default function Hero() {
           <div className="h-cta mt-9 flex flex-wrap items-center gap-4">
             <a
               href="#factory"
-              className="rounded-full bg-violet px-7 py-3.5 font-mono text-sm uppercase tracking-[0.12em] text-obsidian transition-colors hover:bg-lavender focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet"
+              className="rounded-full bg-violet px-7 py-3.5 font-mono text-sm uppercase tracking-[0.12em] text-obsidian transition-[transform,background-color,box-shadow] duration-200 hover:-translate-y-0.5 hover:bg-lavender hover:shadow-[0_0_28px_rgba(155,109,255,0.5)] active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet"
             >
               Start Building
             </a>
             <a
               href="#factory"
-              className="rounded-full border border-steel px-7 py-3.5 font-mono text-sm uppercase tracking-[0.12em] text-cloud transition-colors hover:border-violet focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet"
+              className="rounded-full border border-steel px-7 py-3.5 font-mono text-sm uppercase tracking-[0.12em] text-cloud transition-[transform,border-color] duration-200 hover:-translate-y-0.5 hover:border-violet active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet"
             >
               See the Factory
             </a>

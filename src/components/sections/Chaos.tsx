@@ -14,7 +14,7 @@ export default function Chaos() {
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true, margin: "-20%" }}
               transition={{ duration: 0.6, delay: i * 0.12, ease: [0.22, 1, 0.36, 1] }}
-              className="font-display text-4xl leading-[1.04] tracking-tight text-cloud/30 md:text-6xl"
+              className="font-display text-h2 leading-[1.04] tracking-tight text-cloud/30"
             >
               {l}
             </motion.p>
@@ -32,8 +32,8 @@ export default function Chaos() {
               style={{ background: "radial-gradient(60% 75% at 30% 50%, rgba(10,10,12,0.96), rgba(10,10,12,0) 78%)" }}
             />
             <p
-              className="font-display text-4xl leading-[1.04] tracking-tight text-lavender md:text-6xl"
-              style={{ textShadow: "0 0 28px rgba(179,56,255,0.55), 0 0 60px rgba(138,86,247,0.35)" }}
+              className="font-display text-h2 leading-[1.04] tracking-tight text-lavender"
+              style={{ textShadow: "0 0 28px rgba(197,122,255,0.55), 0 0 60px rgba(155,109,255,0.35)" }}
             >
               We bring order.
             </p>

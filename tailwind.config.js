@@ -10,6 +10,7 @@ export default {
         steel: "rgb(var(--steel) / <alpha-value>)",
         violet: "rgb(var(--violet) / <alpha-value>)",
         "violet-dp": "rgb(var(--violet-dp) / <alpha-value>)",
+        "violet-glow": "rgb(var(--violet-glow) / <alpha-value>)",
         lavender: "rgb(var(--lavender) / <alpha-value>)",
         cloud: "rgb(var(--cloud) / <alpha-value>)",
         muted: "rgb(var(--fg-muted) / <alpha-value>)",
@@ -23,6 +24,13 @@ export default {
         display: ["'Archivo Black'", "system-ui", "sans-serif"],
         body: ["'IBM Plex Sans'", "system-ui", "sans-serif"],
         mono: ["'IBM Plex Mono'", "monospace"],
+      },
+      fontSize: {
+        // Fluid display scale so headings never overflow narrow phones and
+        // scale up cleanly on desktop. Used in place of fixed step pairs.
+        h1: ["clamp(2.25rem, 9vw, 4.75rem)", { lineHeight: "0.92", letterSpacing: "-0.02em" }],
+        h2: ["clamp(2rem, 5.5vw, 3.75rem)", { lineHeight: "0.95", letterSpacing: "-0.015em" }],
+        h3: ["clamp(1.5rem, 3vw, 2.25rem)", { lineHeight: "1.05" }],
       },
       keyframes: {
         "role-fade-in": {

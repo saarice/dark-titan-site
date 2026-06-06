@@ -14,8 +14,8 @@ export default function Agents() {
     <Section id="agents" className="px-6 py-32 md:px-10" scrim>
       <div className="mx-auto w-full max-w-[1200px]">
         <div className="mb-16 max-w-2xl">
-          <p className="mb-4 font-mono text-xs uppercase tracking-[0.35em] text-violet">The Agents</p>
-          <h2 className="font-display text-4xl leading-[0.95] tracking-tight text-cloud md:text-6xl">
+          <p className="mb-4 font-mono text-xs uppercase tracking-[0.2em] text-violet">The Agents</p>
+          <h2 className="font-display text-h2 tracking-tight text-cloud">
             An autonomous pipeline you can see.
           </h2>
         </div>

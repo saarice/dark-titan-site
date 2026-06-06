@@ -27,7 +27,7 @@ export default function Manifesto() {
           {LINES.map((line, i) => (
             <motion.h2
               key={line}
-              className="font-display text-[2rem] leading-[1.02] tracking-tight text-cloud sm:text-5xl md:text-7xl"
+              className="font-display text-[clamp(1.6rem,6.8vw,4.5rem)] leading-[1.04] tracking-tight text-cloud"
               initial={{ opacity: 0, y: 26 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-20%" }}
@@ -37,12 +37,12 @@ export default function Manifesto() {
             </motion.h2>
           ))}
           <motion.h2
-            className="pt-6 font-display text-[2rem] leading-[1.02] tracking-tight text-lavender sm:text-5xl md:text-7xl"
+            className="pt-8 font-display text-[clamp(1.6rem,6.8vw,4.5rem)] leading-[1.04] tracking-tight text-lavender"
             initial={{ opacity: 0, y: 26 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-20%" }}
             transition={{ delay: LINES.length * 0.18 + 0.1, duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-            style={{ textShadow: "0 0 30px rgba(179,56,255,0.4)" }}
+            style={{ textShadow: "0 0 30px rgba(197,122,255,0.4)" }}
           >
             LIGHTS OFF. CODE{" "}
             {/* "OUT." flickers on like a neon tube and keeps a bright glow */}
