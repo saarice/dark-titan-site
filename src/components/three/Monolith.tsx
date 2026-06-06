@@ -23,6 +23,7 @@ export default function Monolith({
   const debrisRef = useRef<THREE.InstancedMesh>(null);
   const rotY = useRef(0);
   const rotX = useRef(0);
+  const openCur = useRef(0);
 
   const seamMat = useMemo(() => new THREE.MeshBasicMaterial({ color: "#CBA6FF", transparent: true }), []);
   // Polished dark metal so the monument catches light/reflections on its faces
@@ -62,10 +63,15 @@ export default function Monolith({
     const s = sceneStateFor(p);
 
     const recede = Math.max(s.constellation, s.rivers);
-    // Gentler open/close so the two halves don't lunge back and forth as you scroll.
-    const open = (1 - s.form) * 0.65 + s.debris * 0.15;
-    if (leftSlab.current) leftSlab.current.position.x = -1.0 - open;
-    if (rightSlab.current) rightSlab.current.position.x = 1.0 + open;
+    // The halves open ONCE as you leave the hero and stay open through the middle
+    // of the page, then close for the footer reform. No per-section "breathing"
+    // bump (the old debris term made them lunge apart during chaos then pull back
+    // in for the factory — that was the back-and-forth). Damped so even fast
+    // scrolling glides toward the target instead of snapping section to section.
+    const openTarget = (1 - s.form) * 0.65;
+    openCur.current = THREE.MathUtils.damp(openCur.current, openTarget, 2.5, delta);
+    if (leftSlab.current) leftSlab.current.position.x = -1.0 - openCur.current;
+    if (rightSlab.current) rightSlab.current.position.x = 1.0 + openCur.current;
 
     if (seam.current) {
       seam.current.scale.y = 0.2 + s.seamOpacity * 1.05;
