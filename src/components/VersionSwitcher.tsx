@@ -1,21 +1,14 @@
 import type { MonolithVersion } from "./three/Scene3D";
 
 const OPTIONS: { id: MonolithVersion; label: string; hint: string }[] = [
-  { id: "d", label: "D", hint: "Cinematic" },
-  { id: "e", label: "E", hint: "Monument" },
-  { id: "f", label: "F", hint: "Obsidian" },
-  { id: "g", label: "G", hint: "Basalt" },
-  { id: "h", label: "H", hint: "Veined" },
-  { id: "i", label: "I", hint: "Iron" },
-  { id: "j", label: "J", hint: "Amethyst" },
-  { id: "k", label: "K", hint: "Alabaster" },
+  { id: "main2", label: "Main 2", hint: "Sealed obsidian" },
+  { id: "f", label: "Obsidian F", hint: "Breaks apart" },
 ];
 
 /**
- * Temporary chooser so the hero monolith can be compared across readings.
- * Persists the choice in the URL (?v=d..k) so a link reopens the same version.
- * A caption names the active reading; the letter chips wrap so the full set
- * still fits on a phone.
+ * Chooser so the hero monolith can be compared across the two live readings.
+ * Persists the choice in the URL (?v=main2|f) so a link reopens the same one.
+ * A caption names the active reading.
  */
 export default function VersionSwitcher({
   version,
@@ -34,13 +27,13 @@ export default function VersionSwitcher({
   const activeHint = OPTIONS.find((o) => o.id === version)?.hint ?? "";
 
   return (
-    <div className="fixed bottom-4 left-1/2 z-[60] w-[min(92vw,26rem)] -translate-x-1/2">
+    <div className="fixed bottom-4 left-1/2 z-[60] w-[min(92vw,22rem)] -translate-x-1/2">
       <div className="rounded-2xl border border-steel bg-charcoal/85 px-3 py-2 shadow-2xl backdrop-blur-xl">
         <div className="mb-1.5 flex items-baseline justify-center gap-2">
           <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-faint">Monolith</span>
           <span className="font-mono text-[11px] uppercase tracking-[0.12em] text-lavender">{activeHint}</span>
         </div>
-        <div className="flex flex-wrap justify-center gap-1">
+        <div className="flex justify-center gap-1.5">
           {OPTIONS.map((o) => {
             const active = o.id === version;
             return (
@@ -51,7 +44,7 @@ export default function VersionSwitcher({
                 title={o.hint}
                 aria-label={`${o.label} - ${o.hint}`}
                 aria-pressed={active}
-                className={`flex h-8 w-8 items-center justify-center rounded-lg font-display text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet ${
+                className={`flex h-8 flex-1 items-center justify-center rounded-lg px-3 font-mono text-[11px] uppercase tracking-[0.1em] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet ${
                   active ? "bg-violet text-obsidian" : "text-muted hover:bg-slate/60 hover:text-cloud"
                 }`}
               >

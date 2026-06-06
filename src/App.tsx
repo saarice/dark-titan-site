@@ -6,10 +6,10 @@ import VersionSwitcher from "./components/VersionSwitcher";
 import Nav from "./components/Nav";
 
 function initialVersion(): MonolithVersion {
-  if (typeof window === "undefined") return "d";
+  if (typeof window === "undefined") return "main2";
   const v = new URLSearchParams(window.location.search).get("v");
-  const all: MonolithVersion[] = ["d", "e", "f", "g", "h", "i", "j", "k"];
-  return all.includes(v as MonolithVersion) ? (v as MonolithVersion) : "d";
+  const all: MonolithVersion[] = ["main2", "f"];
+  return all.includes(v as MonolithVersion) ? (v as MonolithVersion) : "main2";
 }
 import Hero from "./components/sections/Hero";
 import Chaos from "./components/sections/Chaos";

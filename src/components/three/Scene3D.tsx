@@ -3,26 +3,29 @@ import { Canvas } from "@react-three/fiber";
 import { EffectComposer, Bloom } from "@react-three/postprocessing";
 import { Clouds, Cloud, Sparkles } from "@react-three/drei";
 import * as THREE from "three";
-import MonolithShards, { type Version } from "./MonolithShards";
+import MonolithShards from "./MonolithShards";
+import MonolithSolid from "./MonolithSolid";
 import { useScrollProgress } from "../../hooks/useScrollProgress";
 import { usePointer } from "../../hooks/usePointer";
 import { useReducedMotion } from "../../hooks/useReducedMotion";
 
-export type MonolithVersion = Version;
+// "main2" is the single non-breaking obsidian monolith (default hero); "f" is
+// the Obsidian obelisk that still breaks apart, kept for comparison.
+export type MonolithVersion = "main2" | "f";
 
 /** Fixed full-screen WebGL layer behind all content, driven by scroll. */
-export default function Scene3D({ version = "d" }: { version?: MonolithVersion }) {
+export default function Scene3D({ version = "main2" }: { version?: MonolithVersion }) {
   const scroll = useScrollProgress();
   const ptr = usePointer();
   const reduced = useReducedMotion();
   // Phones get a lighter render budget: lower max DPR and softer bloom.
   const isMobile = typeof window !== "undefined" && window.innerWidth < 768;
 
-  // Atmosphere per version: storm behind the dramatic readings, clean air for
-  // the polished stones, bare calm for the restrained monument.
-  const stormy = ["d", "g", "h", "i"].includes(version) && !reduced;
-  const sparkly = version !== "e" && !reduced;
-  const lush = ["d", "f", "h", "j", "k"].includes(version); // richer light + bloom
+  // Both readings are polished obsidian: clean air, no storm. Only the breaking
+  // F obelisk gets sparkles; Main 2 stays calm and premium. Both run lush light.
+  const stormy = false;
+  const sparkly = version === "f" && !reduced;
+  const lush = true; // richer light + bloom
 
   return (
     <div className="fixed inset-0" style={{ zIndex: 0, pointerEvents: "none" }} aria-hidden>
@@ -78,7 +81,11 @@ export default function Scene3D({ version = "d" }: { version?: MonolithVersion }
         )}
 
         <Suspense fallback={null}>
-          <MonolithShards version={version} scroll={scroll} ptr={ptr} reduced={reduced} />
+          {version === "f" ? (
+            <MonolithShards version="f" scroll={scroll} ptr={ptr} reduced={reduced} />
+          ) : (
+            <MonolithSolid scroll={scroll} ptr={ptr} reduced={reduced} />
+          )}
         </Suspense>
 
         <EffectComposer>

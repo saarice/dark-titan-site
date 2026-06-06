@@ -226,48 +226,29 @@
   <body>
     <main class="wrap">
       <p class="eyebrow">Dark Titan / Design Lab</p>
-      <h1>Pick a <span class="stroke">direction.</span><br />Pick a stone.</h1>
+      <h1>Pick a <span class="stroke">monolith.</span></h1>
       <p class="lede">
-        Two choices to make. First the overall site direction, then the hero
-        monolith reading. Tap any card to open it full-screen, then use your
-        browser's back button to return here. Tell Claude the combination you like.
+        Three live heroes. Tap any card to open it full-screen, then use your
+        browser's back button to return here. Tell Claude the one you like.
       </p>
 
       <div class="section-label">
-        Site directions <span class="count" id="dir-count"></span>
+        Heroes <span class="count" id="dir-count"></span>
       </div>
       <div class="grid" id="directions"></div>
 
-      <div class="section-label">
-        Monolith readings <span class="count" id="read-count"></span>
-      </div>
-      <div class="grid" id="grid"></div>
-
       <footer>
-        Pick a direction + a stone, then tell Claude &mdash;
+        Pick a hero, then tell Claude &mdash;
         <a href="./">open the live site</a>
       </footer>
     </main>
 
     <script>
-      // Full site directions: the live React build + the three static concepts.
+      // The three live heroes. Main 2 is the current default site (./).
       var DIRECTIONS = [
-        { tag: "Main", name: "Two-Slab Monolith", desc: "The hero where two slabs part to reveal the seam.", href: "./main-2monolith/", tint: "rgba(197,122,255,0.34)", live: true },
-        { tag: "A", name: "Operator Console", desc: "Dense control-room dashboard energy.", href: "./concepts/a-operator-console.html", tint: "rgba(120,140,200,0.30)" },
-        { tag: "B", name: "Editorial Spec", desc: "Typographic, magazine-style spec sheet.", href: "./concepts/b-editorial-spec.html", tint: "rgba(160,150,140,0.26)" },
-        { tag: "C", name: "Cinematic Signal", desc: "Big, filmic, high-contrast statement.", href: "./concepts/c-cinematic-signal.html", tint: "rgba(156,91,255,0.36)" },
-      ];
-
-      // One source of truth for the readings. Keep in sync with VersionSwitcher.
-      var READINGS = [
-        { id: "d", name: "Cinematic", desc: "Storm-lit drama, deepest atmosphere.", tint: "rgba(155,109,255,0.30)" },
-        { id: "e", name: "Monument", desc: "Bare, restrained, civic calm.", tint: "rgba(130,130,148,0.22)" },
-        { id: "f", name: "Obsidian", desc: "Polished volcanic glass, clean air.", tint: "rgba(120,90,200,0.28)" },
-        { id: "g", name: "Basalt", desc: "Raw columnar rock, matte grain.", tint: "rgba(90,80,120,0.26)" },
-        { id: "h", name: "Veined", desc: "Glowing violet cracks through dark stone.", tint: "rgba(156,91,255,0.40)" },
-        { id: "i", name: "Iron", desc: "Sleek dark metal, single bright seam.", tint: "rgba(120,120,160,0.30)" },
-        { id: "j", name: "Amethyst", desc: "Glossy gemstone over a reflective floor.", tint: "rgba(150,90,255,0.42)" },
-        { id: "k", name: "Alabaster", desc: "Pale carved stone, sculptural grain.", tint: "rgba(217,208,236,0.30)" },
+        { tag: "M2", name: "Main 2", desc: "One sealed obsidian monolith. F's glass on Main's shape, a soft pink slot instead of a seam.", href: "./", tint: "rgba(197,122,255,0.34)", live: true },
+        { tag: "Main", name: "Two-Slab Monolith", desc: "The original hero where two slabs part to reveal the seam.", href: "./main-2monolith/", tint: "rgba(150,140,170,0.26)" },
+        { tag: "F", name: "Obsidian", desc: "Polished volcanic glass obelisk that breaks apart on scroll.", href: "./?v=f", tint: "rgba(120,90,200,0.28)" },
       ];
 
       var dirGrid = document.getElementById("directions");
@@ -279,32 +260,15 @@
         a.style.animationDelay = 0.28 + i * 0.05 + "s";
         a.setAttribute("aria-label", d.name + " - " + d.desc);
         a.innerHTML =
-          '<div class="badge">' + (d.live ? "Live" : "Concept") + "</div>" +
+          '<div class="badge">' + (d.live ? "Live" : "Hero") + "</div>" +
           '<div class="letter">' + d.tag + "</div>" +
           '<div class="name">' + d.name + "</div>" +
           '<div class="desc">' + d.desc + "</div>" +
-          '<div class="go">' + (d.live ? "Open site" : "View concept") + ' <span>&rarr;</span></div>';
+          '<div class="go">Open hero <span>&rarr;</span></div>';
         dirGrid.appendChild(a);
       });
 
-      var grid = document.getElementById("grid");
-      READINGS.forEach(function (r, i) {
-        var a = document.createElement("a");
-        a.className = "card";
-        a.href = "./?v=" + r.id;
-        a.style.setProperty("--tint", r.tint);
-        a.style.animationDelay = 0.5 + i * 0.045 + "s";
-        a.setAttribute("aria-label", r.name + " - " + r.desc);
-        a.innerHTML =
-          '<div class="letter">' + r.id.toUpperCase() + "</div>" +
-          '<div class="name">' + r.name + "</div>" +
-          '<div class="desc">' + r.desc + "</div>" +
-          '<div class="go">View reading <span>&rarr;</span></div>';
-        grid.appendChild(a);
-      });
-
       document.getElementById("dir-count").textContent = DIRECTIONS.length + " options";
-      document.getElementById("read-count").textContent = READINGS.length + " stones";
     </script>
   </body>
 </html>

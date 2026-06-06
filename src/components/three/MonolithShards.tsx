@@ -29,14 +29,12 @@ import { sceneStateFor, smoothstep, clamp } from "../../lib/choreography";
  * horizontal slice of one virtual texture) means the sealed tower looks like
  * one quarried block, never a row of identical tiles.
  *
- * Four readings, chosen with the version switcher:
- *  - d "Cinematic"  obelisk, honed dark granite, storm + base light-pool.
- *  - e "Monument"   straight slab, honed granite, restrained.
- *  - f "Obsidian"   obelisk, polished volcanic glass, mirror floor, deep glints.
- *  - g "Basalt"     obelisk, rough hewn basalt, heavy relief, grazing light.
+ * One reading is kept here, "f" Obsidian: an obelisk of polished volcanic
+ * glass over a mirror floor with deep violet glints, which still breaks apart
+ * on scroll. The non-breaking single monolith lives in MonolithSolid.
  */
 
-export type Version = "d" | "e" | "f" | "g" | "h" | "i" | "j" | "k";
+export type Version = "f";
 
 const K = 9; // number of vertical shards
 const COL_W = 1.18; // total tower width (slim)
@@ -78,38 +76,6 @@ type Preset = {
 };
 
 const PRESETS: Record<Version, Preset> = {
-  d: {
-    shape: "obelisk",
-    tex: "stone",
-    color: "#2c2444",
-    metalness: 0.28,
-    roughness: 0.82,
-    normalScale: 1.1,
-    envMapIntensity: 1.7,
-    tileX: 1.25,
-    tileY: 2.4,
-    displacement: 0,
-    seamColor: "#C6A6FF",
-    seamOpacity: 0.98,
-    poolOpacity: 0.85,
-    reflectiveFloor: false,
-  },
-  e: {
-    shape: "slab",
-    tex: "stone",
-    color: "#221d30",
-    metalness: 0.22,
-    roughness: 0.92,
-    normalScale: 0.85,
-    envMapIntensity: 1.25,
-    tileX: 1.2,
-    tileY: 2.6,
-    displacement: 0,
-    seamColor: "#B28AFF",
-    seamOpacity: 0.72,
-    poolOpacity: 0.45,
-    reflectiveFloor: false,
-  },
   f: {
     shape: "obelisk",
     tex: "stone",
@@ -124,95 +90,6 @@ const PRESETS: Record<Version, Preset> = {
     seamColor: "#D4BBFF",
     seamOpacity: 1.0,
     poolOpacity: 0.7,
-    reflectiveFloor: true,
-  },
-  g: {
-    shape: "obelisk",
-    tex: "rock",
-    color: "#241d33",
-    metalness: 0.04,
-    roughness: 1.0,
-    normalScale: 2.0,
-    envMapIntensity: 0.95,
-    tileX: 1.6,
-    tileY: 2.2,
-    displacement: 0.04,
-    seamColor: "#B894FF",
-    seamOpacity: 0.85,
-    poolOpacity: 0.5,
-    reflectiveFloor: false,
-  },
-  // Veined: dark granite shot through with a glowing violet fracture network.
-  h: {
-    shape: "obelisk",
-    tex: "stone",
-    color: "#1b1528",
-    metalness: 0.3,
-    roughness: 0.8,
-    normalScale: 1.2,
-    envMapIntensity: 1.5,
-    tileX: 1.25,
-    tileY: 2.4,
-    displacement: 0,
-    seamColor: "#CDB0FF",
-    seamOpacity: 0.95,
-    poolOpacity: 0.8,
-    reflectiveFloor: false,
-    emissiveColor: "#9C5BFF",
-    emissiveIntensity: 2.1,
-  },
-  // Iron: dark machined ore, high metalness, industrial titan.
-  i: {
-    shape: "obelisk",
-    tex: "rock",
-    color: "#2b2740",
-    metalness: 0.92,
-    roughness: 0.43,
-    normalScale: 1.35,
-    envMapIntensity: 1.9,
-    tileX: 1.4,
-    tileY: 2.2,
-    displacement: 0,
-    seamColor: "#B28AFF",
-    seamOpacity: 0.85,
-    poolOpacity: 0.55,
-    reflectiveFloor: false,
-  },
-  // Amethyst: polished violet gemstone, clearcoat sheen, deep internal color.
-  j: {
-    shape: "obelisk",
-    tex: "stone",
-    color: "#4b2f93",
-    metalness: 0.12,
-    roughness: 0.13,
-    normalScale: 0.55,
-    envMapIntensity: 2.5,
-    tileX: 1.0,
-    tileY: 2.0,
-    displacement: 0,
-    seamColor: "#E6D4FF",
-    seamOpacity: 1.0,
-    poolOpacity: 0.7,
-    reflectiveFloor: true,
-    physical: true,
-    clearcoat: 1,
-    clearcoatRoughness: 0.08,
-  },
-  // Alabaster: pale luminous honed stone, bright against the black.
-  k: {
-    shape: "obelisk",
-    tex: "stone",
-    color: "#d9d0ec",
-    metalness: 0.0,
-    roughness: 0.32,
-    normalScale: 0.6,
-    envMapIntensity: 1.6,
-    tileX: 1.1,
-    tileY: 2.2,
-    displacement: 0,
-    seamColor: "#C6A6FF",
-    seamOpacity: 0.9,
-    poolOpacity: 0.72,
     reflectiveFloor: true,
   },
 };
