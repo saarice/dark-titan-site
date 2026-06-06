@@ -5,7 +5,7 @@ import {
   Lightformer,
   useTexture,
   ContactShadows,
-  MeshReflectorMaterial,
+  Grid,
   RoundedBox,
 } from "@react-three/drei";
 import * as THREE from "three";
@@ -35,6 +35,7 @@ const DEPTH = 0.62;
 const GAP = 0.1; // slot width between the two halves
 const HALF_H = SLAB_H / 2;
 const HALF_X = GAP / 2 + HALF_W / 2; // x of each half's centre
+const DEBRIS = 420; // floating "stars" drifting around the monolith (from Main)
 
 const tx = (p: string) => import.meta.env.BASE_URL + p;
 
@@ -100,9 +101,35 @@ export default function MonolithSolid({
   const group = useRef<THREE.Group>(null);
   const glowRef = useRef<THREE.Mesh>(null);
   const pool = useRef<THREE.Mesh>(null);
+  const debrisRef = useRef<THREE.InstancedMesh>(null);
 
   const slotGlow = useSlotGlow();
   const poolGlow = usePoolGlow();
+
+  // "Stars": tiny octahedrons scattered in a spherical shell around the stone.
+  // Kept from the Main scene; here they just drift gently (the stone never
+  // breaks, so they stay put rather than exploding outward).
+  const debrisHome = useMemo(() => {
+    const arr: THREE.Vector3[] = [];
+    for (let i = 0; i < DEBRIS; i++) {
+      const r = 2.6 + Math.random() * 6;
+      const th = Math.random() * Math.PI * 2;
+      const ph = Math.acos(Math.random() * 2 - 1);
+      arr.push(
+        new THREE.Vector3(
+          Math.sin(ph) * Math.cos(th) * r * 1.5,
+          Math.cos(ph) * r * 0.9,
+          Math.sin(ph) * Math.sin(th) * r - 1,
+        ),
+      );
+    }
+    return arr;
+  }, []);
+  const debrisScale = useMemo(
+    () => Array.from({ length: DEBRIS }, () => 0.012 + Math.random() * 0.02),
+    [],
+  );
+  const dummy = useMemo(() => new THREE.Object3D(), []);
 
   // F "Obsidian" material: polished near-black volcanic glass.
   const maps = useTexture({
@@ -162,6 +189,21 @@ export default function MonolithSolid({
       pool.current.scale.setScalar(1.2 + Math.sin(t * 0.8) * 0.05);
     }
 
+    // Drift the "stars": each octahedron holds its home position and bobs/spins
+    // slowly. Frozen (no spin/bob) under reduced motion.
+    if (debrisRef.current) {
+      for (let i = 0; i < DEBRIS; i++) {
+        const h = debrisHome[i];
+        const bob = reduced ? 0 : Math.sin(t * 0.3 + i) * 0.12;
+        dummy.position.set(h.x, h.y + bob, h.z);
+        dummy.scale.setScalar(debrisScale[i]);
+        dummy.rotation.set(reduced ? i : t * 0.1 + i, reduced ? i : t * 0.13 + i, 0);
+        dummy.updateMatrix();
+        debrisRef.current.setMatrixAt(i, dummy.matrix);
+      }
+      debrisRef.current.instanceMatrix.needsUpdate = true;
+    }
+
     // Pointer sway + gentle scroll rotation.
     const ptX = reduced ? 0 : ptr.current?.x ?? 0;
     const ptY = reduced ? 0 : ptr.current?.y ?? 0;
@@ -188,6 +230,12 @@ export default function MonolithSolid({
 
   return (
     <group ref={group}>
+      {/* "stars": tiny octahedrons drifting around the stone (kept from Main) */}
+      <instancedMesh ref={debrisRef} args={[undefined, undefined, DEBRIS]}>
+        <octahedronGeometry args={[1, 0]} />
+        <meshStandardMaterial color="#544a78" metalness={0.4} roughness={0.6} envMapIntensity={1} />
+      </instancedMesh>
+
       {/* two obsidian halves with a fixed slot - reads as one sealed stone */}
       <RoundedBox
         args={[HALF_W, SLAB_H, DEPTH]}
@@ -250,32 +298,23 @@ export default function MonolithSolid({
         color="#05040a"
       />
 
-      {!isMobile ? (
-        <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -HALF_H - 0.02, 0]}>
-          <planeGeometry args={[60, 60]} />
-          <MeshReflectorMaterial
-            resolution={1024}
-            mixBlur={1.1}
-            mixStrength={2.2}
-            roughness={0.65}
-            depthScale={1.1}
-            minDepthThreshold={0.4}
-            maxDepthThreshold={1.3}
-            color="#0a0810"
-            metalness={0.7}
-            mirror={0}
-          />
-        </mesh>
-      ) : (
-        <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -HALF_H - 0.02, 0]}>
-          <planeGeometry args={[60, 60]} />
-          <meshStandardMaterial color="#0a0810" roughness={0.6} metalness={0.6} />
-        </mesh>
-      )}
+      {/* the "net": infinite violet grid floor (kept from Main) */}
+      <Grid
+        position={[0, -HALF_H - 0.6, 0]}
+        args={[40, 40]}
+        cellSize={0.6}
+        cellThickness={0.6}
+        cellColor="#2a2350"
+        sectionSize={3}
+        sectionColor="#3a2f66"
+        fadeDistance={26}
+        fadeStrength={3}
+        infiniteGrid
+      />
 
       <Environment resolution={256} frames={1}>
         <Lightformer intensity={4} color="#B28AFF" position={[-2.5, 1.5, 5]} scale={[4, 9, 1]} />
-        <Lightformer intensity={2.4} color="#FF9FD6" position={[3, 0.5, 5]} scale={[3, 8, 1]} />
+        <Lightformer intensity={2.2} color="#7C4AF0" position={[3, 0, 5]} scale={[3, 8, 1]} />
         <Lightformer intensity={1} color="#AEB4C7" position={[0, 4, -2]} scale={[9, 4, 1]} />
         <Lightformer intensity={0.7} color="#ffffff" position={[2.5, -2, 5]} scale={[2, 3, 1]} />
       </Environment>
