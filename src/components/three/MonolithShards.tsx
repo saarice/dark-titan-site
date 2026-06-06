@@ -1,24 +1,42 @@
-import { useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
-import { Grid, Environment, Lightformer } from "@react-three/drei";
+import {
+  Grid,
+  Environment,
+  Lightformer,
+  useTexture,
+  ContactShadows,
+  MeshReflectorMaterial,
+} from "@react-three/drei";
 import * as THREE from "three";
 import { sceneStateFor, smoothstep, clamp } from "../../lib/choreography";
 
 /**
- * One monolith that breaks into the pieces.
+ * One monolith of carved stone that breaks into the pieces.
  *
- * The tower is built from K flush vertical shards. At the hero they sit edge to
- * edge with no internal seams, so the silhouette reads as a single sealed
- * monolith with one bright line of light. As you scroll, the shards peel apart
- * in sequence (the "break") and drift, then reseal into one monolith for the
- * footer. A single scroll source of truth (`scroll`) drives the seam, the
- * break, and the camera via the pure sceneStateFor(), so nothing can disagree.
+ * The tower is K flush vertical shards. At the hero they sit edge to edge with
+ * no internal seams, so the silhouette reads as a single sealed block of stone
+ * with one bright line of light. As you scroll the shards peel apart in
+ * sequence (the "break") and drift, then reseal into one monolith for the
+ * footer. A single scroll source of truth drives the seam, the break and the
+ * camera via the pure sceneStateFor(), so nothing can disagree.
  *
- * variant:
- *  - "obelisk": slim tapered tower + pyramidion cap, intense seam and a glowing
- *    light-pool at the base. The cinematic reading (D).
- *  - "slabs": equal-height rectangular monolith. The restrained reading (E).
+ * The stone itself is real PBR rock (Poly Haven CC0 maps in /public/textures):
+ * a normal map carves micro-relief, a roughness map breaks up the specular,
+ * and a high envMapIntensity lets the violet Lightformer environment catch
+ * every edge. The diffuse is tinted dark-violet so it stays on-brand instead
+ * of grey gravel. Per-shard texture continuity (each shard samples its own
+ * horizontal slice of one virtual texture) means the sealed tower looks like
+ * one quarried block, never a row of identical tiles.
+ *
+ * Four readings, chosen with the version switcher:
+ *  - d "Cinematic"  obelisk, honed dark granite, storm + base light-pool.
+ *  - e "Monument"   straight slab, honed granite, restrained.
+ *  - f "Obsidian"   obelisk, polished volcanic glass, mirror floor, deep glints.
+ *  - g "Basalt"     obelisk, rough hewn basalt, heavy relief, grazing light.
  */
+
+export type Version = "d" | "e" | "f" | "g";
 
 const K = 9; // number of vertical shards
 const COL_W = 1.18; // total tower width (slim)
@@ -27,9 +45,97 @@ const H = 4.3; // full tower height
 const DEPTH = 0.66;
 const HALF_H = H / 2;
 const CENTER = (K - 1) / 2;
-const CAP_H = 0.6; // pyramidion height (obelisk only)
+const CAP_H = 0.9; // pyramidion height (obelisk only)
 
-type Variant = "obelisk" | "slabs";
+type Shape = "obelisk" | "slab";
+type TexSet = "stone" | "rock";
+
+type Preset = {
+  shape: Shape;
+  tex: TexSet;
+  /** dark tint multiplied over the (grey) rock diffuse to stay on-brand */
+  color: string;
+  metalness: number;
+  /** multiplier over the roughness map: <1 polishes, 1 keeps it raw */
+  roughness: number;
+  normalScale: number;
+  envMapIntensity: number;
+  /** world units the texture spans across the full tower width + its vertical tiling */
+  tileX: number;
+  tileY: number;
+  displacement: number;
+  seamColor: string;
+  seamOpacity: number;
+  poolOpacity: number;
+  reflectiveFloor: boolean;
+};
+
+const PRESETS: Record<Version, Preset> = {
+  d: {
+    shape: "obelisk",
+    tex: "stone",
+    color: "#2c2444",
+    metalness: 0.28,
+    roughness: 0.82,
+    normalScale: 1.1,
+    envMapIntensity: 1.7,
+    tileX: 1.25,
+    tileY: 2.4,
+    displacement: 0,
+    seamColor: "#C6A6FF",
+    seamOpacity: 0.98,
+    poolOpacity: 0.85,
+    reflectiveFloor: false,
+  },
+  e: {
+    shape: "slab",
+    tex: "stone",
+    color: "#221d30",
+    metalness: 0.22,
+    roughness: 0.92,
+    normalScale: 0.85,
+    envMapIntensity: 1.25,
+    tileX: 1.2,
+    tileY: 2.6,
+    displacement: 0,
+    seamColor: "#B28AFF",
+    seamOpacity: 0.72,
+    poolOpacity: 0.45,
+    reflectiveFloor: false,
+  },
+  f: {
+    shape: "obelisk",
+    tex: "stone",
+    color: "#140f20",
+    metalness: 0.62,
+    roughness: 0.16,
+    normalScale: 0.4,
+    envMapIntensity: 2.6,
+    tileX: 1.0,
+    tileY: 2.0,
+    displacement: 0,
+    seamColor: "#D4BBFF",
+    seamOpacity: 1.0,
+    poolOpacity: 0.7,
+    reflectiveFloor: true,
+  },
+  g: {
+    shape: "obelisk",
+    tex: "rock",
+    color: "#241d33",
+    metalness: 0.04,
+    roughness: 1.0,
+    normalScale: 2.0,
+    envMapIntensity: 0.95,
+    tileX: 1.6,
+    tileY: 2.2,
+    displacement: 0.04,
+    seamColor: "#B894FF",
+    seamOpacity: 0.85,
+    poolOpacity: 0.5,
+    reflectiveFloor: false,
+  },
+};
 
 type Shard = {
   i: number;
@@ -41,12 +147,14 @@ type Shard = {
   dirX: number;
 };
 
-function buildShards(variant: Variant): Shard[] {
+function buildShards(shape: Shape): Shard[] {
   const base = Array.from({ length: K }, (_, i) => {
     const restX = -COL_W / 2 + SHARD_W * (i + 0.5);
     const dist = Math.abs(i - CENTER) / CENTER;
-    // Gentle taper so the outline reads as one smooth obelisk, not a skyline.
-    const height = variant === "obelisk" ? H * (1 - 0.2 * Math.pow(dist, 1.35)) : H;
+    // Flat-top shaft for both shapes: a height taper turns the discrete shards
+    // into a jagged staircase. The obelisk gets its point from a single
+    // full-width pyramidion cap instead, which reads as one clean carved tip.
+    const height = H;
     return { i, restX, dist, height, yOffset: height / 2 - HALF_H, dirX: Math.sign(restX) };
   });
   // Peel order: outermost shards calve first, the core last.
@@ -62,7 +170,7 @@ function useGlowTexture() {
     c.width = c.height = 256;
     const g = c.getContext("2d")!;
     const grad = g.createRadialGradient(128, 128, 0, 128, 128, 128);
-    grad.addColorStop(0, "rgba(178,138,255,0.95)");
+    grad.addColorStop(0, "rgba(190,150,255,0.95)");
     grad.addColorStop(0.35, "rgba(124,74,240,0.45)");
     grad.addColorStop(1, "rgba(124,74,240,0)");
     g.fillStyle = grad;
@@ -73,26 +181,128 @@ function useGlowTexture() {
   }, []);
 }
 
+const tx = (p: string) => import.meta.env.BASE_URL + p;
+
+/** Load both rock map sets once so switching versions is instant. */
+function useRockMaps() {
+  const stone = useTexture({
+    map: tx("textures/stone/stone_diff.jpg"),
+    normalMap: tx("textures/stone/stone_nor_gl.jpg"),
+    roughnessMap: tx("textures/stone/stone_rough.jpg"),
+    aoMap: tx("textures/stone/stone_ao.jpg"),
+    displacementMap: tx("textures/stone/stone_disp.jpg"),
+  });
+  const rock = useTexture({
+    map: tx("textures/rock/rock_diff.jpg"),
+    normalMap: tx("textures/rock/rock_nor_gl.jpg"),
+    roughnessMap: tx("textures/rock/rock_rough.jpg"),
+    aoMap: tx("textures/rock/rock_ao.jpg"),
+    displacementMap: tx("textures/rock/rock_disp.jpg"),
+  });
+  useMemo(() => {
+    for (const set of [stone, rock]) {
+      set.map.colorSpace = THREE.SRGBColorSpace;
+      for (const key of ["normalMap", "roughnessMap", "aoMap", "displacementMap"] as const) {
+        set[key].colorSpace = THREE.NoColorSpace;
+      }
+    }
+  }, [stone, rock]);
+  return { stone, rock };
+}
+
+type MapSet = ReturnType<typeof useRockMaps>["stone"];
+
 export default function MonolithShards({
-  variant,
+  version,
   scroll,
   ptr,
   reduced,
 }: {
-  variant: Variant;
+  version: Version;
   scroll: React.RefObject<number>;
   ptr: React.RefObject<{ x: number; y: number }>;
   reduced: boolean;
 }) {
   const { camera, size } = useThree();
+  const preset = PRESETS[version];
+  const isObelisk = preset.shape === "obelisk";
+  const isMobile = size.width < 768;
+
   const group = useRef<THREE.Group>(null);
   const shardRefs = useRef<THREE.Group[]>([]);
   const seam = useRef<THREE.Mesh>(null);
   const pool = useRef<THREE.Mesh>(null);
-  const isObelisk = variant === "obelisk";
 
-  const shards = useMemo(() => buildShards(variant), [variant]);
+  const shards = useMemo(() => buildShards(preset.shape), [preset.shape]);
   const glow = useGlowTexture();
+  const maps = useRockMaps();
+  const source: MapSet = preset.tex === "stone" ? maps.stone : maps.rock;
+
+  // Per-shard geometry + material. Each shard clones the shared maps and offsets
+  // them so the K shards together sample ONE continuous texture across the tower:
+  // no repeated tile, no phantom vertical seams when sealed.
+  const built = useMemo(() => {
+    const geometries: THREE.BoxGeometry[] = [];
+    const materials: THREE.MeshStandardMaterial[] = [];
+    const segY = preset.displacement > 0 ? 24 : 1;
+
+    for (const sh of shards) {
+      const geo = new THREE.BoxGeometry(SHARD_W, sh.height, DEPTH, 1, segY, 1);
+      // aoMap needs a second uv set; reuse uv.
+      geo.setAttribute("uv2", new THREE.BufferAttribute((geo.attributes.uv as THREE.BufferAttribute).array, 2));
+      geometries.push(geo);
+
+      const clone = <T extends THREE.Texture>(t: T): T => {
+        const c = t.clone() as T;
+        c.wrapS = c.wrapT = THREE.RepeatWrapping;
+        c.repeat.set(preset.tileX / K, preset.tileY);
+        c.offset.set((sh.i * preset.tileX) / K, 0);
+        c.needsUpdate = true;
+        return c;
+      };
+      const map = clone(source.map);
+      map.colorSpace = THREE.SRGBColorSpace;
+
+      const mat = new THREE.MeshStandardMaterial({
+        map,
+        normalMap: clone(source.normalMap),
+        roughnessMap: clone(source.roughnessMap),
+        aoMap: clone(source.aoMap),
+        ...(preset.displacement > 0
+          ? { displacementMap: clone(source.displacementMap), displacementScale: preset.displacement, displacementBias: -preset.displacement / 2 }
+          : {}),
+        color: new THREE.Color(preset.color),
+        metalness: preset.metalness,
+        roughness: preset.roughness,
+        envMapIntensity: preset.envMapIntensity,
+        normalScale: new THREE.Vector2(preset.normalScale, preset.normalScale),
+        aoMapIntensity: 1,
+      });
+      materials.push(mat);
+    }
+    return { geometries, materials };
+  }, [shards, preset, source]);
+
+  // Dispose GPU resources when the version (and thus built set) changes.
+  useEffect(() => {
+    const { geometries, materials } = built;
+    return () => {
+      geometries.forEach((g) => g.dispose());
+      materials.forEach((m) => {
+        m.map?.dispose();
+        m.normalMap?.dispose();
+        m.roughnessMap?.dispose();
+        m.aoMap?.dispose();
+        m.displacementMap?.dispose();
+        m.dispose();
+      });
+    };
+  }, [built]);
+
+  const seamMat = useMemo(
+    () => new THREE.MeshBasicMaterial({ color: preset.seamColor, transparent: true, toneMapped: false }),
+    [preset.seamColor],
+  );
 
   // Damped per-shard openness (0 sealed .. 1 fully peeled).
   const openCur = useRef<number[]>(new Array(K).fill(0));
@@ -100,24 +310,6 @@ export default function MonolithShards({
   const rotX = useRef(0);
   const posXCur = useRef(0);
   const posYCur = useRef(0);
-
-  // Matte dark stone, not chrome: low metalness + high roughness so the narrow
-  // shard faces read as one continuous surface when flush (a glossy metal would
-  // give each face its own reflection band and the tower would look striped).
-  const slabMat = useMemo(
-    () =>
-      new THREE.MeshStandardMaterial({
-        color: isObelisk ? "#1b1530" : "#181426",
-        metalness: 0.35,
-        roughness: isObelisk ? 0.58 : 0.62,
-        envMapIntensity: isObelisk ? 1.5 : 1.2,
-      }),
-    [isObelisk],
-  );
-  const seamMat = useMemo(
-    () => new THREE.MeshBasicMaterial({ color: "#B28AFF", transparent: true, toneMapped: false }),
-    [],
-  );
 
   useFrame((state, delta) => {
     const t = state.clock.elapsedTime;
@@ -147,10 +339,10 @@ export default function MonolithShards({
     const seamVis = clamp(s.form);
     if (seam.current) {
       seam.current.scale.y = 0.25 + seamVis * 1.0;
-      (seam.current.material as THREE.MeshBasicMaterial).opacity = seamVis * (isObelisk ? 0.95 : 0.7);
+      (seam.current.material as THREE.MeshBasicMaterial).opacity = seamVis * preset.seamOpacity;
     }
     if (pool.current) {
-      (pool.current.material as THREE.MeshBasicMaterial).opacity = seamVis * (isObelisk ? 0.85 : 0.45);
+      (pool.current.material as THREE.MeshBasicMaterial).opacity = seamVis * preset.poolOpacity;
       pool.current.scale.setScalar((isObelisk ? 1.5 : 1.2) * (1 + Math.sin(t * 0.8) * 0.05));
     }
 
@@ -162,7 +354,6 @@ export default function MonolithShards({
     rotX.current = THREE.MathUtils.damp(rotX.current, ptY * 0.07, 3, delta);
 
     const heroOnly = 1 - smoothstep(0.05, 0.16, p);
-    const isMobile = size.width < 768;
     const posXTarget = isMobile ? 1.5 + heroOnly * 1.7 : heroOnly * 1.9;
     const posYTarget = 0.5 * (1 - smoothstep(0, 0.9, p));
     posXCur.current = THREE.MathUtils.damp(posXCur.current, posXTarget, 3, delta);
@@ -179,22 +370,35 @@ export default function MonolithShards({
     camera.lookAt(0, isObelisk ? 0.25 : 0, 0);
   });
 
+  const reflective = preset.reflectiveFloor && !isMobile;
+
   return (
     <group ref={group}>
-      {shards.map((sh) => {
+      {shards.map((sh, idx) => {
         const isCore = sh.dirX === 0;
         return (
           <group key={sh.i} ref={(el) => { if (el) shardRefs.current[sh.i] = el; }}>
             {/* sharp, flush box so shards tile seamlessly into one solid tower.
                 Local x is 0; the group carries restX + the peel offset, so the
                 shard is never positioned twice. */}
-            <mesh position={[0, sh.yOffset, 0]} material={slabMat}>
-              <boxGeometry args={[SHARD_W, sh.height, DEPTH]} />
-            </mesh>
-            {/* pyramidion cap rides the core shard (obelisk only) */}
+            <mesh
+              position={[0, sh.yOffset, 0]}
+              geometry={built.geometries[idx]}
+              material={built.materials[idx]}
+              castShadow
+              receiveShadow
+            />
+            {/* full-width pyramidion cap rides the core shard (obelisk only).
+                A 4-sided pyramid sized so its flat faces span the shaft width,
+                squashed in z to match the slimmer depth: one clean stone tip. */}
             {isObelisk && isCore && (
-              <mesh position={[0, HALF_H + CAP_H / 2, 0]} rotation={[0, Math.PI / 4, 0]} material={slabMat}>
-                <cylinderGeometry args={[0, COL_W * 0.16, CAP_H, 4]} />
+              <mesh
+                position={[0, HALF_H + CAP_H / 2, 0]}
+                rotation={[0, Math.PI / 4, 0]}
+                scale={[1, 1, DEPTH / COL_W]}
+                material={built.materials[idx]}
+              >
+                <cylinderGeometry args={[0, COL_W / Math.SQRT2, CAP_H, 4]} />
               </mesh>
             )}
           </group>
@@ -218,18 +422,48 @@ export default function MonolithShards({
         />
       </mesh>
 
-      <Grid
-        position={[0, -HALF_H - 0.05, 0]}
-        args={[40, 40]}
-        cellSize={0.6}
-        cellThickness={0.6}
-        cellColor={isObelisk ? "#241d44" : "#2a2350"}
-        sectionSize={3}
-        sectionColor={isObelisk ? "#33285c" : "#3a2f66"}
-        fadeDistance={isObelisk ? 30 : 26}
-        fadeStrength={3}
-        infiniteGrid
+      {/* contact shadow grounds the tower against the floor */}
+      <ContactShadows
+        position={[0, -HALF_H + 0.01, 0]}
+        scale={9}
+        resolution={isMobile ? 512 : 1024}
+        blur={2.6}
+        opacity={0.55}
+        far={5}
+        color="#05040a"
       />
+
+      {reflective ? (
+        // polished obsidian floor: the monolith + its seam reflect in the stone
+        <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -HALF_H - 0.02, 0]}>
+          <planeGeometry args={[60, 60]} />
+          <MeshReflectorMaterial
+            resolution={1024}
+            mixBlur={1.1}
+            mixStrength={2.2}
+            roughness={0.65}
+            depthScale={1.1}
+            minDepthThreshold={0.4}
+            maxDepthThreshold={1.3}
+            color="#0a0810"
+            metalness={0.7}
+            mirror={0}
+          />
+        </mesh>
+      ) : (
+        <Grid
+          position={[0, -HALF_H - 0.05, 0]}
+          args={[40, 40]}
+          cellSize={0.6}
+          cellThickness={0.6}
+          cellColor={isObelisk ? "#241d44" : "#2a2350"}
+          sectionSize={3}
+          sectionColor={isObelisk ? "#33285c" : "#3a2f66"}
+          fadeDistance={isObelisk ? 30 : 26}
+          fadeStrength={3}
+          infiniteGrid
+        />
+      )}
 
       <Environment resolution={256} frames={1}>
         <Lightformer intensity={4} color="#B28AFF" position={[-2.5, 1.5, 5]} scale={[4, 9, 1]} />

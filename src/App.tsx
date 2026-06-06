@@ -7,7 +7,8 @@ import Nav from "./components/Nav";
 
 function initialVersion(): MonolithVersion {
   if (typeof window === "undefined") return "d";
-  return new URLSearchParams(window.location.search).get("v") === "e" ? "e" : "d";
+  const v = new URLSearchParams(window.location.search).get("v");
+  return v === "e" || v === "f" || v === "g" ? v : "d";
 }
 import Hero from "./components/sections/Hero";
 import Chaos from "./components/sections/Chaos";

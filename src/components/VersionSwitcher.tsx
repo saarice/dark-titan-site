@@ -2,7 +2,9 @@ import type { MonolithVersion } from "./three/Scene3D";
 
 const OPTIONS: { id: MonolithVersion; label: string; hint: string }[] = [
   { id: "d", label: "D", hint: "Cinematic" },
-  { id: "e", label: "E", hint: "Seal + break" },
+  { id: "e", label: "E", hint: "Monument" },
+  { id: "f", label: "F", hint: "Obsidian" },
+  { id: "g", label: "G", hint: "Basalt" },
 ];
 
 /**
