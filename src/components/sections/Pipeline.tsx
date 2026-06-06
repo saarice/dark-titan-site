@@ -232,7 +232,7 @@ export default function Pipeline() {
                   {/* card */}
                   <div
                     className={[
-                      "absolute top-1/2 w-[calc(100vw-7rem)] -translate-y-1/2 rounded-xl border p-4 backdrop-blur-sm transition-all duration-500",
+                      "absolute top-1/2 w-[calc(100vw-7rem)] rounded-xl border p-4 backdrop-blur-sm transition-all duration-500",
                       "left-full ml-5", // mobile + even desktop: right
                       cardRight ? "md:left-full md:ml-5 md:right-auto md:mr-0" : "md:left-auto md:right-full md:ml-0 md:mr-5",
                       "md:w-[min(40vw,300px)]",
@@ -240,7 +240,12 @@ export default function Pipeline() {
                     style={{
                       borderColor: st === "idle" ? "rgb(var(--steel))" : "rgb(var(--lavender) / 0.5)",
                       background: "linear-gradient(160deg, rgb(255 255 255 / 0.05), rgb(255 255 255 / 0.01))",
-                      opacity: st === "idle" ? 0.4 : 1,
+                      // Cards aren't drawn until the signal reaches the node; then
+                      // they fade + rise into place ("drawn" as you scroll) rather
+                      // than sitting ahead of the signal as faint gray placeholders.
+                      opacity: st === "idle" ? 0 : 1,
+                      transform: st === "idle" ? "translateY(calc(-50% + 16px))" : "translateY(-50%)",
+                      pointerEvents: st === "idle" ? "none" : "auto",
                       boxShadow: st === "lit" ? `0 16px 50px -24px rgb(${litTone} / 0.9)` : "none",
                     }}
                   >
