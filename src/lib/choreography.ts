@@ -32,9 +32,12 @@ export function sceneStateFor(p: number): SceneState {
   const rivers = smoothstep(0.62, 0.74, p) * (1 - smoothstep(0.78, 0.9, p));
   const cameraZ = 6.4 + p * 0.85;
   // Seam lives only at the start of the journey: brightest at the hero, with a
-  // last appearance during the Factory "ordering" beat. It does NOT return
-  // anywhere after that — no faint footer/reform glow — so the back half of the
-  // page (agents -> rivers -> tempo -> proof -> manifesto -> footer) is seamless.
-  const seamOpacity = hero * 0.9 + order * 0.45;
+  // last appearance during the Factory section, then fully cleared BEFORE the
+  // Agents section begins (agents starts at p~0.43). It never returns after that,
+  // so agents -> rivers -> tempo -> proof -> manifesto -> footer stay seamless.
+  // Note: this uses its own narrow window, not the wider `order` band (which
+  // still drives the debris ordering and bleeds into the agents range).
+  const factorySeam = smoothstep(0.25, 0.35, p) * (1 - smoothstep(0.39, 0.43, p));
+  const seamOpacity = hero * 0.9 + factorySeam * 0.5;
   return { form, debris, order, constellation, rivers, reform, cameraZ, seamOpacity: clamp(seamOpacity) };
 }
