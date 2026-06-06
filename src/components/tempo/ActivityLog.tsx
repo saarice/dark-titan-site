@@ -1,16 +1,9 @@
-import { useEffect, useRef } from "react";
-
 /**
  * Streaming activity log — short monospace lines tick down the side, newest at
- * the bottom, auto-scrolled into view. Reinforces the sense of a live system.
+ * the bottom. The container is bottom-aligned and clipped, so fresh lines
+ * appear at the bottom on their own; nothing scrolls the page into view.
  */
 export default function ActivityLog({ lines }: { lines: string[] }) {
-  const endRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    endRef.current?.scrollIntoView({ block: "end" });
-  }, [lines]);
-
   return (
     <div className="flex h-full flex-col overflow-hidden rounded-2xl border border-slate bg-charcoal/70">
       <div className="flex items-center gap-2 border-b border-slate px-4 py-3">
@@ -38,7 +31,6 @@ export default function ActivityLog({ lines }: { lines: string[] }) {
               </p>
             );
           })}
-          <div ref={endRef} />
         </div>
       </div>
     </div>

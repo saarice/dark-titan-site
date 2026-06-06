@@ -1,28 +1,17 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { AnimatePresence } from "framer-motion";
 import { useReducedMotion } from "../../hooks/useReducedMotion";
-import {
-  EVENTS,
-  LANES,
-  LOOP_MS,
-  REPLAY_MS,
-  SHIPPED_BASE,
-  TICKETS,
-  TICKET_BY_ID,
-  locate,
-  logLine,
-  stateAt,
-} from "../../lib/tempoData";
+import { LANES, MAX_ROWS, boardAtTime, logLinesAt } from "../../lib/tempoData";
 import TicketCard, { ROW } from "./TicketCard";
 import ActivityLog from "./ActivityLog";
 
 const LANE_GAP = 14;
 const HEADER_H = 44; // lane header height inside the field
-const FIELD_H = HEADER_H + 6 * ROW + 8; // tallest a lane can get + breathing room
-const LIFT_MS = 760; // how long a card stays "lifted" after its move fires
-const MAX_LOG = 14;
+const FIELD_H = HEADER_H + MAX_ROWS * ROW + 8; // tallest a lane can get + breathing room
 
-const INITIAL_LOG = ["TK-19  ✓ shipped", "TK-20  ✓ shipped"];
-const SHIPPED_TOTAL = SHIPPED_BASE + EVENTS.filter((e) => e.to === "done").length;
+// A still frame to show when the visitor prefers reduced motion: far enough in
+// that every lane is populated, but frozen.
+const STILL_T = 5200;
 
 /** Measure an element's content width, kept current across resizes. */
 function useWidth<T extends HTMLElement>(): [React.RefObject<T | null>, number] {
@@ -44,10 +33,11 @@ export default function Board() {
   const reduced = useReducedMotion();
   const [fieldRef, fieldW] = useWidth<HTMLDivElement>();
 
-  // Single source of truth for the replay: elapsed time within one loop. The
-  // board, lifted cards, log, and counter are all *derived* from this (via the
-  // pure stateAt), so nothing can drift or double-count across loops.
-  const [tMs, setTms] = useState(reduced ? REPLAY_MS : 0);
+  // Single source of truth: elapsed time since the board began. The whole
+  // board, lifted cards, log, and counter are *derived* from this via the pure
+  // boardAtTime / logLinesAt, so nothing can drift or double-count. There is no
+  // loop seam — tickets are born, flow, and age off forever, all from one clock.
+  const [tMs, setTms] = useState(reduced ? STILL_T : 0);
 
   useEffect(() => {
     if (reduced) return;
@@ -57,12 +47,9 @@ export default function Board() {
 
     const frame = (now: number) => {
       if (!start) start = now;
-      let elapsed = now - start;
-      if (elapsed >= LOOP_MS) {
-        start = now;
-        elapsed = 0;
-      }
-      setTms(elapsed);
+      // Endless: elapsed grows without bound. (boardAtTime adds WARMUP so the
+      // board is already fully populated at t = 0.)
+      setTms(now - start);
       raf = requestAnimationFrame(frame);
     };
 
@@ -72,16 +59,9 @@ export default function Board() {
     return () => cancelAnimationFrame(raf);
   }, [reduced]);
 
-  const board = useMemo(() => stateAt(reduced ? REPLAY_MS : tMs), [tMs, reduced]);
-  const movingIds = useMemo(() => {
-    if (reduced) return new Set<string>();
-    return new Set(EVENTS.filter((e) => e.at <= tMs && e.at > tMs - LIFT_MS).map((e) => e.id));
-  }, [tMs, reduced]);
-  const log = useMemo(() => {
-    const past = EVENTS.filter((e) => e.at <= tMs).map(logLine);
-    return [...INITIAL_LOG, ...past].slice(-MAX_LOG);
-  }, [tMs]);
-  const progress = reduced ? 1 : Math.min(tMs / REPLAY_MS, 1);
+  const t = reduced ? STILL_T : tMs;
+  const board = useMemo(() => boardAtTime(t), [t]);
+  const log = useMemo(() => logLinesAt(t), [t]);
 
   const laneW = fieldW > 0 ? (fieldW - LANE_GAP * (LANES.length - 1)) / LANES.length : 0;
   const laneX = (i: number) => i * (laneW + LANE_GAP);
@@ -91,20 +71,17 @@ export default function Board() {
     <div className="grid gap-4 lg:grid-cols-[1fr_300px]">
       {/* board */}
       <div className="overflow-hidden rounded-2xl border border-steel bg-obsidian/60 p-4 shadow-2xl backdrop-blur-sm">
-        {/* loop progress / tempo bar */}
-        <div className="mb-3 flex items-center gap-3">
-          <span className="font-mono text-[10px] uppercase tracking-[0.22em] text-violet">
-            Build replay
-          </span>
-          <span className="relative h-[3px] flex-1 overflow-hidden rounded-full bg-slate">
-            <span
-              className="absolute inset-y-0 left-0 rounded-full bg-violet"
-              style={{ width: `${progress * 100}%`, transition: "width 0.1s linear" }}
-            />
+        {/* live header: pulsing dot + climbing shipped counter */}
+        <div className="mb-3 flex items-center justify-between">
+          <span className="flex items-center gap-2">
+            <span className="h-1.5 w-1.5 animate-pulse-dot rounded-full bg-violet" />
+            <span className="font-mono text-[10px] uppercase tracking-[0.22em] text-violet">
+              Build replay · live
+            </span>
           </span>
           <span className="font-mono text-[11px] tabular-nums text-muted">
             <span className="text-cloud">{board.shipped}</span>
-            <span className="text-faint"> / {SHIPPED_TOTAL} shipped</span>
+            <span className="text-faint"> shipped this quarter</span>
           </span>
         </div>
 
@@ -139,7 +116,7 @@ export default function Board() {
                     </span>
                   </span>
                   <span className="font-mono text-[11px] tabular-nums text-faint">
-                    {board.lanes[lane.id].length}
+                    {board.counts[lane.id]}
                   </span>
                 </div>
               </div>
@@ -147,21 +124,21 @@ export default function Board() {
           })}
 
           {/* tickets */}
-          {laneW > 0 &&
-            TICKETS.map((t) => {
-              const { lane, slot } = locate(board, t.id);
-              return (
+          {laneW > 0 && (
+            <AnimatePresence>
+              {board.cards.map((card) => (
                 <TicketCard
-                  key={t.id}
-                  ticket={TICKET_BY_ID[t.id]}
-                  x={laneX(laneIndex(lane)) + 10}
-                  y={HEADER_H + slot * ROW + 4}
+                  key={card.id}
+                  card={card}
+                  x={laneX(laneIndex(card.lane)) + 10}
+                  y={HEADER_H + card.slot * ROW + 4}
                   width={laneW - 20}
-                  moving={movingIds.has(t.id)}
-                  done={lane === "done"}
+                  moving={card.moving}
+                  done={card.lane === "done"}
                 />
-              );
-            })}
+              ))}
+            </AnimatePresence>
+          )}
         </div>
       </div>
 
