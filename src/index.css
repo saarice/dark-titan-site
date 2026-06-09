@@ -1,0 +1,112 @@
+@import url('https://fonts.googleapis.com/css2?family=Archivo+Black&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* Dark Titan brand tokens — space-separated RGB channels so Tailwind can
+     inject alpha via the /opacity modifier (rgb(var(--x) / <alpha-value>)). */
+  --obsidian:  10 10 12;     /* page bg          #0A0A0C */
+  --charcoal:  17 18 22;     /* raised surface   #111216 */
+  --slate:     30 30 36;     /* hairline border  #1E1E24 */
+  --steel:     42 42 51;     /* stronger border  #2A2A33 */
+  --violet:    155 109 255;  /* primary accent   #9B6DFF (brightened) */
+  --violet-dp: 124 74 240;   /* deep accent      #7C4AF0 (brightened) */
+  --violet-glow: 178 138 255;/* lit highlight    #B28AFF (pillars/dots) */
+  --lavender:  197 122 255;  /* bright / seam    #C57AFF (brightened) */
+  --cloud:     247 247 247;  /* primary text     #F7F7F7 */
+  --fg-muted:  166 166 180;  /* #A6A6B4 */
+  --fg-faint:  130 130 148;  /* #828294 (AA-lifted) */
+  /* product-only signal colors */
+  --sig-cyan:  34 211 238;   /* #22D3EE */
+  --sig-amber: 255 177 0;    /* #FFB100 */
+  --sig-red:   239 68 68;    /* #EF4444 */
+  --sig-green: 34 197 94;    /* #22C55E */
+  --seam-glow: rgba(155, 109, 255, 0.55);
+}
+
+* { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  margin: 0;
+  background: rgb(var(--obsidian));
+  color: rgb(var(--cloud));
+  font-family: 'IBM Plex Sans', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+/* The seam - vertical light line motif. Strong neon-violet (bright violet core,
+   saturated violet glow) to match the 3D crest/monolith seam — never washes to
+   white. */
+.seam-line {
+  background: linear-gradient(180deg, transparent, rgb(var(--violet)) 22%, rgb(var(--lavender)) 50%, rgb(var(--violet)) 78%, transparent);
+}
+.glow-seam {
+  filter:
+    drop-shadow(0 0 4px rgb(var(--lavender)))
+    drop-shadow(0 0 12px rgb(var(--violet)))
+    drop-shadow(0 0 26px rgba(138, 63, 255, 0.85));
+}
+
+/* Neon-tube treatment — a white-violet core wrapped in a layered violet halo,
+   so a single word reads like a lit neon sign against the dark manifesto. After
+   the entrance flicker it keeps a subtle, perpetual buzz so the signature word
+   stays alive instead of going static (disabled under reduced motion). */
+.neon-out {
+  color: #F7ECFF;
+  text-shadow:
+    0 0 4px rgba(247, 236, 255, 0.95),
+    0 0 11px rgba(197, 122, 255, 0.9),
+    0 0 24px rgba(197, 122, 255, 0.78),
+    0 0 46px rgba(155, 109, 255, 0.68),
+    0 0 88px rgba(155, 109, 255, 0.52);
+  animation: neon-buzz 7s ease-in-out 2.2s infinite;
+}
+@keyframes neon-buzz {
+  0%, 100%   { opacity: 1; }
+  47%        { opacity: 1; }
+  48%        { opacity: 0.86; }
+  49%        { opacity: 1; }
+  82%        { opacity: 1; }
+  83%        { opacity: 0.9; }
+  84%        { opacity: 1; }
+}
+
+/* Soft luminous halo for heading accent words so violet reads "lit", not dim. */
+.text-glow-violet {
+  text-shadow: 0 0 26px rgba(197, 122, 255, 0.45), 0 0 60px rgba(155, 109, 255, 0.28);
+}
+
+/* Animated gradient border helper (violet) */
+.gradient-border-animated {
+  background: linear-gradient(90deg, rgb(var(--lavender)), rgb(var(--violet)), rgb(var(--violet-dp)), rgb(var(--violet)));
+  background-size: 300% 100%;
+  animation: gradient-shift 6s ease infinite;
+}
+
+/* Data-river flow - slow, continuous dash drift */
+.river-dash {
+  animation: river-flow 2.8s linear infinite;
+}
+@keyframes river-flow {
+  to { stroke-dashoffset: -120; }
+}
+
+::selection { background: rgb(var(--violet)); color: #0a0a0c; }
+
+::-webkit-scrollbar { width: 10px; }
+::-webkit-scrollbar-track { background: rgb(var(--obsidian)); }
+::-webkit-scrollbar-thumb { background: rgb(var(--steel)); border-radius: 6px; }
+::-webkit-scrollbar-thumb:hover { background: rgb(var(--violet-dp)); }
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .gradient-border-animated { animation: none; }
+  .river-dash { animation: none; }
+  .neon-out { animation: none; }
+  .animate-pulse-dot { animation: none !important; }
+}
