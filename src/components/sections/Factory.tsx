@@ -7,22 +7,49 @@ import ActivityList from "../factory/ActivityList";
 import SystemHealth from "../factory/SystemHealth";
 import { METRICS, NAV_ITEMS } from "../../lib/factoryData";
 
+// Beat 7 (§5.6) — Infrastructure 3 of 5: Better UI for runtime control.
+const POINTS = [
+  {
+    title: "Ticket-based",
+    body: "Work is driven through a familiar ticket model — readable, assignable, trackable.",
+  },
+  {
+    title: "Priorities, dependencies, releases",
+    body: "First-class, built-in concepts — orchestrate complex delivery, not just isolated tasks.",
+  },
+  {
+    title: "Continuous, budget-aware",
+    body: "Works continuously — stopping and starting automatically within budget constraints.",
+  },
+];
+
 export default function Factory() {
   return (
-    <Section id="factory" className="px-6 py-32 md:px-10" scrim>
+    <Section id="runtime" className="px-6 py-32 md:px-10" scrim>
       <div className="mx-auto w-full max-w-[1200px]">
-        <div className="mb-12 max-w-2xl">
-          <p className="mb-4 font-mono text-xs uppercase tracking-[0.2em] text-violet">The Factory</p>
-          <h2 className="font-display text-h2 tracking-tight text-cloud">
-            Watch the factory run.
-          </h2>
-          <p className="mt-5 max-w-lg text-base leading-relaxed text-muted">
-            A live control surface. Autonomous agents building, running, and operating software in
-            real time, all under one pane of glass.
-          </p>
+        <div className="mb-12">
+          <div className="max-w-2xl">
+            <p className="mb-4 font-mono text-xs uppercase tracking-[0.2em] text-violet">
+              Infrastructure · 3 of 5
+            </p>
+            <h2 className="font-display text-h2 tracking-tight text-cloud">
+              Better UI for runtime control
+            </h2>
+          </div>
+          <div className="mt-10 grid gap-x-8 gap-y-6 md:grid-cols-3">
+            {POINTS.map((p) => (
+              <div key={p.title}>
+                <div className="mb-3 flex items-center gap-2">
+                  <span className="h-1.5 w-1.5 rounded-full bg-violet shadow-[0_0_10px_2px_rgba(155,109,255,0.5)]" />
+                  <h3 className="font-display text-base text-cloud">{p.title}</h3>
+                </div>
+                <p className="text-sm leading-relaxed text-muted">{p.body}</p>
+              </div>
+            ))}
+          </div>
         </div>
 
-        {/* product window */}
+        {/* product window — illustrative dashboard chrome (kept as-is) */}
         <div className="overflow-hidden rounded-2xl border border-steel bg-charcoal shadow-2xl">
           <div className="grid md:grid-cols-[200px_1fr]">
             {/* left rail */}

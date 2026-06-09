@@ -1,37 +1,37 @@
 import { motion } from "framer-motion";
 import Section from "../Section";
 
-const STOPS = [
+// Beat 5 (§5.4) — Infrastructure 1 of 5: Process as code. The 3 cards give the
+// flow.yaml pipeline scene below its argument (deterministic, in git).
+const CARDS = [
   {
-    title: "Describe the outcome",
-    body: "Hand the factory a goal, a repo, and constraints.",
+    title: "In Git",
+    body: "Every pipeline — prompts, models, tools, roles — lives in version control. Reviewable, auditable, diffable.",
   },
   {
-    title: "The agents build it",
-    body: "Spec, code, review, test: coordinated, in parallel.",
+    title: "Deterministic",
+    body: 'Repeatable, predictable runs — unlike opaque, "AI-based TryCycle" approaches that drift between executions.',
+    determinism: true,
   },
   {
-    title: "It runs in production",
-    body: "Deployed, observed, and operated autonomously.",
+    title: "Wholistic",
+    body: "Prompt, model, tools and roles are all packaged and configurable per stage of the pipeline — one coherent unit.",
   },
 ];
 
 export default function Rivers() {
   return (
-    <Section id="how" className="px-6 py-32 md:px-10" scrim>
+    <Section id="process" className="px-6 py-32 md:px-10" scrim>
       <div className="mx-auto w-full max-w-[1200px]">
         <div className="mb-16 max-w-2xl">
-          <p className="mb-4 font-mono text-xs uppercase tracking-[0.2em] text-violet">How it works</p>
-          <h2 className="font-display text-h2 tracking-tight text-cloud">
-            From idea to operated, in one flow.
-          </h2>
+          <p className="mb-4 font-mono text-xs uppercase tracking-[0.2em] text-violet">
+            Infrastructure · 1 of 5
+          </p>
+          <h2 className="font-display text-h2 tracking-tight text-cloud">Process as code</h2>
         </div>
 
-        {/* the river */}
         <div className="relative">
-          {/* A single straight line threading the three steps. It draws itself in
-              from the left when the section scrolls into view. Sits behind the
-              cards (shows through the gaps), so it reads as one connected flow. */}
+          {/* a straight line threading the three cards, drawn in on scroll */}
           <motion.div
             className="pointer-events-none absolute inset-x-0 top-10 hidden h-[2px] origin-left md:block"
             style={{
@@ -45,7 +45,7 @@ export default function Rivers() {
           />
 
           <ol className="grid gap-10 md:grid-cols-3 md:gap-6">
-            {STOPS.map((s, i) => (
+            {CARDS.map((s, i) => (
               <motion.li
                 key={s.title}
                 className="relative rounded-2xl border border-steel bg-charcoal/60 p-6 backdrop-blur-sm"
@@ -54,11 +54,27 @@ export default function Rivers() {
                 viewport={{ once: true, margin: "-15%" }}
                 transition={{ delay: i * 0.16, duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
               >
-                <span className="font-mono text-[11px] uppercase tracking-[0.2em] text-violet">
-                  Step {String(i + 1).padStart(2, "0")}
+                <span className="inline-flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.2em] text-violet">
+                  <span className="h-1.5 w-1.5 rounded-full bg-violet shadow-[0_0_10px_2px_rgba(155,109,255,0.5)]" />
+                  {String(i + 1).padStart(2, "0")}
                 </span>
                 <h3 className="mt-3 font-display text-xl text-cloud">{s.title}</h3>
                 <p className="mt-2 text-sm leading-relaxed text-muted">{s.body}</p>
+
+                {/* "same input → same output" micro-anim (opacity loop is reduced-safe) */}
+                {s.determinism && (
+                  <div className="mt-4 flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.12em] text-violet/80">
+                    <span className="rounded border border-steel px-1.5 py-0.5">in</span>
+                    <motion.span
+                      animate={{ opacity: [0.25, 1, 0.25] }}
+                      transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut" }}
+                    >
+                      →
+                    </motion.span>
+                    <span className="rounded border border-steel px-1.5 py-0.5">out</span>
+                    <span className="text-faint">· identical every run</span>
+                  </div>
+                )}
               </motion.li>
             ))}
           </ol>

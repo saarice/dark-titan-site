@@ -23,11 +23,13 @@ export const AGENTS = ["Planner", "Builder", "Reviewer", "Tester", "Deployer"].m
   status: "Running" as const,
 }));
 
+// §5.6 — the darktitan · board ticket rows (verbatim PDF). Status text always
+// shown (not color alone); colors map to signal tokens in ActivityList.
 export const ACTIVITY = [
-  { task: "Order Service Refactor", state: "Completed" as const, when: "2m ago" },
-  { task: "Payment Gateway Integration", state: "Completed" as const, when: "5m ago" },
-  { task: "User Authentication Module", state: "In Progress" as const, when: "12m ago" },
-  { task: "Legacy System Modernization", state: "In Progress" as const, when: "18m ago" },
+  { task: "DT-204 · Auth refactor", state: "RUNNING" as const, when: "now" },
+  { task: "DT-205 · Payments API · P0", state: "QUEUED" as const, when: "2m ago" },
+  { task: "DT-206 · Migrate schema", state: "BLOCKED" as const, when: "6m ago" },
+  { task: "DT-201 · Release v2.3", state: "SHIPPED" as const, when: "12m ago" },
 ];
 
 export const HEALTH = ["Compute", "Memory", "Agents", "Network"].map((name) => ({

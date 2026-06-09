@@ -36,7 +36,7 @@ const STAGES: Stage[] = [
     run: "running agent…",
     done: "done ✓",
     label: "Stage 01 · implement",
-    sub: "A Claude Code agent reads TASK.md and writes the feature inside your repo, following the patterns already there. Clean, tested code.",
+    sub: "",
     top: 0.06,
     tone: "violet",
   },
@@ -49,7 +49,7 @@ const STAGES: Stage[] = [
     run: "reviewing…",
     done: "flagged",
     label: "Stage 02 · review",
-    sub: "A second agent reviews the work for correctness, edge cases, and quality before anything is allowed to advance.",
+    sub: "",
     top: 0.3,
     tone: "violet",
   },
@@ -62,7 +62,7 @@ const STAGES: Stage[] = [
     run: "loop 2/3 ↻",
     done: "passed ✓",
     label: "Gate · loop",
-    sub: "The ai-evaluation gate fails the first pass. Within max_iterations: 3, the flow loops and re-runs automatically until it clears.",
+    sub: "",
     top: 0.53,
     tone: "loop",
   },
@@ -75,7 +75,7 @@ const STAGES: Stage[] = [
     run: "awaiting sign-off",
     done: "approved ✓",
     label: "escalation · pause",
-    sub: "By design, promotion waits for a human. The flow pauses and hands you the final decision.",
+    sub: "",
     top: 0.76,
     tone: "violet",
   },
@@ -88,7 +88,7 @@ const STAGES: Stage[] = [
     run: "promoting…",
     done: "shipped ✓",
     label: "Shipped",
-    sub: "Approved and promoted to production — with a complete audit trail of every prompt, change, and gate decision.",
+    sub: "",
     top: 0.96,
     tone: "violet",
   },
@@ -96,7 +96,7 @@ const STAGES: Stage[] = [
 
 const INTRO = {
   label: "implement-and-review",
-  sub: "A real flow.yaml, executed as you scroll. The signal travels the spine; each stage ignites as its agent runs, gates judge the work, and a loop retries until it passes.",
+  sub: "",
 };
 
 type NodeState = "idle" | "lit" | "passed";
@@ -172,7 +172,7 @@ export default function Pipeline() {
           {/* readout — flush left, left-aligned, its own column */}
           <div className="mb-10 w-full text-left md:mb-0 md:w-[40%] md:shrink-0">
             <p className="mb-3 font-mono text-xs uppercase tracking-[0.2em] text-violet">
-              The Pipeline · one flow, executing
+              Process as code · flow.yaml
             </p>
             <h2
               key={readout.label}
@@ -180,7 +180,6 @@ export default function Pipeline() {
             >
               {readout.label}
             </h2>
-            <p className="mt-4 max-w-md text-sm leading-relaxed text-muted">{readout.sub}</p>
           </div>
 
           {/* spine + nodes — the timeline, in its own column on the RIGHT */}

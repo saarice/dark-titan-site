@@ -1,22 +1,41 @@
 import { useEffect, useState } from "react";
 import Logo from "./Logo";
 
+// Maps the new value-offer arc (§4). Each link points at its beat's section id.
 const LINKS: [string, string][] = [
-  ["Factory", "#factory"],
-  ["Pipeline", "#pipeline"],
-  ["Tempo", "#tempo"],
-  ["Trust", "#trust"],
+  ["Offer", "offer"],
+  ["Infrastructure", "pillar-infra"],
+  ["Ecosystem", "pillar-eco"],
+  ["Why", "offer-table"],
 ];
 
 export default function Nav() {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
+  const [active, setActive] = useState<string>("");
 
   useEffect(() => {
     const on = () => setScrolled(window.scrollY > 40);
     on();
     window.addEventListener("scroll", on, { passive: true });
     return () => window.removeEventListener("scroll", on);
+  }, []);
+
+  // Active-section highlight: whichever tracked section is crossing the upper
+  // third of the viewport owns the nav state.
+  useEffect(() => {
+    const ids = LINKS.map(([, id]) => id);
+    const els = ids.map((id) => document.getElementById(id)).filter(Boolean) as HTMLElement[];
+    if (!els.length) return;
+    const io = new IntersectionObserver(
+      (entries) => {
+        const vis = entries.filter((e) => e.isIntersecting).sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
+        if (vis[0]) setActive(vis[0].target.id);
+      },
+      { rootMargin: "-20% 0px -70% 0px", threshold: 0 },
+    );
+    els.forEach((el) => io.observe(el));
+    return () => io.disconnect();
   }, []);
 
   // Lock body scroll while the mobile menu is open.
@@ -39,14 +58,21 @@ export default function Nav() {
         </a>
 
         <div className="hidden items-center gap-8 md:flex">
-          {LINKS.map(([label, href]) => (
+          {LINKS.map(([label, id]) => (
             <a
               key={label}
-              href={href}
-              className="group relative font-mono text-xs uppercase tracking-[0.18em] text-muted transition-colors hover:text-cloud focus-visible:text-cloud focus-visible:outline-none"
+              href={`#${id}`}
+              aria-current={active === id ? "true" : undefined}
+              className={`group relative font-mono text-xs uppercase tracking-[0.18em] transition-colors focus-visible:text-cloud focus-visible:outline-none ${
+                active === id ? "text-cloud" : "text-muted hover:text-cloud"
+              }`}
             >
               {label}
-              <span className="absolute -bottom-1 left-0 h-px w-full origin-left scale-x-0 bg-violet transition-transform duration-300 group-hover:scale-x-100 group-focus-visible:scale-x-100" />
+              <span
+                className={`absolute -bottom-1 left-0 h-px w-full origin-left bg-violet transition-transform duration-300 group-hover:scale-x-100 group-focus-visible:scale-x-100 ${
+                  active === id ? "scale-x-100" : "scale-x-0"
+                }`}
+              />
             </a>
           ))}
         </div>
@@ -56,7 +82,7 @@ export default function Nav() {
             href="#contact"
             className="whitespace-nowrap rounded-full bg-violet px-4 py-2 font-mono text-[11px] uppercase tracking-[0.12em] text-obsidian transition-[transform,background-color,box-shadow] duration-200 hover:-translate-y-0.5 hover:bg-lavender hover:shadow-[0_0_24px_rgba(155,109,255,0.5)] active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet md:px-5 md:py-2.5 md:text-xs md:tracking-[0.15em]"
           >
-            Book a Demo
+            Book a demo
           </a>
           <button
             type="button"
@@ -78,16 +104,23 @@ export default function Nav() {
       {open && (
         <div className="border-t border-slate bg-charcoal/95 backdrop-blur-xl md:hidden">
           <div className="flex flex-col px-5 py-4">
-            {LINKS.map(([label, href]) => (
+            {LINKS.map(([label, id]) => (
               <a
                 key={label}
-                href={href}
+                href={`#${id}`}
                 onClick={() => setOpen(false)}
                 className="border-b border-slate/60 py-4 font-mono text-sm uppercase tracking-[0.18em] text-muted transition-colors hover:text-cloud focus-visible:text-cloud focus-visible:outline-none"
               >
                 {label}
               </a>
             ))}
+            <a
+              href="#contact"
+              onClick={() => setOpen(false)}
+              className="mt-4 rounded-full bg-violet px-4 py-3 text-center font-mono text-sm uppercase tracking-[0.12em] text-obsidian"
+            >
+              Book a demo
+            </a>
           </div>
         </div>
       )}

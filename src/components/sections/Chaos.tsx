@@ -36,11 +36,10 @@ export default function Chaos() {
               className="font-display text-h2 leading-[1.04] tracking-tight text-lavender"
               style={{ textShadow: "0 0 28px rgba(197,122,255,0.55), 0 0 60px rgba(155,109,255,0.35)" }}
             >
-              We bring order.
+              Infrastructure you control.
             </p>
             <p className="mt-6 max-w-md font-body text-base leading-relaxed text-muted">
-              One factory. Autonomous agents that plan, build, review, test, and operate, so the
-              noise collapses into a single line of control.
+              Not a black box you hand the keys to.
             </p>
           </motion.div>
         </div>

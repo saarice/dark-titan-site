@@ -1,19 +1,16 @@
 import { motion } from "framer-motion";
 
-const LINES = [
-  "INTELLIGENCE WITHOUT CHAOS.",
-  "AUTOMATION WITHOUT SURRENDER.",
-  "CONTROL WITHOUT FRICTION.",
-];
-
+/**
+ * Beat 10 (§5.9) — The Infrastructure Principle. The solution payoff / emotional
+ * peak; a full-bleed statement band, the solid monolith at its most commanding
+ * behind it. "you control." is the resolution callback to Beat 2.
+ */
 export default function Manifesto() {
   return (
     <section
-      id="manifesto"
+      id="principle"
       className="relative flex min-h-screen items-center overflow-hidden px-6 py-32 md:px-10"
     >
-      {/* readability scrim (the seam intentionally does NOT run through here —
-          it lives only at the start of the page, through the Factory beat) */}
       <div
         className="pointer-events-none absolute inset-0 -z-[1]"
         style={{
@@ -23,45 +20,48 @@ export default function Manifesto() {
       />
 
       <div className="mx-auto w-full max-w-[1100px] text-center">
-        <div className="space-y-1 md:space-y-2">
-          {LINES.map((line, i) => (
-            <motion.h2
-              key={line}
-              className="font-display text-[clamp(1.6rem,6.8vw,4.5rem)] leading-[1.04] tracking-tight text-cloud"
-              initial={{ opacity: 0, y: 26 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-20%" }}
-              transition={{ delay: i * 0.18, duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-            >
-              {line}
-            </motion.h2>
-          ))}
-          <motion.h2
-            className="pt-8 font-display text-[clamp(1.6rem,6.8vw,4.5rem)] leading-[1.04] tracking-tight text-lavender"
+        <motion.p
+          className="mb-6 font-mono text-xs uppercase tracking-[0.3em] text-violet"
+          initial={{ opacity: 0, y: 16 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-20%" }}
+          transition={{ duration: 0.6 }}
+        >
+          The Infrastructure Principle
+        </motion.p>
+
+        <h2 className="font-display text-[clamp(2.25rem,8vw,5.5rem)] leading-[1.02] tracking-tight text-cloud">
+          <motion.span
+            className="block"
             initial={{ opacity: 0, y: 26 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-20%" }}
-            transition={{ delay: LINES.length * 0.18 + 0.1, duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-            style={{ textShadow: "0 0 30px rgba(197,122,255,0.4)" }}
+            transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
           >
-            LIGHTS OFF. CODE{" "}
-            {/* "OUT." flickers on like a neon tube and keeps a bright glow */}
-            <motion.span
-              className="neon-out"
-              initial={{ opacity: 0.15 }}
-              whileInView={{ opacity: [0.15, 1, 0.25, 1, 0.6, 1] }}
-              viewport={{ once: true, margin: "-20%" }}
-              transition={{
-                delay: LINES.length * 0.18 + 0.55,
-                duration: 1.1,
-                times: [0, 0.18, 0.32, 0.5, 0.7, 1],
-                ease: "easeOut",
-              }}
-            >
-              OUT.
-            </motion.span>
-          </motion.h2>
-        </div>
+            Infrastructure
+          </motion.span>
+          <motion.span
+            className="block text-lavender"
+            style={{ textShadow: "0 0 32px rgba(197,122,255,0.45), 0 0 70px rgba(155,109,255,0.3)" }}
+            initial={{ opacity: 0, y: 26 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-20%" }}
+            transition={{ duration: 0.7, delay: 0.12, ease: [0.22, 1, 0.36, 1] }}
+          >
+            you control.
+          </motion.span>
+        </h2>
+
+        <motion.p
+          className="mx-auto mt-8 max-w-2xl text-lg leading-relaxed text-muted"
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-20%" }}
+          transition={{ duration: 0.7, delay: 0.25 }}
+        >
+          Versioned in git. Deterministic on every run. Governed by hard limits. Scaled across the
+          cluster. Not a black box you hand the keys to.
+        </motion.p>
       </div>
     </section>
   );

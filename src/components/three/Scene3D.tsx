@@ -16,15 +16,24 @@ import { useReducedMotion } from "../../hooks/useReducedMotion";
  */
 const TRACK: TrackStop[] = [
   { id: "home", x: 2.2 }, // hero: copy left, monolith centred opposite it (not pushed to the edge)
-  { id: "chaos", x: -2.4 }, // copy moved to right column
-  { id: "factory", x: 1.9 },
-  { id: "pipeline", x: -0.5 }, // crest logo centred in the gap between the left text and the right timeline
-  { id: "how", x: 1.9 },
-  { id: "tempo", x: -1.9 },
-  { id: "proof", x: 1.9 },
-  { id: "trust", x: -1.9 },
-  { id: "manifesto", x: 0 }, // centred climax
-  { id: "contact", x: 0 },
+  { id: "chaos", x: -2.4 }, // pain beat, copy on the right
+  { id: "offer", x: 1.9 }, // two-ways orientation
+  { id: "pillar-infra", x: 0 }, // Pillar I statement — commanding, centred
+  { id: "process", x: 1.9 }, // Beat 5 process as code
+  { id: "pipeline", x: -0.5 }, // crest centred in the gap between left text and right timeline
+  { id: "agents", x: 1.9 }, // Beat 6 agent control
+  { id: "runtime", x: -1.9 }, // Beat 7 runtime UI
+  { id: "scale", x: 1.9 }, // Beat 8 scale on K8s
+  { id: "team", x: -1.9 }, // Beat 9 one instance
+  { id: "principle", x: 0 }, // Beat 10 — Infrastructure Principle, centred climax
+  { id: "pillar-eco", x: 0 }, // Pillar II statement — centred
+  { id: "integrations", x: 1.9 }, // Beat 12
+  { id: "flows", x: -1.9 }, // Beat 13
+  { id: "tempo", x: 1.9 }, // Beat 14 build replay
+  { id: "proof", x: -1.9 }, // Beat 15 self-build proof
+  { id: "offer-table", x: 1.9 }, // Beat 16 the offer at a glance
+  { id: "trust", x: -1.9 }, // Beat 17 trust & control
+  { id: "contact", x: 0 }, // Beat 18 closing CTA, centred
 ];
 
 /**
