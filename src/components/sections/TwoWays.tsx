@@ -1,14 +1,19 @@
+import { useState } from "react";
 import { motion } from "framer-motion";
 import Section from "../Section";
 
-// Beat 3 (§5.2) — orientation: the two ways DarkTitan delivers value. The cards
-// let a mixed audience self-select (Infrastructure-minded vs. Ecosystem-minded).
+/**
+ * Beat 3 (v2) — "Two ways DarkTitan delivers value", as an interactive split
+ * stage (not two equal cards). Hovering/focusing a half expands it and dims the
+ * other — a real, cinematic choice that lets a mixed audience lean into their
+ * track. Reduced-motion / no-hover: both halves shown equally with details.
+ */
 const CARDS = [
   {
     no: "01",
     title: "As Infrastructure",
     body: "The autonomous engine itself — agent pipelines as code in git, with deterministic execution, hard governance, runtime control, and Kubernetes scale.",
-    points: ["Process as code", "Control over agent behavior", "Runtime control UI · scale · shared memory"],
+    points: ["Process as code", "Control over agent behavior", "Runtime control · scale · shared memory"],
     href: "#pillar-infra",
   },
   {
@@ -21,10 +26,12 @@ const CARDS = [
 ];
 
 export default function TwoWays() {
+  const [active, setActive] = useState<number | null>(null);
+
   return (
     <Section id="offer" className="px-6 py-32 md:px-10" scrim>
       <div className="mx-auto w-full max-w-[1200px]">
-        <div className="mb-14 max-w-2xl">
+        <div className="mb-12 max-w-2xl">
           <p className="mb-4 font-mono text-xs uppercase tracking-[0.2em] text-violet">
             How to read this offer
           </p>
@@ -33,41 +40,57 @@ export default function TwoWays() {
           </h2>
         </div>
 
-        <div className="grid gap-5 md:grid-cols-2">
-          {CARDS.map((c, i) => (
-            <motion.a
-              key={c.no}
-              href={c.href}
-              className="group relative block overflow-hidden rounded-2xl border border-violet/25 bg-charcoal/60 p-8 backdrop-blur-sm transition-colors hover:border-violet/60"
-              initial={{ opacity: 0, y: 22 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-12%" }}
-              transition={{ delay: i * 0.12, duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-            >
-              <div className="flex items-baseline gap-3">
-                <span className="font-display text-3xl leading-none text-lavender text-glow-violet">
-                  {c.no}
+        <div className="flex flex-col gap-4 md:flex-row md:gap-3" onMouseLeave={() => setActive(null)}>
+          {CARDS.map((c, i) => {
+            const isActive = active === i;
+            const isDimmed = active !== null && active !== i;
+            return (
+              <motion.a
+                key={c.no}
+                href={c.href}
+                onMouseEnter={() => setActive(i)}
+                onFocus={() => setActive(i)}
+                onBlur={() => setActive(null)}
+                className="group relative flex min-h-[400px] flex-col overflow-hidden rounded-2xl border p-8 backdrop-blur-sm focus-visible:outline-none"
+                style={{ flexBasis: 0, background: "rgb(var(--charcoal) / 0.6)" }}
+                animate={{
+                  flexGrow: isActive ? 1.7 : isDimmed ? 0.75 : 1,
+                  opacity: isDimmed ? 0.5 : 1,
+                  borderColor: isActive ? "rgba(155,109,255,0.7)" : "rgba(155,109,255,0.22)",
+                }}
+                transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+              >
+                <div className="flex items-baseline gap-3">
+                  <span className="font-display text-4xl leading-none text-lavender text-glow-violet">
+                    {c.no}
+                  </span>
+                  <h3 className="font-display text-2xl leading-tight text-cloud md:text-3xl">{c.title}</h3>
+                </div>
+                <p className="mt-5 max-w-md text-base leading-relaxed text-muted">{c.body}</p>
+
+                {/* details — emphasised as the half expands */}
+                <motion.ul
+                  className="mt-6 space-y-2.5 border-t border-slate pt-5"
+                  animate={{ opacity: isDimmed ? 0.5 : 1 }}
+                >
+                  {c.points.map((p) => (
+                    <li
+                      key={p}
+                      className="flex items-center gap-2.5 font-mono text-[12px] uppercase tracking-[0.1em] text-cloud/80"
+                    >
+                      <span className="h-1.5 w-1.5 flex-none rounded-full bg-violet shadow-[0_0_10px_2px_rgba(155,109,255,0.5)]" />
+                      {p}
+                    </li>
+                  ))}
+                </motion.ul>
+
+                <span className="mt-auto inline-flex items-center gap-1.5 pt-8 font-mono text-[11px] uppercase tracking-[0.14em] text-violet">
+                  Explore
+                  <span className="transition-transform duration-200 group-hover:translate-x-1">→</span>
                 </span>
-                <h3 className="font-display text-2xl leading-tight text-cloud">{c.title}</h3>
-              </div>
-              <p className="mt-4 text-base leading-relaxed text-muted">{c.body}</p>
-              <ul className="mt-6 space-y-2.5 border-t border-slate pt-5">
-                {c.points.map((p) => (
-                  <li
-                    key={p}
-                    className="flex items-center gap-2.5 font-mono text-[12px] uppercase tracking-[0.1em] text-cloud/80"
-                  >
-                    <span className="h-1.5 w-1.5 flex-none rounded-full bg-violet shadow-[0_0_10px_2px_rgba(155,109,255,0.5)]" />
-                    {p}
-                  </li>
-                ))}
-              </ul>
-              <span className="mt-6 inline-flex items-center gap-1.5 font-mono text-[11px] uppercase tracking-[0.14em] text-violet">
-                Explore
-                <span className="transition-transform duration-200 group-hover:translate-x-0.5">→</span>
-              </span>
-            </motion.a>
-          ))}
+              </motion.a>
+            );
+          })}
         </div>
       </div>
     </Section>

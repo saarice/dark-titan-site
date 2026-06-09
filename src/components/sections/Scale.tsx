@@ -1,28 +1,17 @@
 import Section from "../Section";
 import { useCountUp } from "../../hooks/useCountUp";
 
-// Beat 8 (§5.7) — Infrastructure 4 of 5: Scale on Kubernetes.
-const POINTS = [
-  {
-    title: "Uniform central environment",
-    body: "One organization-authorized flow and tool set, in a single governed environment.",
-  },
-  {
-    title: "Massive concurrency",
-    body: "Run hundreds of agents at once — the cluster, not the laptop, is the limit.",
-  },
-  {
-    title: "Secure",
-    body: "Enterprise-grade isolation and controls on proven cloud-native foundations.",
-  },
-];
+// Beat 8 (v2) — Scale on Kubernetes, as a numeric monument. The number owns the
+// viewport; the 3 ideas collapse to one quiet line beneath.
+const POINTS = ["Uniform central environment", "Massive concurrency", "Secure"];
 
 function GiantMetric() {
-  const { ref, display } = useCountUp(100, { duration: 1600 });
+  const { ref, display } = useCountUp(100, { duration: 1700 });
   return (
     <span
       ref={ref}
-      className="font-display text-[clamp(4rem,13vw,8.5rem)] leading-none text-cloud text-glow-violet"
+      className="block font-display leading-[0.82] text-cloud text-glow-violet"
+      style={{ fontSize: "clamp(4.5rem,19vw,14rem)" }}
     >
       {display}s
     </span>
@@ -31,35 +20,26 @@ function GiantMetric() {
 
 export default function Scale() {
   return (
-    <Section id="scale" className="px-6 py-32 md:px-10" scrim>
-      <div className="mx-auto w-full max-w-[1200px]">
-        <div className="mb-12 max-w-2xl">
-          <p className="mb-4 font-mono text-xs uppercase tracking-[0.2em] text-violet">
-            Infrastructure · 4 of 5
-          </p>
-          <h2 className="font-display text-h2 tracking-tight text-cloud">Scale on Kubernetes</h2>
-        </div>
+    <Section id="scale" className="flex min-h-screen items-center px-6 py-32 md:px-10" scrim>
+      <div className="mx-auto w-full max-w-[1200px] text-center">
+        <p className="mb-6 font-mono text-xs uppercase tracking-[0.3em] text-violet">
+          Scale on Kubernetes
+        </p>
 
-        <div className="grid items-center gap-12 md:grid-cols-[auto_1fr] md:gap-16">
-          <div>
-            <GiantMetric />
-            <p className="mt-4 font-mono text-xs uppercase tracking-[0.2em] text-violet">
-              Agents running concurrently
-            </p>
-          </div>
+        <GiantMetric />
 
-          <div className="grid gap-8 sm:grid-cols-3">
-            {POINTS.map((p) => (
-              <div key={p.title}>
-                <div className="mb-3 flex items-center gap-2">
-                  <span className="h-1.5 w-1.5 rounded-full bg-violet shadow-[0_0_10px_2px_rgba(155,109,255,0.5)]" />
-                  <h3 className="font-display text-base text-cloud">{p.title}</h3>
-                </div>
-                <p className="text-sm leading-relaxed text-muted">{p.body}</p>
-              </div>
-            ))}
-          </div>
-        </div>
+        <p className="mt-6 font-mono text-sm uppercase tracking-[0.3em] text-lavender">
+          Agents running concurrently
+        </p>
+
+        <p className="mx-auto mt-10 max-w-2xl font-mono text-[11px] uppercase tracking-[0.18em] text-faint">
+          {POINTS.map((p, i) => (
+            <span key={p}>
+              {i > 0 && <span className="px-2 text-violet/50">·</span>}
+              {p}
+            </span>
+          ))}
+        </p>
       </div>
     </Section>
   );

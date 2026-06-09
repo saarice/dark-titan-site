@@ -30,20 +30,21 @@ export default function Factory() {
         <div className="mb-12">
           <div className="max-w-2xl">
             <p className="mb-4 font-mono text-xs uppercase tracking-[0.2em] text-violet">
-              Infrastructure · 3 of 5
+              Runtime control
             </p>
             <h2 className="font-display text-h2 tracking-tight text-cloud">
               Better UI for runtime control
             </h2>
           </div>
-          <div className="mt-10 grid gap-x-8 gap-y-6 md:grid-cols-3">
+          {/* 3 points as tight mono captions, not cards */}
+          <div className="mt-8 grid gap-x-10 gap-y-4 border-t border-slate pt-5 md:grid-cols-3">
             {POINTS.map((p) => (
-              <div key={p.title}>
-                <div className="mb-3 flex items-center gap-2">
-                  <span className="h-1.5 w-1.5 rounded-full bg-violet shadow-[0_0_10px_2px_rgba(155,109,255,0.5)]" />
-                  <h3 className="font-display text-base text-cloud">{p.title}</h3>
+              <div key={p.title} className="font-mono">
+                <div className="flex items-center gap-2">
+                  <span className="text-violet">▸</span>
+                  <h3 className="text-[11px] uppercase tracking-[0.16em] text-cloud">{p.title}</h3>
                 </div>
-                <p className="text-sm leading-relaxed text-muted">{p.body}</p>
+                <p className="mt-1.5 pl-4 text-xs leading-relaxed text-muted">{p.body}</p>
               </div>
             ))}
           </div>

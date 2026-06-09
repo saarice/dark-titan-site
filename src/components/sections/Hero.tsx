@@ -1,15 +1,8 @@
 import { useEffect, useRef } from "react";
 import { gsap } from "gsap";
 
-// §5.1 hero chips — first is the active/primary one in the PDF.
-const PILLS = [
-  "DarkTitan for Enterprise",
-  "Process as code",
-  "Governed at scale",
-  "Built on Kubernetes",
-];
-
-// The brand keyword strip (verbatim PDF fragments).
+// The brand keyword strip (verbatim PDF fragments). The old 4-chip row was folded
+// in here (v2 Beat 1) so the hero stays clean and commanding.
 const MARQUEE = ["LIGHTS OFF. CODE OUT.", "PROCESS AS CODE", "GOVERNED AT SCALE", "BUILT ON KUBERNETES"];
 
 export default function Hero({ revealed = true }: { revealed?: boolean }) {
@@ -25,10 +18,9 @@ export default function Hero({ revealed = true }: { revealed?: boolean }) {
     const ctx = gsap.context(() => {
       const tl = gsap.timeline({ defaults: { ease: "power3.out" }, delay: 0.4 });
       tl.fromTo(".h-eyebrow", { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.8 })
-        .fromTo(".h-line", { opacity: 0, y: 40 }, { opacity: 1, y: 0, duration: 1, stagger: 0.12 }, "-=0.3")
+        .fromTo(".h-line", { opacity: 0, y: 48 }, { opacity: 1, y: 0, duration: 1, stagger: 0.12 }, "-=0.3")
         .fromTo(".h-sub", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.8 }, "-=0.4")
-        .fromTo(".h-chip", { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: 0.5, stagger: 0.08 }, "-=0.3")
-        .fromTo(".h-cta", { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.7 }, "-=0.2")
+        .fromTo(".h-cta", { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.7 }, "-=0.3")
         .fromTo(".h-trust", { opacity: 0 }, { opacity: 1, duration: 0.9 }, "-=0.3");
     }, root);
     return () => ctx.revert();
@@ -47,41 +39,25 @@ export default function Hero({ revealed = true }: { revealed?: boolean }) {
       />
 
       <div className="relative z-10 mx-auto w-full max-w-[1200px]">
-        <div className="max-w-2xl">
+        <div className="max-w-4xl">
           <p className="h-eyebrow mb-6 font-mono text-xs uppercase tracking-[0.2em] text-violet">
             Enterprise Value Offer
           </p>
 
-          <h1 className="font-display text-h1 text-cloud">
+          <h1 className="font-display text-[clamp(2.6rem,9vw,6.75rem)] leading-[0.9] tracking-tight text-cloud">
             <span className="h-line block whitespace-nowrap">LIGHTS OFF.</span>
             <span className="h-line block whitespace-nowrap">
               CODE <span className="text-lavender text-glow-violet">OUT.</span>
             </span>
           </h1>
 
-          <p className="h-sub mt-7 max-w-xl text-base leading-relaxed text-muted">
+          <p className="h-sub mt-8 max-w-xl text-base leading-relaxed text-muted">
             The autonomous software pipeline — re-cast as enterprise infrastructure. Define your
             flow, govern your agents, and ship continuously at organizational scale.
           </p>
 
-          {/* §5.1 chips */}
-          <div className="mt-8 flex flex-wrap gap-2.5">
-            {PILLS.map((p, i) => (
-              <span
-                key={p}
-                className={`h-chip rounded-full border px-3.5 py-2 font-mono text-[11px] uppercase tracking-[0.12em] ${
-                  i === 0
-                    ? "border-violet/50 bg-violet/15 text-lavender"
-                    : "border-steel text-muted"
-                }`}
-              >
-                {p}
-              </span>
-            ))}
-          </div>
-
-          {/* primary CTA = Book a demo; secondary = the URL as a text link */}
-          <div className="h-cta mt-9 flex flex-wrap items-center gap-x-6 gap-y-3">
+          {/* primary CTA = Book a demo; secondary = the URL as a quiet text link */}
+          <div className="h-cta mt-10 flex flex-wrap items-center gap-x-6 gap-y-3">
             <a
               href="#contact"
               className="rounded-full bg-violet px-7 py-3.5 font-mono text-sm uppercase tracking-[0.12em] text-obsidian transition-[transform,background-color,box-shadow] duration-200 hover:-translate-y-0.5 hover:bg-lavender hover:shadow-[0_0_28px_rgba(155,109,255,0.5)] active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet"

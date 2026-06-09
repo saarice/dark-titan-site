@@ -1,27 +1,18 @@
 import { motion } from "framer-motion";
 import Section from "../Section";
 
-// Beat 16 (§5.13) — the offer at a glance: a scannable recap of every capability
-// on the page, grouped Infrastructure / Ecosystem, right before the close.
-type Row = { capability: string; delivers: string };
-const GROUPS: { label: string; rows: Row[] }[] = [
-  {
-    label: "Infrastructure",
-    rows: [
-      { capability: "Process as code", delivers: "Versioned in git · deterministic on every run · wholistic" },
-      { capability: "Agent control", delivers: "Model per stage · concurrency · financial limits · security guardrails" },
-      { capability: "Runtime control UI", delivers: "Ticket-based · priorities, dependencies, releases · budget-aware" },
-      { capability: "Scale on Kubernetes", delivers: "Uniform central environment · massive concurrency · secure" },
-      { capability: "One instance", delivers: "Full redundancy · long-term project memory across the team" },
-    ],
-  },
-  {
-    label: "Ecosystem",
-    rows: [
-      { capability: "External integrations", delivers: "SSO · issue tracking · code scanners · environment allocation" },
-      { capability: "Pre-baked flows", delivers: "Brownfield · aspect modernization · security hardening · extensible" },
-    ],
-  },
+/**
+ * Beat 16 (v2 archetype G) — the one structured recap, a refined editorial
+ * SEMANTIC table. Copy is verbatim from the PDF slide 13 ("Why it matters for the
+ * enterprise"): 6 rows, columns CAPABILITY | WHAT THE ENTERPRISE GETS.
+ */
+const ROWS: { capability: string; gets: string }[] = [
+  { capability: "Process as code", gets: "Versioned, deterministic pipelines in git — auditable and repeatable, not opaque." },
+  { capability: "Agent control", gets: "Model-per-stage, explicit concurrency, financial limits and security guardrails." },
+  { capability: "Runtime control UI", gets: "Ticket-based delivery with priorities, dependencies, releases — continuous and budget-aware." },
+  { capability: "Kubernetes scale", gets: "A uniform central environment running 100s of agents concurrently — securely." },
+  { capability: "Shared instance", gets: "Full team redundancy + long-term project memory." },
+  { capability: "Ecosystem", gets: "External integrations + pre-baked flows (brownfield, modernization, hardening…)." },
 ];
 
 export default function OfferTable() {
@@ -29,37 +20,44 @@ export default function OfferTable() {
     <Section id="offer-table" className="px-6 py-32 md:px-10" scrim>
       <div className="mx-auto w-full max-w-[1100px]">
         <div className="mb-12 max-w-2xl">
-          <p className="mb-4 font-mono text-xs uppercase tracking-[0.2em] text-violet">
-            Why DarkTitan
-          </p>
-          <h2 className="font-display text-h2 tracking-tight text-cloud">The offer at a glance</h2>
+          <p className="mb-4 font-mono text-xs uppercase tracking-[0.2em] text-violet">The full offer</p>
+          <h2 className="font-display text-h2 tracking-tight text-cloud">
+            Why it matters for the enterprise
+          </h2>
         </div>
 
-        <div className="overflow-hidden rounded-2xl border border-steel">
-          {GROUPS.map((g) => (
-            <div key={g.label}>
-              <div className="border-b border-steel bg-charcoal/80 px-6 py-3 font-mono text-[11px] uppercase tracking-[0.25em] text-violet">
-                {g.label}
-              </div>
-              {g.rows.map((r, i) => (
-                <motion.div
-                  key={r.capability}
-                  className="grid grid-cols-1 gap-1 border-b border-slate bg-charcoal px-6 py-5 last:border-b-0 md:grid-cols-[minmax(0,16rem)_1fr] md:gap-6"
-                  initial={{ opacity: 0, x: -16 }}
-                  whileInView={{ opacity: 1, x: 0 }}
-                  viewport={{ once: true, margin: "-8%" }}
-                  transition={{ delay: i * 0.06, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-                >
-                  <div className="flex items-center gap-2">
-                    <span className="h-1.5 w-1.5 flex-none rounded-full bg-violet-glow shadow-[0_0_10px_2px_rgba(178,138,255,0.6)]" />
-                    <span className="font-display text-base text-cloud">{r.capability}</span>
-                  </div>
-                  <p className="font-mono text-[13px] leading-relaxed text-muted">{r.delivers}</p>
-                </motion.div>
-              ))}
-            </div>
-          ))}
-        </div>
+        <table className="w-full border-collapse text-left">
+          <caption className="sr-only">Why it matters for the enterprise, by capability</caption>
+          <thead>
+            <tr className="border-b border-steel">
+              <th scope="col" className="w-[38%] py-3 pr-6 font-mono text-[11px] font-normal uppercase tracking-[0.2em] text-violet">
+                Capability
+              </th>
+              <th scope="col" className="py-3 font-mono text-[11px] font-normal uppercase tracking-[0.2em] text-violet">
+                What the enterprise gets
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {ROWS.map((r, i) => (
+              <motion.tr
+                key={r.capability}
+                className="border-b border-slate align-top last:border-b-0"
+                initial={{ opacity: 0, x: -14 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true, margin: "-8%" }}
+                transition={{ delay: i * 0.06, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+              >
+                <th scope="row" className="py-6 pr-6 text-left align-top font-display text-base font-normal text-cloud">
+                  {r.capability}
+                </th>
+                <td className="py-6 align-top font-mono text-[13px] leading-relaxed text-muted">
+                  {r.gets}
+                </td>
+              </motion.tr>
+            ))}
+          </tbody>
+        </table>
       </div>
     </Section>
   );

@@ -3,28 +3,29 @@ import { AnimatePresence, MotionConfig } from "framer-motion";
 import LoadingScreen from "./components/LoadingScreen";
 import Scene3D from "./components/three/Scene3D";
 import Nav from "./components/Nav";
+import PillarRail from "./components/PillarRail";
 import Hero from "./components/sections/Hero";
 import Chaos from "./components/sections/Chaos";
 import TwoWays from "./components/sections/TwoWays";
 import PillarDivider from "./components/sections/PillarDivider";
-import Rivers from "./components/sections/Rivers";
 import Pipeline from "./components/sections/Pipeline";
 import AgentControl from "./components/sections/AgentControl";
 import Factory from "./components/sections/Factory";
 import Scale from "./components/sections/Scale";
 import OneInstance from "./components/sections/OneInstance";
-import EngineDiagram from "./components/sections/EngineDiagram";
 import Manifesto from "./components/sections/Manifesto";
 import Integrations from "./components/sections/Integrations";
 import PreBakedFlows from "./components/sections/PreBakedFlows";
+import Break from "./components/sections/Break";
 import Tempo from "./components/sections/Tempo";
 import Proof from "./components/sections/Proof";
 import OfferTable from "./components/sections/OfferTable";
-import Trust from "./components/sections/Trust";
 import Footer from "./components/sections/Footer";
 
 export default function App() {
   const [loading, setLoading] = useState(true);
+  // Beat M pins a full-screen 3D scene; pause the global canvas while it's active.
+  const [breakActive, setBreakActive] = useState(false);
 
   return (
     <MotionConfig reducedMotion="user">
@@ -33,9 +34,28 @@ export default function App() {
       </AnimatePresence>
 
       {/* fixed WebGL backdrop - decorative, behind everything */}
-      <Scene3D />
+      <Scene3D paused={breakActive} />
 
       <Nav />
+
+      {/* Pillar progress rails (Beats 4 & 11) — the demoted chip words, now functional */}
+      <PillarRail
+        label="Pillar 01"
+        items={[
+          { label: "Process as code", id: "process" },
+          { label: "Agent control", id: "agents" },
+          { label: "Runtime control UI", id: "runtime" },
+          { label: "Scale on Kubernetes", id: "scale" },
+          { label: "One instance", id: "team" },
+        ]}
+      />
+      <PillarRail
+        label="Pillar 02"
+        items={[
+          { label: "Integrations", id: "integrations" },
+          { label: "Pre-baked flows", id: "flows" },
+        ]}
+      />
 
       <main className="relative z-10 overflow-x-clip">
         {/* Beat 1 — hero */}
@@ -48,20 +68,12 @@ export default function App() {
         {/* Beat 4 — Pillar I: As Infrastructure */}
         <PillarDivider
           id="pillar-infra"
-          eyebrow="Pillar 01 · As Infrastructure"
-          title="The engine, as infrastructure."
-          sub="The autonomous engine itself — agent pipelines versioned in git, executed deterministically, governed by hard limits, and scaled across Kubernetes."
-          pills={[
-            "Process as code",
-            "Agent control",
-            "Runtime control UI",
-            "Scale on Kubernetes",
-            "One instance",
-          ]}
-          visual={<EngineDiagram />}
+          index="01"
+          eyebrow="Pillar one — the engine"
+          title="As Infrastructure"
+          sub="Not a black box you hand the keys to."
         />
         {/* Beats 5–9 — the five infrastructure capabilities */}
-        <Rivers />
         <Pipeline />
         <AgentControl />
         <Factory />
@@ -73,21 +85,23 @@ export default function App() {
         {/* Beat 11 — Pillar II: As an Ecosystem */}
         <PillarDivider
           id="pillar-eco"
-          eyebrow="Pillar 02 · As an Ecosystem"
-          title="The methodology, as an ecosystem."
-          sub="Infrastructure plus coded methodology — wired into the systems you already run, and shipped with proven, pre-baked engineering flows."
-          pills={["External integrations", "Pre-baked flows", "Compounding methodology"]}
+          index="02"
+          eyebrow="Pillar two — the methodology"
+          title="As an Ecosystem"
+          sub="Wired into the systems you already run."
+          align="right"
         />
         {/* Beats 12–13 — the ecosystem */}
         <Integrations />
         <PreBakedFlows />
 
+        {/* Beat M — the monolith → microservices break (centerpiece) */}
+        <Break onActiveChange={setBreakActive} />
+
         {/* Beats 14–16 — proof / demo */}
         <Tempo />
         <Proof />
         <OfferTable />
-        {/* Beat 17 — trust & control */}
-        <Trust />
         {/* Beat 18 — closing CTA */}
         <Footer />
       </main>

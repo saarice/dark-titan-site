@@ -99,6 +99,28 @@ const INTRO = {
   sub: "",
 };
 
+// Beat 5 (v2) — the three "process as code" ideas, folded in as annotations that
+// reveal beside the diagram as the signal reaches the stage they explain (the old
+// Rivers card row is retired).
+const IDEAS: { at: number; title: string; body: string; determinism?: boolean }[] = [
+  {
+    at: 0,
+    title: "In Git",
+    body: "Every pipeline — prompts, models, tools, roles — lives in version control. Reviewable, auditable, diffable.",
+  },
+  {
+    at: 2,
+    title: "Deterministic",
+    body: "Repeatable, predictable runs — not opaque executions that drift between runs.",
+    determinism: true,
+  },
+  {
+    at: 4,
+    title: "Wholistic",
+    body: "Prompt, model, tools and roles packaged per stage — one coherent unit.",
+  },
+];
+
 type NodeState = "idle" | "lit" | "passed";
 
 export default function Pipeline() {
@@ -144,7 +166,7 @@ export default function Pipeline() {
   const statusOf = (s: Stage, st: NodeState) => (st === "passed" ? s.done : st === "lit" ? s.run : s.idle);
 
   return (
-    <section id="pipeline" className="relative">
+    <section id="process" className="relative">
       {/* readability scrim over the WebGL backdrop */}
       <div
         className="pointer-events-none absolute inset-0 -z-[1]"
@@ -170,7 +192,7 @@ export default function Pipeline() {
               Mobile: stacked (text, then timeline). */}
           <div className="w-full md:flex md:items-center md:gap-10">
           {/* readout — flush left, left-aligned, its own column */}
-          <div className="mb-10 w-full text-left md:mb-0 md:w-[40%] md:shrink-0">
+          <div className="relative z-10 mb-10 w-full text-left md:mb-0 md:w-[40%] md:shrink-0">
             <p className="mb-3 font-mono text-xs uppercase tracking-[0.2em] text-violet">
               Process as code · flow.yaml
             </p>
@@ -180,6 +202,42 @@ export default function Pipeline() {
             >
               {readout.label}
             </h2>
+
+            {/* the three ideas, as annotations that light up with the run */}
+            <ul className="mt-8 max-w-xs space-y-5">
+              {IDEAS.map((idea) => {
+                const on = active >= idea.at;
+                return (
+                  <li
+                    key={idea.title}
+                    className="transition-all duration-500"
+                    style={{ opacity: on ? 1 : 0.32, transform: on ? "translateX(0)" : "translateX(-6px)" }}
+                  >
+                    <div className="flex items-center gap-2">
+                      <span
+                        className="h-1.5 w-1.5 rounded-full transition-colors duration-500"
+                        style={{
+                          background: on ? "rgb(var(--violet))" : "rgb(var(--steel))",
+                          boxShadow: on ? "0 0 10px 2px rgb(var(--violet) / 0.5)" : "none",
+                        }}
+                      />
+                      <h3 className="font-display text-sm uppercase tracking-[0.12em] text-cloud">
+                        {idea.title}
+                      </h3>
+                    </div>
+                    <p className="mt-1.5 text-[13px] leading-relaxed text-muted">{idea.body}</p>
+                    {idea.determinism && on && (
+                      <div className="mt-2 flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.12em] text-violet/80">
+                        <span className="rounded border border-steel px-1.5 py-0.5">in</span>
+                        <span className={reduced ? "" : "animate-pulse"}>→</span>
+                        <span className="rounded border border-steel px-1.5 py-0.5">out</span>
+                        <span className="text-faint">· identical every run</span>
+                      </div>
+                    )}
+                  </li>
+                );
+              })}
+            </ul>
           </div>
 
           {/* spine + nodes — the timeline, in its own column on the RIGHT */}

@@ -19,8 +19,7 @@ const TRACK: TrackStop[] = [
   { id: "chaos", x: -2.4 }, // pain beat, copy on the right
   { id: "offer", x: 1.9 }, // two-ways orientation
   { id: "pillar-infra", x: 0 }, // Pillar I statement — commanding, centred
-  { id: "process", x: 1.9 }, // Beat 5 process as code
-  { id: "pipeline", x: -0.5 }, // crest centred in the gap between left text and right timeline
+  { id: "process", x: -0.5 }, // Beat 5 process as code — crest centred in the gap (text left, timeline right)
   { id: "agents", x: 1.9 }, // Beat 6 agent control
   { id: "runtime", x: -1.9 }, // Beat 7 runtime UI
   { id: "scale", x: 1.9 }, // Beat 8 scale on K8s
@@ -29,10 +28,10 @@ const TRACK: TrackStop[] = [
   { id: "pillar-eco", x: 0 }, // Pillar II statement — centred
   { id: "integrations", x: 1.9 }, // Beat 12
   { id: "flows", x: -1.9 }, // Beat 13
+  { id: "break", x: 0 }, // Beat M — global scene paused here; centred on approach
   { id: "tempo", x: 1.9 }, // Beat 14 build replay
   { id: "proof", x: -1.9 }, // Beat 15 self-build proof
   { id: "offer-table", x: 1.9 }, // Beat 16 the offer at a glance
-  { id: "trust", x: -1.9 }, // Beat 17 trust & control
   { id: "contact", x: 0 }, // Beat 18 closing CTA, centred
 ];
 
@@ -40,7 +39,7 @@ const TRACK: TrackStop[] = [
  * Fixed full-screen WebGL layer behind all content, driven by scroll.
  * Renders the single sealed obsidian monolith (the only hero reading).
  */
-export default function Scene3D() {
+export default function Scene3D({ paused = false }: { paused?: boolean }) {
   const scroll = useScrollProgress();
   const posX = useMonolithX(TRACK);
   const ptr = usePointer();
@@ -54,6 +53,7 @@ export default function Scene3D() {
         camera={{ position: [0, 0, 6.4], fov: 50 }}
         gl={{ antialias: !isMobile, powerPreference: "high-performance" }}
         dpr={isMobile ? [1, 1.25] : [1, 1.5]}
+        frameloop={paused ? "never" : "always"}
       >
         <color attach="background" args={["#0A0A0C"]} />
         <fog attach="fog" args={["#0A0A0C", 8, 30]} />

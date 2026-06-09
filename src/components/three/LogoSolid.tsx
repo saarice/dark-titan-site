@@ -81,10 +81,12 @@ export default function LogoSolid({
     const present = reduced ? 0 : smoothstep(0.16, 0.24, p);
     if (inner.current) inner.current.scale.setScalar(present);
 
-    // Seam glow + floor pool fade out with the crest.
+    // Seam glow + floor pool fade out with the crest. The blade also SCALES with
+    // `present` so it grows/shrinks locked to the crest (never detaches mid-assembly).
     if (seam.current) {
       (seam.current.material as THREE.MeshBasicMaterial).opacity =
         (0.55 + Math.sin(t * 0.9) * 0.08) * present;
+      seam.current.scale.setScalar(present);
     }
     if (pool.current) {
       (pool.current.material as THREE.MeshBasicMaterial).opacity =
