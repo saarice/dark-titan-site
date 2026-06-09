@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import Logo from "./Logo";
 
 // Maps the new value-offer arc (§4). Each link points at its beat's section id.
@@ -76,6 +77,13 @@ export default function Nav() {
               />
             </a>
           ))}
+          <Link
+            to="/docs"
+            className="group relative font-mono text-xs uppercase tracking-[0.18em] text-muted transition-colors hover:text-cloud focus-visible:text-cloud focus-visible:outline-none"
+          >
+            Docs
+            <span className="absolute -bottom-1 left-0 h-px w-full origin-left scale-x-0 bg-violet transition-transform duration-300 group-hover:scale-x-100 group-focus-visible:scale-x-100" />
+          </Link>
         </div>
 
         <div className="flex items-center gap-3">
@@ -117,6 +125,13 @@ export default function Nav() {
                 {label}
               </a>
             ))}
+            <Link
+              to="/docs"
+              onClick={() => setOpen(false)}
+              className="border-b border-slate/60 py-4 font-mono text-sm uppercase tracking-[0.18em] text-muted transition-colors hover:text-cloud focus-visible:text-cloud focus-visible:outline-none"
+            >
+              Docs
+            </Link>
             <a
               href="#contact"
               onClick={() => setOpen(false)}
