@@ -60,7 +60,8 @@ export default function Break({ onActiveChange }: { onActiveChange?: (v: boolean
   const copyOpacity = reduced ? 1 : Math.min(1, Math.max(0, (p - 0.55) / 0.3));
 
   return (
-    <section id="break" ref={wrapRef} className="relative" style={{ height: reduced ? "auto" : "340vh" }}>
+    // 340vh → 260vh — shorter scrub runway, same break (slideshow feedback).
+    <section id="break" ref={wrapRef} className="relative" style={{ height: reduced ? "auto" : "260vh" }}>
       <div className={reduced ? "relative min-h-screen overflow-hidden" : "sticky top-0 h-screen overflow-hidden"}>
         {/* 3D layer */}
         <div className="absolute inset-0">
@@ -71,7 +72,10 @@ export default function Break({ onActiveChange }: { onActiveChange?: (v: boolean
           )}
         </div>
 
-        {/* overlay — eyebrow up top, copy + resolved services resolve in at the end */}
+        {/* overlay — the modernization story is stated UP FRONT (eyebrow + title),
+            a stage caption narrates the scrub, and the resolved services land at
+            the end. Before this, the break read as abstract spectacle; the point
+            (legacy monolith → microservices) has to be unmissable. */}
         <div className="pointer-events-none relative z-10 flex h-full min-h-screen flex-col justify-between px-6 py-20 md:px-10">
           {/* bottom scrim keeps the copy legible over the constellation */}
           <div
@@ -81,8 +85,21 @@ export default function Break({ onActiveChange }: { onActiveChange?: (v: boolean
 
           <div className="relative mx-auto w-full max-w-[1200px]">
             <p className="font-mono text-xs uppercase tracking-[0.3em] text-violet">
-              Aspect modernization
+              Legacy modernization
             </p>
+            <h2 className="mt-3 max-w-xl font-display text-h3 leading-[1.05] tracking-tight text-cloud md:text-h2">
+              Break the monolith into microservices.
+            </h2>
+            {/* stage caption — narrates what the animation is doing right now */}
+            {!reduced && (
+              <p className="mt-4 max-w-md font-mono text-xs uppercase tracking-[0.18em] text-lavender">
+                {p < 0.35
+                  ? "one legacy codebase · years of coupling"
+                  : p < 0.7
+                    ? "agents carve it along its seams"
+                    : "independent services · each owned, tested, deployable"}
+              </p>
+            )}
           </div>
 
           <div
@@ -100,8 +117,8 @@ export default function Break({ onActiveChange }: { onActiveChange?: (v: boolean
               ))}
             </div>
             <p className="max-w-2xl font-display text-h3 leading-[1.06] tracking-tight text-cloud">
-              Systematically modernize a chosen aspect across the codebase — frameworks, patterns,
-              dependencies.
+              From monolith to microservices: agents systematically modernize the chosen aspect
+              across the codebase. Frameworks, patterns, dependencies.
             </p>
           </div>
         </div>

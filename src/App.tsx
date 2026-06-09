@@ -18,7 +18,6 @@ import Integrations from "./components/sections/Integrations";
 import PreBakedFlows from "./components/sections/PreBakedFlows";
 import Break from "./components/sections/Break";
 import Tempo from "./components/sections/Tempo";
-import Proof from "./components/sections/Proof";
 import OfferTable from "./components/sections/OfferTable";
 import Footer from "./components/sections/Footer";
 
@@ -98,9 +97,8 @@ export default function App() {
         {/* Beat M — the monolith → microservices break (centerpiece) */}
         <Break onActiveChange={setBreakActive} />
 
-        {/* Beats 14–16 — proof / demo */}
+        {/* Beats 14–16 — demo / offer (self-build Proof beat removed for now per Saar, 2026-06-09) */}
         <Tempo />
-        <Proof />
         <OfferTable />
         {/* Beat 18 — closing CTA */}
         <Footer />

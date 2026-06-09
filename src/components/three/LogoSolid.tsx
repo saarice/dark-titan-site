@@ -33,7 +33,9 @@ export default function LogoSolid({
   // Geometry has corrected winding + recomputed outward normals (see
   // buildLogoGeometry), so it renders FrontSide with correct lighting like the
   // monolith — no DoubleSide hack.
-  const geom = useMemo(() => buildLogoGeometry(3.0), []);
+  // Sized down ~30% (3.0 → 2.1) — at full size the crest dominated every data
+  // section it sat behind and read as noise rather than brand (Saar, 2026-06-09).
+  const geom = useMemo(() => buildLogoGeometry(2.1), []);
 
   // The monolith's obsidian, but with metalness/roughness/env dialled down from
   // its defaults (0.62/0.16/2.6) so the crest's facets don't blow out to violet
@@ -107,12 +109,13 @@ export default function LogoSolid({
     // only appears as you move the mouse. A whisper of idle sway keeps it alive.
     // Mostly frontal (faces the viewer), only partly turned toward the camera so
     // it doesn't read as a 3/4 view leaning to the side.
+    // Pointer-follow and idle sway removed — testers found the backdrop chasing
+    // the mouse (and drifting on its own) distracting. The crest now holds a
+    // calm, fixed orientation; only scroll moves it. (Feedback via Efi, 2026-06-09.)
+    void ptr;
     const faceCam = Math.atan2(-posXCur.current, camera.position.z || 6.4) * 0.45;
-    const ptX = reduced ? 0 : ptr.current?.x ?? 0;
-    const ptY = reduced ? 0 : ptr.current?.y ?? 0;
-    const sway = reduced ? 0 : Math.sin(t * 0.22) * 0.02;
-    rotY.current = THREE.MathUtils.damp(rotY.current, faceCam + sway + ptX * 0.35, 3, delta);
-    rotX.current = THREE.MathUtils.damp(rotX.current, ptY * 0.1, 3, delta);
+    rotY.current = THREE.MathUtils.damp(rotY.current, faceCam, 3, delta);
+    rotX.current = THREE.MathUtils.damp(rotX.current, 0, 3, delta);
 
     if (group.current) {
       group.current.rotation.y = rotY.current;

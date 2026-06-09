@@ -16,7 +16,7 @@ import { useReducedMotion } from "../../hooks/useReducedMotion";
  */
 const TRACK: TrackStop[] = [
   { id: "home", x: 2.2 }, // hero: copy left, monolith centred opposite it (not pushed to the edge)
-  { id: "chaos", x: -2.4 }, // pain beat, copy on the right
+  { id: "chaos", x: 2.2 }, // pain beat — stone on the RIGHT, the type stack reads from the left
   { id: "offer", x: 1.9 }, // two-ways orientation
   { id: "pillar-infra", x: 0 }, // Pillar I statement — commanding, centred
   { id: "process", x: -0.5 }, // Beat 5 process as code — crest centred in the gap (text left, timeline right)
@@ -30,8 +30,7 @@ const TRACK: TrackStop[] = [
   { id: "flows", x: -1.9 }, // Beat 13
   { id: "break", x: 0 }, // Beat M — global scene paused here; centred on approach
   { id: "tempo", x: 1.9 }, // Beat 14 build replay
-  { id: "proof", x: -1.9 }, // Beat 15 self-build proof
-  { id: "offer-table", x: 1.9 }, // Beat 16 the offer at a glance
+  { id: "offer-table", x: -1.9 }, // Beat 16 the offer at a glance
   { id: "contact", x: 0 }, // Beat 18 closing CTA, centred
 ];
 

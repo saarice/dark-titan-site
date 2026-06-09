@@ -54,7 +54,8 @@ export default function Nav() {
     >
       <nav className="mx-auto flex max-w-[1200px] items-center justify-between px-5 py-4 md:px-10">
         <a href="#home" aria-label="Dark Titan home" className="block rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet">
-          <Logo variant="lockup" />
+          {/* smaller on phones — full-size lockup + demo pill + burger overflow 390px */}
+          <Logo variant="lockup" className="h-5 md:h-7" />
         </a>
 
         <div className="hidden items-center gap-8 md:flex">
@@ -78,9 +79,11 @@ export default function Nav() {
         </div>
 
         <div className="flex items-center gap-3">
+          {/* hidden on phones: lockup + pill + burger can't share 360-390px
+              (the burger menu and the hero both carry the Book-a-demo CTA) */}
           <a
             href="#contact"
-            className="whitespace-nowrap rounded-full bg-violet px-4 py-2 font-mono text-[11px] uppercase tracking-[0.12em] text-obsidian transition-[transform,background-color,box-shadow] duration-200 hover:-translate-y-0.5 hover:bg-lavender hover:shadow-[0_0_24px_rgba(155,109,255,0.5)] active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet md:px-5 md:py-2.5 md:text-xs md:tracking-[0.15em]"
+            className="hidden whitespace-nowrap rounded-full bg-violet px-4 py-2 font-mono text-[11px] uppercase tracking-[0.12em] text-obsidian transition-[transform,background-color,box-shadow] duration-200 hover:-translate-y-0.5 hover:bg-lavender hover:shadow-[0_0_24px_rgba(155,109,255,0.5)] active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet sm:inline-block md:px-5 md:py-2.5 md:text-xs md:tracking-[0.15em]"
           >
             Book a demo
           </a>

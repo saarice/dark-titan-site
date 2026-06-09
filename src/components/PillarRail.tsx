@@ -58,8 +58,15 @@ export default function PillarRail({ label, items }: { label: string; items: Ite
         visible ? "opacity-100" : "pointer-events-none opacity-0"
       }`}
     >
-      <div className="group relative rounded-xl px-3 py-4 transition-colors duration-300 hover:bg-charcoal/70 hover:backdrop-blur-sm focus-within:bg-charcoal/70 focus-within:backdrop-blur-sm">
-        <p className="mb-4 pl-1 font-mono text-[9px] uppercase tracking-[0.25em] text-violet/70">{label}</p>
+      {/* Labels are absolutely positioned (out of flow) — when they sat in flow,
+          the invisible text made this fixed nav ~200px wide and it hovered/sat
+          over section content (seen over the agent-governance console at xl). */}
+      <div className="group relative w-fit rounded-xl px-3 py-4">
+        {/* vertical so the horizontal header text doesn't widen the rail back
+            over the content margin at xl */}
+        <p className="mb-4 rotate-180 font-mono text-[9px] uppercase tracking-[0.25em] text-violet/70 [writing-mode:vertical-rl]">
+          {label}
+        </p>
         <div className="relative flex flex-col gap-5">
           {/* track + fill */}
           <span className="absolute left-[3px] top-1.5 bottom-1.5 w-px bg-steel" />
@@ -70,7 +77,16 @@ export default function PillarRail({ label, items }: { label: string; items: Ite
           {items.map((it, i) => {
             const state = i < active ? "past" : i === active ? "active" : "future";
             return (
-              <a key={it.id} href={`#${it.id}`} className="relative z-10 flex items-center gap-3" aria-current={state === "active" ? "step" : undefined}>
+              <a
+                key={it.id}
+                href={`#${it.id}`}
+                className="relative z-10 flex items-center gap-3"
+                aria-current={state === "active" ? "step" : undefined}
+                // Drop focus after a click — focus-within otherwise keeps the
+                // label panel expanded over the section content (seen overlapping
+                // the agent-governance console). Keyboard focus still expands it.
+                onClick={(e) => e.currentTarget.blur()}
+              >
                 <span
                   className={`h-[7px] w-[7px] flex-none rounded-full ring-2 ring-obsidian transition-all duration-300 ${
                     state === "active"
@@ -81,7 +97,7 @@ export default function PillarRail({ label, items }: { label: string; items: Ite
                   }`}
                 />
                 <span
-                  className={`-translate-x-1 whitespace-nowrap font-mono text-[10px] uppercase tracking-[0.14em] opacity-0 transition-all duration-300 group-hover:translate-x-0 group-hover:opacity-100 group-focus-within:translate-x-0 group-focus-within:opacity-100 ${
+                  className={`pointer-events-none absolute left-full top-1/2 ml-2 -translate-x-1 -translate-y-1/2 whitespace-nowrap rounded-md bg-charcoal/90 px-2 py-1 font-mono text-[10px] uppercase tracking-[0.14em] opacity-0 backdrop-blur-sm transition-all duration-300 group-hover:translate-x-0 group-hover:opacity-100 group-focus-within:translate-x-0 group-focus-within:opacity-100 ${
                     state === "active" ? "text-cloud" : state === "past" ? "text-muted" : "text-faint"
                   }`}
                 >

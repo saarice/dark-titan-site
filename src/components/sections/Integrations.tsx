@@ -42,7 +42,30 @@ export default function Integrations() {
           </p>
         </div>
 
-        <svg viewBox="0 0 1000 470" className="h-auto w-full" role="img" aria-label="External systems — SSO, Jira, code scanners, environment allocation and more — wiring into a central DarkTitan hub.">
+        {/* Phones: the 1000px-wide wiring diagram scales to ~5px labels, so the
+            same content stacks as a hub card + system chips instead. */}
+        <div className="md:hidden">
+          <div className="mx-auto w-fit rounded-2xl border-2 border-lavender bg-[#15131f] px-8 py-5 text-center">
+            <p className="font-display text-lg text-cloud">DARKTITAN</p>
+            <p className="mt-1 font-mono text-[11px] uppercase tracking-[0.2em] text-violet">hub</p>
+          </div>
+          <div className="mx-auto mt-3 h-6 w-px bg-violet/50" />
+          <ul className="space-y-2.5">
+            {NODES.map((n) => (
+              <li
+                key={n.label}
+                className="flex items-baseline justify-between rounded-xl border border-violet/60 bg-[#15131f] px-4 py-3"
+              >
+                <span className="font-mono text-sm text-cloud">{n.label}</span>
+                {n.sub && (
+                  <span className="font-mono text-[11px] tracking-wide text-muted">{n.sub}</span>
+                )}
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        <svg viewBox="0 0 1000 470" className="hidden h-auto w-full md:block" role="img" aria-label="External systems — SSO, Jira, code scanners, environment allocation and more — wiring into a central DarkTitan hub.">
           {/* connectors (drawn behind the nodes) */}
           {NODES.map((n, i) => (
             <motion.line
@@ -104,19 +127,6 @@ export default function Integrations() {
             transition={{ delay: r ? 0 : 0.15, duration: 0.6 }}
             style={{ transformOrigin: `${HUB.x}px ${HUB.y}px` }}
           >
-            {!r && (
-              <motion.circle
-                cx={HUB.x}
-                cy={HUB.y}
-                r={62}
-                fill="none"
-                stroke={VIOLET}
-                strokeWidth={1}
-                animate={{ opacity: [0.5, 0.12, 0.5], scale: [1, 1.08, 1] }}
-                transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-                style={{ transformOrigin: `${HUB.x}px ${HUB.y}px` }}
-              />
-            )}
             <rect x={HUB.x - 78} y={HUB.y - 44} width={156} height={88} rx={14} fill={NODE_FILL} stroke={LAVENDER} strokeWidth={1.8} />
             <text x={HUB.x} y={HUB.y - 2} fill="#F7F7F7" fontSize={19} fontFamily="'Archivo Black', sans-serif" textAnchor="middle">
               DARKTITAN

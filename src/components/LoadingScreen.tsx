@@ -13,7 +13,7 @@ export default function LoadingScreen({ onComplete }: { onComplete: () => void }
 
   useEffect(() => {
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const duration = reduced ? 600 : 2400;
+    const duration = reduced ? 400 : 1200;
     const start = performance.now();
     let raf = 0;
     const tick = (now: number) => {
@@ -97,10 +97,6 @@ export default function LoadingScreen({ onComplete }: { onComplete: () => void }
               {WORDS[wordIndex]}
             </motion.span>
           </AnimatePresence>
-        </div>
-
-        <div className="absolute bottom-6 right-6 font-display tabular-nums text-6xl text-cloud md:bottom-10 md:right-10 md:text-8xl lg:text-9xl">
-          {String(count).padStart(3, "0")}
         </div>
 
         <div className="absolute bottom-0 left-0 h-[3px] w-full bg-slate">
