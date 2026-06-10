@@ -116,9 +116,11 @@ export default function Break({ onActiveChange }: { onActiveChange?: (v: boolean
                 </span>
               ))}
             </div>
-            <p className="max-w-2xl font-display text-h3 leading-[1.06] tracking-tight text-cloud">
-              From monolith to microservices: agents systematically modernize the chosen aspect
-              across the codebase. Frameworks, patterns, dependencies.
+            {/* one quiet line — the headline already carries the message, so the
+                close stays body-size (full display-size repeat read as too much text) */}
+            <p className="max-w-xl text-lg leading-relaxed text-muted">
+              Agents modernize the chosen aspect across the codebase: frameworks, patterns,
+              dependencies.
             </p>
           </div>
         </div>
