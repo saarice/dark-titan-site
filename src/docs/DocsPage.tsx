@@ -27,14 +27,26 @@ export default function DocsPage() {
   const [missing, setMissing] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
 
-  useEffect(() => {
-    const load = loaderFor(slug);
+  // Reset during render when the slug changes (React's "adjusting state when a
+  // prop changes" pattern) — the effect below only does the real side-effects.
+  const [shownSlug, setShownSlug] = useState<string | null>(null);
+  if (shownSlug !== slug) {
+    setShownSlug(slug);
     setMd(null);
-    setMissing(!load);
+    setMissing(!loaderFor(slug));
     setMenuOpen(false);
+  }
+
+  useEffect(() => {
     window.scrollTo(0, 0);
     document.title = `${docTitle(slug) ?? "Docs"} · DarkTitan Docs`;
-    load?.().then(setMd);
+    let stale = false;
+    loaderFor(slug)?.().then((text) => {
+      if (!stale) setMd(text);
+    });
+    return () => {
+      stale = true;
+    };
   }, [slug]);
 
   const { prev, next } = docNeighbors(slug);
