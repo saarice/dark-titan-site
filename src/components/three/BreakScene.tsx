@@ -1,97 +1,169 @@
 import { Suspense, useMemo, useRef } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
-import { Environment, Lightformer, Preload, RoundedBox } from "@react-three/drei";
+import { Environment, Lightformer, Preload } from "@react-three/drei";
 import { EffectComposer, Bloom } from "@react-three/postprocessing";
 import * as THREE from "three";
+import { RoundedBoxGeometry } from "three-stdlib";
 import { useObsidianMaterial } from "./obsidian";
+import { useBladeGlow } from "./glows";
+import { sampleCrestVoxels } from "../../lib/logoMorph";
 
 /**
- * Beat M — the monolith → microservices break (the centerpiece). The SAME obsidian
- * material/proportions the user has seen all along, here built from a stack of
- * blocks that, scroll-by-scroll, split apart deliberately and resolve into an
- * ordered constellation of microservices. Not chaotic shattering — governed.
- * `progress` (0..1) is scroll-scrubbed by the Break section.
+ * Beat M — the monolith → microservices → CREST build (the centerpiece).
+ * Three acts on one timed performance (`progress` 0..1, driven by Break.tsx):
+ *   A (0 → 0.40)  the packed slab breaks apart, blocks arc out
+ *   B (0.40→0.50) they hold as an ordered service grid
+ *   C (0.50→0.95) the services fly together and BUILD the Dark Titan crest,
+ *                 bottom-up, each brick shrinking into its mosaic voxel
+ *   (0.88→1)      the crest's seam light ignites — the wow payoff
+ * One instanced draw call for all bricks. Reduced motion: the finished crest,
+ * seam lit, no animation.
  */
-const COLS = 2;
-const ROWS = 8;
-const N = COLS * ROWS; // 16 blocks form the slab
-const BW = 0.58;
-const BH = 0.44;
-const BD = 0.58;
 const GAP = 0.02;
+const SLAB_COLS = 5;
+const SLAB_W = 0.42; // brick footprint in the packed slab
+const SLAB_D = 0.42;
+const GRID_COLS = 10; // act-B service grid
+const GRID_DX = 0.6;
+const GRID_DY = 0.52;
+const MOSAIC = 0.86; // voxels sit slightly apart so the crest reads as built-from-blocks
 
 function easeInOut(t: number) {
   return t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
 }
+/** 0..1 over [a, b] */
+function seg(t: number, a: number, b: number) {
+  return THREE.MathUtils.clamp((t - a) / (b - a), 0, 1);
+}
 
 type Block = {
   packed: THREE.Vector3;
-  target: THREE.Vector3;
-  delay: number;
+  grid: THREE.Vector3;
+  crest: THREE.Vector3;
+  delayA: number;
+  delayB: number;
   rot: number;
 };
 
 function Blocks({ progress, reduced }: { progress: React.RefObject<number>; reduced: boolean }) {
-  const material = useObsidianMaterial();
-  const refs = useRef<(THREE.Mesh | null)[]>([]);
+  // The crest's own obsidian dialling (see LogoSolid): many small faces catch
+  // far more of the violet lights than big slabs, so the defaults blow out.
+  // crest-style dialling (see LogoSolid): small faces catch more violet light
+  const material = useObsidianMaterial({ roughness: 0.32, envMapIntensity: 0.6, metalness: 0.5 });
+  const bladeGlow = useBladeGlow();
+  const inst = useRef<THREE.InstancedMesh>(null);
+  const seam = useRef<THREE.Mesh>(null);
   const cur = useRef(reduced ? 1 : 0);
+  const dummy = useMemo(() => new THREE.Object3D(), []);
 
-  const blocks = useMemo<Block[]>(() => {
+  const { blocks, brickH, voxel, crestH, geom } = useMemo(() => {
+    // The crest sampled as voxels — these are the act-C targets and define N.
+    const vox = sampleCrestVoxels(3.0, 22);
+    // Build bottom-up: rank voxels by height so the crest assembles like a build.
+    const order = [...vox.positions].sort((a, b) => a.y - b.y || a.x - b.x);
+    const n = order.length;
+
+    // Packed slab sized to hold n bricks at roughly monolith proportions.
+    const rows = Math.ceil(n / SLAB_COLS);
+    const slabH = 3.1;
+    const bh = slabH / rows - GAP;
+
+    const gridRows = Math.ceil(n / GRID_COLS);
+
     const arr: Block[] = [];
-    for (let i = 0; i < N; i++) {
-      const c = i % COLS;
-      const r = Math.floor(i / COLS);
-      // packed: the solid slab (a narrow vertical monolith, seam down the middle)
-      const packed = new THREE.Vector3((c - (COLS - 1) / 2) * (BW + GAP), (r - (ROWS - 1) / 2) * (BH + GAP), 0);
-      // target: an ordered 4×4 service constellation, spread and aligned
-      const gc = i % 4;
-      const gr = Math.floor(i / 4);
-      const target = new THREE.Vector3((gc - 1.5) * 1.18, (gr - 1.5) * 1.0, ((gc + gr) % 2) * 0.35 - 0.17);
-      // Tighter stagger (0.42 → 0.22): with the long window most blocks sat
-      // frozen through the first half of the scrub and the break felt stuck.
-      arr.push({ packed, target, delay: (i / N) * 0.22, rot: ((i % 3) - 1) * 0.12 });
+    for (let i = 0; i < n; i++) {
+      const c = i % SLAB_COLS;
+      const r = Math.floor(i / SLAB_COLS);
+      const packed = new THREE.Vector3(
+        (c - (SLAB_COLS - 1) / 2) * (SLAB_W + GAP),
+        (r - (rows - 1) / 2) * (bh + GAP),
+        0,
+      );
+      const gc = i % GRID_COLS;
+      const gr = Math.floor(i / GRID_COLS);
+      const grid = new THREE.Vector3(
+        (gc - (GRID_COLS - 1) / 2) * GRID_DX,
+        (gr - (gridRows - 1) / 2) * GRID_DY,
+        ((gc + gr) % 2) * 0.3 - 0.15,
+      );
+      // slab row r ↔ bottom-up crest rank: low bricks build the crest's base
+      arr.push({
+        packed,
+        grid,
+        crest: order[i],
+        delayA: (i / n) * 0.1,
+        delayB: (i / n) * 0.16,
+        rot: ((i % 3) - 1) * 0.12,
+      });
     }
-    return arr;
+    const g = new RoundedBoxGeometry(SLAB_W, bh, SLAB_D, 3, 0.03);
+    return { blocks: arr, brickH: bh, voxel: vox.cell, crestH: vox.height, geom: g };
   }, []);
 
-  useFrame((_, delta) => {
-    if (reduced) return; // static resolved end-state (positions set via the position prop)
-    const want = THREE.MathUtils.clamp(progress.current ?? 0, 0, 1);
-    // Softer damp (6 → 4.5): scroll arrives in discrete steps; the lower lambda
-    // glides between them instead of visibly stepping with each wheel tick.
-    cur.current = THREE.MathUtils.damp(cur.current, want, 4.5, delta);
-    // Choreography completes at 88% of the pin, not the very last pixel — the
-    // tail otherwise read as the animation hanging unfinished ("stuck").
-    const t = Math.min(1, cur.current / 0.88);
-    for (let i = 0; i < N; i++) {
-      const mesh = refs.current[i];
-      if (!mesh) continue;
+  useFrame((state, delta) => {
+    const mesh = inst.current;
+    if (!mesh) return;
+    const t = reduced
+      ? 1
+      : (cur.current = THREE.MathUtils.damp(
+          cur.current,
+          THREE.MathUtils.clamp(progress.current ?? 0, 0, 1),
+          4.5,
+          delta,
+        ));
+
+    const vs = (voxel * MOSAIC) / SLAB_W;
+    const vsy = (voxel * MOSAIC) / brickH;
+    for (let i = 0; i < blocks.length; i++) {
       const b = blocks[i];
-      const local = THREE.MathUtils.clamp((t - b.delay) / (1 - 0.22), 0, 1);
-      const e = easeInOut(local);
-      mesh.position.lerpVectors(b.packed, b.target, e);
-      // a gentle arc up-and-out during transit; settles flat (ordered) at the end
-      mesh.position.y += Math.sin(e * Math.PI) * 0.25;
-      mesh.rotation.z = b.rot * Math.sin(e * Math.PI);
-      mesh.rotation.y = e * 0.5 * (i % 2 ? 1 : -1) * Math.sin(e * Math.PI);
+      // act A: slab → service grid; act C: grid → crest voxel
+      const a = reduced ? 1 : easeInOut(seg(t, b.delayA, b.delayA + 0.3));
+      const c = reduced ? 1 : easeInOut(seg(t, 0.5 + b.delayB, 0.5 + b.delayB + 0.29));
+
+      dummy.position.lerpVectors(b.packed, b.grid, a);
+      dummy.position.lerp(b.crest, c);
+      // arcs: up-and-out while breaking, a rising sweep while building
+      dummy.position.y += Math.sin(a * Math.PI) * 0.25 * (1 - c) + Math.sin(c * Math.PI) * 0.4;
+      dummy.rotation.set(
+        0,
+        a * 0.5 * (i % 2 ? 1 : -1) * Math.sin(a * Math.PI) * (1 - c),
+        b.rot * Math.sin(a * Math.PI) * (1 - c),
+      );
+      // bricks shrink into mosaic voxels as they land
+      dummy.scale.set(
+        THREE.MathUtils.lerp(1, vs, c),
+        THREE.MathUtils.lerp(1, vsy, c),
+        THREE.MathUtils.lerp(1, vs, c),
+      );
+      dummy.updateMatrix();
+      mesh.setMatrixAt(i, dummy.matrix);
+    }
+    mesh.instanceMatrix.needsUpdate = true;
+
+    // the seam ignites once the crest is built
+    if (seam.current) {
+      const on = reduced ? 1 : seg(t, 0.88, 1);
+      (seam.current.material as THREE.MeshBasicMaterial).opacity =
+        on * (0.7 + Math.sin(state.clock.elapsedTime * 0.9) * 0.08);
     }
   });
 
   return (
-    <group position={[0, 0.55, 0]}>
-      {blocks.map((_, i) => (
-        <RoundedBox
-          key={i}
-          ref={(m) => {
-            refs.current[i] = m;
-          }}
-          args={[BW, BH, BD]}
-          radius={0.04}
-          smoothness={3}
-          material={material}
-          position={reduced ? blocks[i].target : blocks[i].packed}
+    <group position={[0, 0.35, 0]}>
+      <instancedMesh ref={inst} args={[geom, material, blocks.length]} />
+      {/* the crest's luminous seam — the same blade of light the brand carries */}
+      <mesh ref={seam} position={[0, 0.1, voxel / 2 + 0.06]}>
+        <planeGeometry args={[0.16, crestH * 0.94]} />
+        <meshBasicMaterial
+          map={bladeGlow}
+          color="#9A4DFF"
+          transparent
+          opacity={0}
+          depthWrite={false}
+          blending={THREE.AdditiveBlending}
+          toneMapped={false}
         />
-      ))}
+      </mesh>
     </group>
   );
 }
@@ -108,9 +180,11 @@ export default function BreakScene({ progress, reduced }: { progress: React.RefO
       <color attach="background" args={["#0A0A0C"]} />
       <fog attach="fog" args={["#0A0A0C", 9, 30]} />
       <ambientLight intensity={0.3} />
-      <pointLight position={[0, 2, 6]} intensity={26} color="#B28AFF" distance={32} />
-      <pointLight position={[-4, 1, 4]} intensity={9} color="#7C4AF0" distance={26} />
-      <pointLight position={[0, 1.5, -6]} intensity={16} color="#9B6DFF" distance={28} />
+      <pointLight position={[0, 2, 6]} intensity={20} color="#B28AFF" distance={32} />
+      <pointLight position={[-4, 1, 4]} intensity={8} color="#7C4AF0" distance={26} />
+      {/* rim light far up and dim: at the old [0,1.5,-6]/16 it shone straight
+          through the crest's mosaic gaps and bloomed into rows of hot slits */}
+      <pointLight position={[0, 6, -9]} intensity={6} color="#9B6DFF" distance={30} />
 
       <Suspense fallback={null}>
         <Blocks progress={progress} reduced={reduced} />
@@ -120,12 +194,12 @@ export default function BreakScene({ progress, reduced }: { progress: React.RefO
           <Lightformer intensity={1} color="#AEB4C7" position={[0, 4, -2]} scale={[9, 4, 1]} />
         </Environment>
         {/* compile shaders + upload textures at mount (1.5 viewports before the
-            pin), so the first scrubbed frames don't hitch on first render */}
+            beat), so the first played frames don't hitch on first render */}
         <Preload all />
       </Suspense>
 
       <EffectComposer>
-        <Bloom intensity={isMobile ? 0.6 : 0.85} luminanceThreshold={0.4} luminanceSmoothing={0.9} mipmapBlur radius={0.8} />
+        <Bloom intensity={isMobile ? 0.6 : 0.85} luminanceThreshold={0.55} luminanceSmoothing={0.9} mipmapBlur radius={0.8} />
       </EffectComposer>
     </Canvas>
   );

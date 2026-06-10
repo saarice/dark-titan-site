@@ -8,7 +8,8 @@ const BreakScene = lazy(() => import("../three/BreakScene"));
 const SERVICES = ["gateway", "auth", "payments", "billing", "search", "events"];
 
 // One viewing: the break plays as a timed performance, not a scroll scrub.
-const DURATION_MS = 3400;
+// Three acts (break → services → crest build) need the longer runtime.
+const DURATION_MS = 5200;
 
 /**
  * Beat M (v2 archetype F) — the monolith → microservices break, the centerpiece.
@@ -83,7 +84,7 @@ export default function Break({ onActiveChange }: { onActiveChange?: (v: boolean
     };
   }, [reduced, onActiveChange]);
 
-  const copyOpacity = reduced ? 1 : Math.min(1, Math.max(0, (p - 0.55) / 0.3));
+  const copyOpacity = reduced ? 1 : Math.min(1, Math.max(0, (p - 0.7) / 0.25));
 
   return (
     <section id="break" ref={sectionRef} className="relative">
@@ -117,11 +118,13 @@ export default function Break({ onActiveChange }: { onActiveChange?: (v: boolean
             {/* stage caption — narrates what the animation is doing right now */}
             {!reduced && (
               <p className="mt-4 max-w-md font-mono text-xs uppercase tracking-[0.18em] text-lavender">
-                {p < 0.35
+                {p < 0.28
                   ? "one legacy codebase · years of coupling"
-                  : p < 0.7
+                  : p < 0.5
                     ? "agents carve it along its seams"
-                    : "independent services · each owned, tested, deployable"}
+                    : p < 0.85
+                      ? "independent services · each owned, tested, deployable"
+                      : "rebuilt as one: dark titan"}
               </p>
             )}
           </div>
