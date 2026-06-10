@@ -11,11 +11,13 @@ gsap.registerPlugin(ScrollTrigger);
  * alternating sides — visual pressure accumulating — then a hard cut releases to
  * the calm, centred, lit turn line. The contrast is the design.
  */
+// rem floors sit BELOW each line's vw size on phones — the old floors (up to
+// 3.3rem) overrode 11vw at 390px and pushed "COMPLEXITY." off the right edge.
 const LINES = [
-  { t: "MORE NOISE.", size: "clamp(1.9rem,6vw,4rem)", tone: "text-cloud/35", from: -60 },
-  { t: "MORE ALERTS.", size: "clamp(2.3rem,7.6vw,5.2rem)", tone: "text-cloud/50", from: 48 },
-  { t: "MORE TOOLS.", size: "clamp(2.8rem,9.2vw,6.6rem)", tone: "text-cloud/72", from: -40 },
-  { t: "MORE COMPLEXITY.", size: "clamp(3.3rem,11vw,8rem)", tone: "text-cloud/95", from: 30 },
+  { t: "MORE NOISE.", size: "clamp(1.5rem,6vw,4rem)", tone: "text-cloud/35", from: -60 },
+  { t: "MORE ALERTS.", size: "clamp(1.8rem,7.6vw,5.2rem)", tone: "text-cloud/50", from: 48 },
+  { t: "MORE TOOLS.", size: "clamp(2rem,9.2vw,6.6rem)", tone: "text-cloud/72", from: -40 },
+  { t: "MORE COMPLEXITY.", size: "clamp(2.2rem,11vw,8rem)", tone: "text-cloud/95", from: 30 },
 ];
 
 export default function Chaos() {
@@ -84,7 +86,9 @@ export default function Chaos() {
   }
 
   return (
-    <section id="chaos" ref={root} className="relative h-[240vh]">
+    // 240vh → 170vh: testers said the scroll-gated beats felt like waiting
+    // through a slideshow; same performance, less runway (Efi, 2026-06-09).
+    <section id="chaos" ref={root} className="relative h-[170vh]">
       {/* sticky stage holds the performance while the section scrolls past */}
       <div className="sticky top-0 flex h-screen items-center overflow-hidden px-6 md:px-10">
         <div className="relative mx-auto w-full max-w-[1200px]">

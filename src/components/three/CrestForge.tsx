@@ -57,9 +57,9 @@ export default function CrestForge({
 }) {
   const camera = useThree((s) => s.camera);
 
-  // 4 crest pieces sharing the assembled crest's transform (targetHeight = 3.0,
-  // same as LogoSolid's buildLogoGeometry(3.0)).
-  const pieceGeoms = useMemo(() => buildLogoPieceGeometries(3.0), []);
+  // 4 crest pieces sharing the assembled crest's transform (targetHeight = 2.1,
+  // same as LogoSolid's buildLogoGeometry(2.1) after Saar's 30% size-down).
+  const pieceGeoms = useMemo(() => buildLogoPieceGeometries(2.1), []);
   const pieceInfo = useMemo(
     () =>
       pieceGeoms.map((g) => {

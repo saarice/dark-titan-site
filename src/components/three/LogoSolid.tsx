@@ -33,7 +33,9 @@ export default function LogoSolid({
   // Geometry has corrected winding + recomputed outward normals (see
   // buildLogoGeometry), so it renders FrontSide with correct lighting like the
   // monolith — no DoubleSide hack.
-  const geom = useMemo(() => buildLogoGeometry(3.0), []);
+  // Sized down ~30% (3.0 → 2.1) — at full size the crest dominated every data
+  // section it sat behind and read as noise rather than brand (Saar, 2026-06-09).
+  const geom = useMemo(() => buildLogoGeometry(2.1), []);
 
   // The monolith's obsidian, but with metalness/roughness/env dialled down from
   // its defaults (0.62/0.16/2.6) so the crest's facets don't blow out to violet
@@ -107,6 +109,8 @@ export default function LogoSolid({
     // only appears as you move the mouse. A whisper of idle sway keeps it alive.
     // Mostly frontal (faces the viewer), only partly turned toward the camera so
     // it doesn't read as a 3/4 view leaning to the side.
+    // Pointer-follow + whisper of idle sway (restored 2026-06-10 — Saar wants
+    // the crest tracking the mouse; overrides the earlier tester note).
     const faceCam = Math.atan2(-posXCur.current, camera.position.z || 6.4) * 0.45;
     const ptX = reduced ? 0 : ptr.current?.x ?? 0;
     const ptY = reduced ? 0 : ptr.current?.y ?? 0;

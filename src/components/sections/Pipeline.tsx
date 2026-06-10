@@ -173,8 +173,9 @@ export default function Pipeline() {
         style={{ background: "radial-gradient(70% 55% at 68% 45%, rgba(10,10,12,0.9), rgba(10,10,12,0) 75%)" }}
       />
 
-      {/* tall scroll region; pinned stage inside */}
-      <div ref={wrapRef} style={{ height: reduced ? "auto" : "440vh" }}>
+      {/* tall scroll region; pinned stage inside. 440vh → 300vh: testers said
+          the scroll-gated run felt like a slideshow; same five stages, less runway. */}
+      <div ref={wrapRef} style={{ height: reduced ? "auto" : "300vh" }}>
         <div
           className={
             reduced

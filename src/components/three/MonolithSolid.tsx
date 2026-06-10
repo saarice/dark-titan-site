@@ -126,7 +126,8 @@ export default function MonolithSolid({
       debrisRef.current.instanceMatrix.needsUpdate = true;
     }
 
-    // Pointer sway + gentle scroll rotation.
+    // Pointer sway + gentle scroll rotation (restored 2026-06-10 — Saar wants
+    // the stone following the mouse; overrides the earlier tester note).
     const ptX = reduced ? 0 : ptr.current?.x ?? 0;
     const ptY = reduced ? 0 : ptr.current?.y ?? 0;
     const sway = reduced ? 0 : Math.sin(t * 0.22) * 0.06;

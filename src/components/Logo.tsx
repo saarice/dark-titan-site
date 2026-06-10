@@ -35,7 +35,9 @@ export default function Logo({
       src={lockupSvg}
       alt="Dark Titan"
       draggable={false}
-      className={`block h-7 w-auto max-w-full select-none ${className}`}
+      // Height lives in the default only so callers can override it (Tailwind
+      // can't resolve h-7 vs h-5 by class order; both would apply).
+      className={`block w-auto max-w-full select-none ${className || "h-7"}`}
     />
   );
 }

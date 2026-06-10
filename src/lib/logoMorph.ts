@@ -148,6 +148,77 @@ export function buildLogoPieceGeometries(targetHeight = 3.6, depth = 55): THREE.
   return pieceGeoms;
 }
 
+export type CrestVoxels = {
+  /** world-space voxel centres (z = 0), centred on origin, crest standing upright */
+  positions: THREE.Vector3[];
+  /** world-space edge length of one voxel cell */
+  cell: number;
+  /** world-space height of the voxelized crest */
+  height: number;
+};
+
+/**
+ * Samples the crest silhouette into a grid of voxel centres — the targets the
+ * Break scene's blocks fly to when the broken monolith reassembles as the brand
+ * mark. `cols` controls resolution (cells across the crest's width). Cells count
+ * by their CENTRE only — corner-testing inflated the silhouette, filled the
+ * crest's negative space and the mark read as a solid wall.
+ */
+export function sampleCrestVoxels(targetHeight = 3.0, cols = 22): CrestVoxels {
+  const loader = new SVGLoader();
+  const data = loader.parse(CREST_SVG);
+
+  type Poly = { outer: THREE.Vector2[]; holes: THREE.Vector2[][] };
+  const polys: Poly[] = [];
+  for (const path of data.paths) {
+    for (const shape of SVGLoader.createShapes(path)) {
+      polys.push({
+        outer: shape.getPoints(10),
+        holes: shape.holes.map((h) => h.getPoints(10)),
+      });
+    }
+  }
+
+  let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+  for (const p of polys) {
+    for (const pt of p.outer) {
+      if (pt.x < minX) minX = pt.x;
+      if (pt.x > maxX) maxX = pt.x;
+      if (pt.y < minY) minY = pt.y;
+      if (pt.y > maxY) maxY = pt.y;
+    }
+  }
+
+  const inPoly = (x: number, y: number, poly: THREE.Vector2[]) => {
+    let inside = false;
+    for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
+      const xi = poly[i].x, yi = poly[i].y, xj = poly[j].x, yj = poly[j].y;
+      if (yi > y !== yj > y && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi) inside = !inside;
+    }
+    return inside;
+  };
+  const inCrest = (x: number, y: number) =>
+    polys.some((p) => inPoly(x, y, p.outer) && !p.holes.some((h) => inPoly(x, y, h)));
+
+  const cellSvg = (maxX - minX) / cols;
+  const rows = Math.ceil((maxY - minY) / cellSvg);
+  const s = targetHeight / (maxY - minY);
+  const cx0 = (minX + maxX) / 2;
+  const cy0 = (minY + maxY) / 2;
+
+  const positions: THREE.Vector3[] = [];
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++) {
+      const x = minX + (c + 0.5) * cellSvg;
+      const y = minY + (r + 0.5) * cellSvg;
+      // mirror Y: SVG y points down, the crest stands up in world space
+      if (inCrest(x, y)) positions.push(new THREE.Vector3((x - cx0) * s, -(y - cy0) * s, 0));
+    }
+  }
+
+  return { positions, cell: cellSvg * s, height: targetHeight };
+}
+
 /** Reverse triangle winding on a non-indexed geometry by swapping each triangle's
  *  2nd and 3rd vertices (position + uv). Used after a mirror so faces stay
  *  outward-facing for FrontSide rendering. */
