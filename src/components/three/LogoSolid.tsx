@@ -65,27 +65,23 @@ export default function LogoSolid({
   const group = useRef<THREE.Group>(null);
   const inner = useRef<THREE.Group>(null);
   const channel = useRef<THREE.Mesh>(null);
+  const breakEl = useRef<HTMLElement | null>(null);
   const rotY = useRef(0);
   const rotX = useRef(0);
   const posXCur = useRef(0);
   const posYCur = useRef(0);
-  const progCur = useRef(0);
 
   useFrame((state, delta) => {
     const t = state.clock.elapsedTime;
 
-    // Mirror the Break scene EXACTLY: damp the same raw progress with the same
-    // lambda (4.5), apply the same fade window (0.97→1). The Break's crest does
-    // 1−fade, this one does fade — complementary at every instant, both
-    // directions. Full scale always; OPACITY does the reveal (a growing crest
-    // next to a fading one would read as a swap).
-    progCur.current = THREE.MathUtils.damp(
-      progCur.current,
-      reduced ? 0 : THREE.MathUtils.clamp(breakProgress.current ?? 0, 0, 1),
-      4.5,
-      delta,
-    );
-    const present = THREE.MathUtils.clamp((progCur.current - 0.97) / 0.03, 0, 1);
+    // Mirror the Break scene EXACTLY: the RAW scroll value, the same narrow
+    // window (0.985→0.995 ≈ 20px of scroll). The Break's crest does 1−fade,
+    // this one does fade — a near-instant swap, complementary in the SAME
+    // frame (no damping lag), overlapping for a blink. Full scale always;
+    // OPACITY does the reveal (a growing crest next to a fading one would
+    // read as a swap).
+    const rawT = reduced ? 0 : THREE.MathUtils.clamp(breakProgress.current ?? 0, 0, 1);
+    const present = THREE.MathUtils.clamp((rawT - 0.985) / 0.01, 0, 1);
     if (group.current) group.current.visible = present > 0.002;
     if (inner.current) inner.current.scale.setScalar(1);
     material.opacity = present;
@@ -97,7 +93,21 @@ export default function LogoSolid({
     // is the clean obsidian mark (the stray beam + glowing circle that tagged
     // along after the handoff were exactly this, removed 2026-06-10).
 
-    const posXTarget = reduced ? 1.9 : posX.current ?? 0;
+    // STRAIGHT DOWN first: the crest holds the Break's centre (x 0) while the
+    // section is still leaving the screen, then eases onto the TRACK over the
+    // next ~1.4 screens — no diagonal drift at the moment of the handoff.
+    let xRelease = 1;
+    if (!reduced) {
+      if (!breakEl.current) breakEl.current = document.getElementById("break");
+      const el = breakEl.current;
+      if (el) {
+        const bottom = el.getBoundingClientRect().bottom;
+        const vh = window.innerHeight;
+        const r = THREE.MathUtils.clamp((vh - bottom) / (vh * 1.4), 0, 1);
+        xRelease = r * r * (3 - 2 * r); // smoothstep — gentle start, gentle end
+      }
+    }
+    const posXTarget = reduced ? 1.9 : (posX.current ?? 0) * xRelease;
     // Vertical placement: sits a touch below centre so the crest reads centred
     // against the hero copy block. (~0.15 world units ≈ 24px at this viewport.)
     const posYTarget = -0.15;

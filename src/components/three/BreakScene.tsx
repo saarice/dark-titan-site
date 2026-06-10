@@ -221,11 +221,14 @@ function Scenery({ progress, reduced }: { progress: React.RefObject<number>; red
     }
 
     // ——— the real crest fades in under the converging cloud, then HANDS OFF:
-    // over the last beat it dissolves out exactly as the global LogoSolid
-    // (same screen rect, behind this transparent canvas) dissolves in — the
-    // same element simply keeps going down the page. Scrubbing back reverses it.
+    // a near-instant swap (window 0.985→0.995 of the scrub ≈ 20px of scroll,
+    // the two overlapping for a blink) with the global LogoSolid at the same
+    // screen rect behind this transparent canvas. BOTH sides read the RAW
+    // scroll value — no damping lag — so they are complementary in the same
+    // frame, even on a fast flick. Scrubbing back reverses it.
+    const rawT = reduced ? 1 : THREE.MathUtils.clamp(progress.current ?? 0, 0, 1);
     const crestIn = reduced ? 1 : seg(t, 0.88, 0.96);
-    const handOut = reduced ? 1 : 1 - seg(t, 0.97, 1);
+    const handOut = reduced ? 1 : 1 - seg(rawT, 0.985, 0.995);
     if (crestRef.current) {
       crestRef.current.visible = crestIn > 0 && handOut > 0;
       const sc = 0.96 + 0.04 * crestIn;
