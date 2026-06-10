@@ -9,16 +9,16 @@ import { usePointer } from "../../hooks/usePointer";
 import { useReducedMotion } from "../../hooks/useReducedMotion";
 
 /**
- * The stone's journey down the page: it slides right -> left -> centre from
- * section to section, always landing opposite that section's copy, arrives
- * CENTRED at the principle statement and recedes back into the dark there.
- * From the Break's finale onward the CREST takes its place (crestLive) and
- * rides the same track to the bottom of the page.
+ * The stone's journey: hero (right) → glides to CENTRE for the Chaos turn line
+ * ("Infrastructure you control.") → recedes back into the dark as Chaos
+ * releases — gone before the Pipeline. It RETURNS from the depth inside the
+ * Break, forges the crest, and from there the CREST (crestLive) rides the
+ * track to the bottom of the page.
  */
 const TRACK: TrackStop[] = [
   { id: "home", x: 2.2 }, // hero: copy left, monolith centred opposite it (not pushed to the edge)
-  { id: "chaos", x: 2.2 }, // pain beat — stone on the RIGHT, the type stack reads from the left
-  { id: "process", x: -0.5 }, // process as code — stone centred in the gap (text left, timeline right)
+  { id: "chaos", x: 0 }, // pain beat — the stone glides to CENTRE, standing centred behind the turn line
+  { id: "process", x: 0 }, // (the stone has receded by here — kept centred so the exit stays straight back)
   { id: "agents", x: 1.9 }, // agent control
   { id: "runtime", x: -1.9 }, // runtime UI
   { id: "scale", x: 1.9 }, // scale on K8s

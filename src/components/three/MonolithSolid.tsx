@@ -88,11 +88,12 @@ export default function MonolithSolid({
   const posXCur = useRef(0);
   const posYCur = useRef(0);
 
-  // The stone's EXIT: it rides every beat to the principle statement, lands
-  // centred there, then recedes BACK into the fog. Driven by the #principle
-  // section's viewport position (measured, not a hardcoded scroll fraction, so
-  // it survives content changes). Fully scroll-reversible.
-  const principleEl = useRef<HTMLElement | null>(null);
+  // The stone's EXIT: it stands CENTRED behind the Chaos turn line
+  // ("Infrastructure you control."), then recedes BACK into the fog as the
+  // Chaos pin releases — gone before the Pipeline. Driven by the #chaos
+  // section's measured viewport position (no hardcoded scroll fraction), so it
+  // survives content changes and is fully scroll-reversible.
+  const chaosEl = useRef<HTMLElement | null>(null);
   const lastScroll = useRef(-1);
   const recedeT = useRef(0);
   const recedeZ = useRef(0);
@@ -102,18 +103,18 @@ export default function MonolithSolid({
     const p = reduced ? 0 : scroll.current ?? 0;
     const s = sceneStateFor(p);
 
-    // Recede progress: 0 until the principle section's centre crosses the
-    // viewport middle, 1 once it has scrolled well past. The rect is only
-    // re-read when the scroll actually moved (cheap); z is damped for glide.
+    // Recede progress: 0 through the whole Chaos pin (the stone stands centred
+    // behind the turn line), ramping to 1 as the section's bottom scrolls out —
+    // fully gone before the Pipeline arrives. The rect is only re-read when the
+    // scroll actually moved (cheap); z is damped for glide.
     if (!reduced && p !== lastScroll.current) {
       lastScroll.current = p;
-      if (!principleEl.current) principleEl.current = document.getElementById("principle");
-      const el = principleEl.current;
+      if (!chaosEl.current) chaosEl.current = document.getElementById("chaos");
+      const el = chaosEl.current;
       if (el) {
         const r = el.getBoundingClientRect();
         const vh = window.innerHeight;
-        const c = (r.top + r.bottom) / 2;
-        recedeT.current = THREE.MathUtils.clamp((vh / 2 - c) / (vh * 0.55), 0, 1);
+        recedeT.current = THREE.MathUtils.clamp((vh * 1.05 - r.bottom) / (vh * 0.55), 0, 1);
       }
     }
     const recede = reduced ? 0 : recedeT.current;

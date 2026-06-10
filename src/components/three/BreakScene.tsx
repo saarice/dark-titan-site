@@ -33,6 +33,15 @@ const DEPTH = 0.58;
 const GAP = 0.1;
 const HALF_X = GAP / 2 + HALF_W / 2;
 
+// The forged crest must occupy EXACTLY the same screen rect as the global
+// LogoSolid (2.1 tall at y -0.15, camera z 6.4), because at the finale the
+// global crest cross-dissolves in UNDERNEATH this transparent canvas and
+// carries on down the page — the SAME element, no visible swap. This camera
+// sits at z 7.4, so: height 2.1·(7.4/6.4) ≈ 2.43, world y -0.15·(7.4/6.4) ≈
+// -0.17 → local -0.37 under the scene group's y 0.2.
+const CREST_H = 2.43;
+const CREST_Y = -0.37;
+
 // act-B service grid
 const GRID_COLS = 10;
 const GRID_DX = 0.6;
@@ -93,9 +102,11 @@ function Scenery({ progress, reduced }: { progress: React.RefObject<number>; red
 
   const { shards, shardGeom, crestGeom, crestDims, voxel } = useMemo(() => {
     const rand = mulberry(7);
-    // crest voxels define the shard count and the act-C targets (bottom-up)
-    const vox = sampleCrestVoxels(2.9, 13);
+    // crest voxels define the shard count and the act-C targets (bottom-up),
+    // shifted down to the crest's handoff position (CREST_Y)
+    const vox = sampleCrestVoxels(CREST_H, 13);
     const order = [...vox.positions].sort((a, b) => a.y - b.y || a.x - b.x);
+    for (const v of order) v.y += CREST_Y;
     const n = order.length;
 
     // pack n shards to tile the slab's two halves exactly (2 columns per half)
@@ -137,7 +148,7 @@ function Scenery({ progress, reduced }: { progress: React.RefObject<number>; red
       });
     }
     const sg = new RoundedBoxGeometry(sw, sh, DEPTH, 2, 0.02);
-    const cg = buildLogoGeometry(2.9);
+    const cg = buildLogoGeometry(CREST_H);
     cg.computeBoundingBox();
     const bb = cg.boundingBox!;
     const dims = { seamHeight: (bb.max.y - bb.min.y) * 0.94, frontZ: bb.max.z + 0.03, bottomY: bb.min.y };
@@ -208,18 +219,22 @@ function Scenery({ progress, reduced }: { progress: React.RefObject<number>; red
       }
     }
 
-    // ——— the real crest fades in under the converging cloud ———
+    // ——— the real crest fades in under the converging cloud, then HANDS OFF:
+    // over the last beat it dissolves out exactly as the global LogoSolid
+    // (same screen rect, behind this transparent canvas) dissolves in — the
+    // same element simply keeps going down the page. Scrubbing back reverses it.
     const crestIn = reduced ? 1 : seg(t, 0.88, 0.96);
+    const handOut = reduced ? 1 : 1 - seg(t, 0.97, 1);
     if (crestRef.current) {
-      crestRef.current.visible = crestIn > 0;
+      crestRef.current.visible = crestIn > 0 && handOut > 0;
       const sc = 0.96 + 0.04 * crestIn;
       crestRef.current.scale.setScalar(sc);
     }
-    crestMaterial.opacity = crestIn;
+    crestMaterial.opacity = crestIn * handOut;
     if (bladeRef.current) {
       const on = reduced ? 1 : seg(t, 0.92, 1);
       (bladeRef.current.material as THREE.MeshBasicMaterial).opacity =
-        on * (0.62 + Math.sin(clock * 0.9) * 0.08);
+        on * handOut * (0.62 + Math.sin(clock * 0.9) * 0.08);
     }
   });
 
@@ -256,8 +271,9 @@ function Scenery({ progress, reduced }: { progress: React.RefObject<number>; red
       {/* ACTS 2–4 — the shards (one instanced draw call) */}
       <instancedMesh ref={shardsRef} args={[shardGeom, shardMaterial, shards.length]} visible={false} />
 
-      {/* FINALE — the real solid crest, seam blade igniting */}
-      <group ref={crestRef} visible={reduced}>
+      {/* FINALE — the real solid crest, seam blade igniting, parked at the
+          global LogoSolid's exact screen position for the seamless handoff */}
+      <group ref={crestRef} visible={reduced} position={[0, CREST_Y, 0]}>
         <mesh geometry={crestGeom} material={crestMaterial} />
         {/* dark recessed channel down the centre (same trick as LogoSolid) */}
         <mesh position={[0, 0, crestDims.frontZ - 0.02]}>
