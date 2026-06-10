@@ -2,7 +2,6 @@ import { Suspense } from "react";
 import { Canvas } from "@react-three/fiber";
 import { EffectComposer, Bloom } from "@react-three/postprocessing";
 import MonolithSolid from "./MonolithSolid";
-import LogoSolid from "./LogoSolid";
 import { useScrollProgress } from "../../hooks/useScrollProgress";
 import { useMonolithX, type TrackStop } from "../../hooks/useSectionFocus";
 import { usePointer } from "../../hooks/usePointer";
@@ -60,14 +59,13 @@ export default function Scene3D({ paused = false }: { paused?: boolean }) {
         <pointLight position={[0, 1.5, -6]} intensity={16} color="#9B6DFF" distance={28} />
 
         <Suspense fallback={null}>
-          {/* Crest owns the hero, fades out behind the demo as you scroll, and the
-              monolith takes over for the data sections — a clean cross-fade. */}
-          <LogoSolid scroll={scroll} posX={posX} ptr={ptr} reduced={reduced} />
+          {/* The monolith owns the hero, then fades out — and NOTHING replaces it
+              (user call, 2026-06-10): the crest now appears ONLY in the Break
+              finale, where it's earned. The grid/stars/environment stay as the
+              backdrop for the data sections. LogoSolid is parked, not deleted;
+              the CrestForge light-carve alternative lives on branch
+              crest-forge-prototype. */}
           <MonolithSolid scroll={scroll} posX={posX} ptr={ptr} reduced={reduced} />
-          {/* The CrestForge light-carve handoff (monolith → 4 blocks → crest) is
-              PARKED, not deleted: re-mount it here + restore its handoff windows
-              in MonolithSolid/LogoSolid + localClippingEnabled on the Canvas, or
-              checkout branch crest-forge-prototype. */}
         </Suspense>
 
         <EffectComposer>
