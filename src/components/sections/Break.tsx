@@ -7,17 +7,13 @@ const BreakScene = lazy(() => import("../three/BreakScene"));
 // The resulting microservices that resolve out of the monolith.
 const SERVICES = ["gateway", "auth", "payments", "billing", "search", "events"];
 
-// One viewing: the break plays as a timed performance, not a scroll scrub.
-// Monolith → explosion → services → solid crest needs the full runtime.
-const DURATION_MS = 6500;
-
 /**
  * Beat M (v2 archetype F) — the monolith → microservices break, the centerpiece.
- * A single full-screen beat: when it enters view the break PLAYS ON ITS OWN over
- * ~3.4s (it was a 260vh scroll-scrub before — testers called the scroll tax too
- * high). While mostly on screen it signals the global Scene3D to pause (never two
- * heavy r3f scenes animating at once). Reduced-motion shows the resolved
- * end-state, no animation.
+ * SCROLL-SCRUBBED (back, by request): the section pins for ~1.8 extra screens and
+ * the performance advances exactly with the scroll — it cannot start before you
+ * reach it, and scrolling back rewinds it (the scene is a pure function of t).
+ * While pinned it signals the global Scene3D to pause (never two heavy r3f
+ * scenes animating at once). Reduced-motion shows the resolved end-state.
  */
 export default function Break({ onActiveChange }: { onActiveChange?: (v: boolean) => void }) {
   const reduced = useReducedMotion();
@@ -25,26 +21,14 @@ export default function Break({ onActiveChange }: { onActiveChange?: (v: boolean
   const progress = useRef(reduced ? 1 : 0);
   const [p, setP] = useState(reduced ? 1 : 0);
   const [mounted, setMounted] = useState(reduced);
-  const startedRef = useRef(reduced);
   const activeRef = useRef(false);
 
-  // Drive the performance: mount early, play once when ~half the section shows.
+  // Mount the scene a viewport-and-a-half early so shaders compile before the
+  // show starts; the scrub itself only moves once the section is pinned.
   useEffect(() => {
     if (reduced) return;
     const el = sectionRef.current;
     if (!el) return;
-    let raf = 0;
-
-    const play = () => {
-      const t0 = performance.now();
-      const tick = (now: number) => {
-        const t = Math.min(1, (now - t0) / DURATION_MS);
-        progress.current = t;
-        setP(t);
-        if (t < 1) raf = requestAnimationFrame(tick);
-      };
-      raf = requestAnimationFrame(tick);
-    };
 
     const mountIO = new IntersectionObserver(
       (entries) => {
@@ -53,33 +37,37 @@ export default function Break({ onActiveChange }: { onActiveChange?: (v: boolean
           mountIO.disconnect();
         }
       },
-      // a viewport-and-a-half early: shaders compile before the show starts
       { rootMargin: "150% 0px" },
     );
     mountIO.observe(el);
 
-    const playIO = new IntersectionObserver(
-      (entries) => {
-        const e = entries[0];
-        if (e.intersectionRatio >= 0.45 && !startedRef.current) {
-          startedRef.current = true;
-          play();
-        }
-        // pause the global backdrop while the break owns the screen
-        const active = e.intersectionRatio >= 0.5;
+    let raf = 0;
+    const onScroll = () => {
+      if (raf) return;
+      raf = requestAnimationFrame(() => {
+        raf = 0;
+        const rect = el.getBoundingClientRect();
+        const total = el.offsetHeight - window.innerHeight;
+        const np = total > 0 ? Math.min(1, Math.max(0, -rect.top / total)) : 0;
+        progress.current = np;
+        setP(np);
+        // pause the global backdrop only while the break owns the screen
+        const active = rect.top <= 2 && rect.bottom >= window.innerHeight - 2;
         if (active !== activeRef.current) {
           activeRef.current = active;
           onActiveChange?.(active);
         }
-      },
-      { threshold: [0, 0.45, 0.5, 1] },
-    );
-    playIO.observe(el);
+      });
+    };
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll);
 
     return () => {
       mountIO.disconnect();
-      playIO.disconnect();
-      cancelAnimationFrame(raf);
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+      if (raf) cancelAnimationFrame(raf);
       onActiveChange?.(false);
     };
   }, [reduced, onActiveChange]);
@@ -87,8 +75,19 @@ export default function Break({ onActiveChange }: { onActiveChange?: (v: boolean
   const copyOpacity = reduced ? 1 : Math.min(1, Math.max(0, (p - 0.7) / 0.25));
 
   return (
-    <section id="break" ref={sectionRef} className="relative">
-      <div className="relative min-h-screen overflow-hidden">
+    <section
+      id="break"
+      ref={sectionRef}
+      className="relative"
+      style={{ height: reduced ? "auto" : "280vh" }}
+    >
+      <div
+        className={
+          reduced
+            ? "relative min-h-screen overflow-hidden"
+            : "sticky top-0 h-screen overflow-hidden"
+        }
+      >
         {/* 3D layer */}
         <div className="absolute inset-0">
           {mounted && (
