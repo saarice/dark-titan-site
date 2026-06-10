@@ -83,7 +83,15 @@ export default function LogoSolid({
     const rawT = reduced ? 0 : THREE.MathUtils.clamp(breakProgress.current ?? 0, 0, 1);
     const present = THREE.MathUtils.clamp((rawT - 0.985) / 0.01, 0, 1);
     if (group.current) group.current.visible = present > 0.002;
-    if (inner.current) inner.current.scale.setScalar(1);
+    // SIZE LOCK: the global camera dollies back with scroll (cameraZ = 6.4 +
+    // p·0.85, see choreography), so a fixed-size crest would read SMALLER than
+    // the Break's crest (2.43 tall at its fixed camera z 7.4) at the moment of
+    // the handoff. Scale by the live camera distance so this crest's SCREEN
+    // size always equals the Break's — pixel-matched swap at any page length,
+    // and a constant-size mark for the rest of the ride down.
+    const camZ = camera.position.z || 6.4;
+    const sizeLock = ((2.43 / 7.4) * camZ) / 2.1;
+    if (inner.current) inner.current.scale.setScalar(sizeLock);
     material.opacity = present;
     if (channel.current) {
       (channel.current.material as THREE.MeshBasicMaterial).opacity = 0.92 * present;
@@ -108,9 +116,10 @@ export default function LogoSolid({
       }
     }
     const posXTarget = reduced ? 1.9 : (posX.current ?? 0) * xRelease;
-    // Vertical placement: sits a touch below centre so the crest reads centred
-    // against the hero copy block. (~0.15 world units ≈ 24px at this viewport.)
-    const posYTarget = -0.15;
+    // Vertical placement: projected to the SAME screen height as the Break's
+    // crest (world y -0.17 at its camera z 7.4), camera-distance compensated —
+    // no vertical jump at the handoff.
+    const posYTarget = -(0.17 / 7.4) * camZ;
     posXCur.current = THREE.MathUtils.damp(posXCur.current, posXTarget, 3, delta);
     posYCur.current = THREE.MathUtils.damp(posYCur.current, posYTarget, 3, delta);
 

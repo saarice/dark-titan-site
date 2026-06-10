@@ -12,16 +12,19 @@ import { buildLogoGeometry, sampleCrestVoxels } from "../../lib/logoMorph";
  * Beat M — MONOLITH TO MONOLITH (the wow centerpiece).
  * One scroll-scrubbed performance (`progress` 0..1, driven by Break.tsx):
  *
- *   t 0    → 0.14  RETURN — the stone that receded into the dark at the
- *                  principle beat comes BACK: the slab glides forward out of
+ *   t 0    → 0.12  RETURN — the stone that receded into the dark at the
+ *                  Chaos turn comes BACK: the slab glides forward out of
  *                  the fog to centre stage (transparent canvas — same world).
- *   t 0.16 → 0.20  a tremor builds…
- *   t 0.20 → 0.40  EXPLOSION — the slab shatters into tumbling shards
- *   t 0.42 → 0.58  the shards are pulled back under control into an ordered
+ *   t 0.14 → 0.18  a tremor builds…
+ *   t 0.18 → 0.34  EXPLOSION — the slab shatters into tumbling shards
+ *   t 0.36 → 0.56  the shards are pulled back under control into an ordered
  *                  service grid (the microservices reading; chips overlay)
- *   t 0.62 → 0.88  the services fly in bottom-up and trace the CREST silhouette
- *   t 0.88 → 1.00  the cloud MORPHS into the real solid 3D crest — shards melt
+ *   t 0.54 → 0.79  the services fly in bottom-up and trace the CREST silhouette
+ *   t 0.70 → 0.84  the cloud MORPHS into the real solid 3D crest — shards melt
  *                  into its faces as it fades in, and the seam blade IGNITES.
+ *   t 0.84 → 0.985 HOLD — the finished crest stays pinned for a real beat, so
+ *                  it registers that the mark was BUILT from the blocks.
+ *   t 0.985→ 0.995 the instant handoff to the global crest.
  *
  * Chaos → governed → brand. Reduced motion: the finished crest, seam lit.
  */
@@ -172,34 +175,34 @@ function Scenery({ progress, reduced }: { progress: React.RefObject<number>; red
 
     // ——— the slab RETURNS from the depth, stands whole, then blows ———
     if (slab.current) {
-      slab.current.visible = !reduced && t < 0.2;
+      slab.current.visible = !reduced && t < 0.18;
       // entry: glide forward out of the fog to centre stage
-      const entry = easeOutCubic(seg(t, 0, 0.14));
+      const entry = easeOutCubic(seg(t, 0, 0.12));
       slab.current.position.z = -16 * (1 - entry);
       // tremor: a fast, growing shiver right before the blast
-      const tremor = seg(t, 0.16, 0.2);
+      const tremor = seg(t, 0.14, 0.18);
       slab.current.rotation.z = Math.sin(clock * 60) * 0.006 * tremor;
       slab.current.position.x = Math.sin(clock * 47) * 0.015 * tremor;
     }
     if (slabGlowRef.current) {
       // the slot glow flares as the tremor builds — the seam is the fault line
       (slabGlowRef.current.material as THREE.MeshBasicMaterial).opacity =
-        0.85 + Math.sin(clock * 0.9) * 0.1 + seg(t, 0.16, 0.2) * 0.6;
+        0.85 + Math.sin(clock * 0.9) * 0.1 + seg(t, 0.14, 0.18) * 0.6;
     }
 
     // ——— shards: explosion → grid → crest ———
     const inst = shardsRef.current;
     if (inst) {
-      inst.visible = !reduced && t >= 0.2 && t < 0.97;
+      inst.visible = !reduced && t >= 0.18 && t < 0.82;
       if (inst.visible) {
         const vs = (voxel * 0.92) / (HALF_W / 2);
         const vsy = (voxel * 0.92) / (SLAB_H / Math.ceil(shards.length / 4));
-        const melt = seg(t, 0.9, 0.97); // shards shrink into the crest faces
+        const melt = seg(t, 0.72, 0.8); // shards shrink into the crest faces
         for (let i = 0; i < shards.length; i++) {
           const s = shards[i];
-          const e = easeOutCubic(seg(t, 0.2, 0.4)); // blast out
-          const g = easeInOut(seg(t, 0.42 + s.dB * 0.4, 0.58 + s.dB * 0.4)); // regroup
-          const c = easeInOut(seg(t, 0.62 + s.dB, 0.82 + s.dB)); // build the crest
+          const e = easeOutCubic(seg(t, 0.18, 0.34)); // blast out
+          const g = easeInOut(seg(t, 0.36 + s.dB * 0.4, 0.5 + s.dB * 0.4)); // regroup
+          const c = easeInOut(seg(t, 0.54 + s.dB * 0.7, 0.68 + s.dB * 0.7)); // build the crest
 
           dummy.position.lerpVectors(s.packed, s.burst, e);
           dummy.position.lerp(s.grid, g);
@@ -227,7 +230,7 @@ function Scenery({ progress, reduced }: { progress: React.RefObject<number>; red
     // scroll value — no damping lag — so they are complementary in the same
     // frame, even on a fast flick. Scrubbing back reverses it.
     const rawT = reduced ? 1 : THREE.MathUtils.clamp(progress.current ?? 0, 0, 1);
-    const crestIn = reduced ? 1 : seg(t, 0.88, 0.96);
+    const crestIn = reduced ? 1 : seg(t, 0.7, 0.78);
     const handOut = reduced ? 1 : 1 - seg(rawT, 0.985, 0.995);
     if (crestRef.current) {
       crestRef.current.visible = crestIn > 0 && handOut > 0;
@@ -236,7 +239,7 @@ function Scenery({ progress, reduced }: { progress: React.RefObject<number>; red
     }
     crestMaterial.opacity = crestIn * handOut;
     if (bladeRef.current) {
-      const on = reduced ? 1 : seg(t, 0.92, 1);
+      const on = reduced ? 1 : seg(t, 0.76, 0.84);
       (bladeRef.current.material as THREE.MeshBasicMaterial).opacity =
         on * handOut * (0.62 + Math.sin(clock * 0.9) * 0.08);
     }

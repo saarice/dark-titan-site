@@ -88,12 +88,12 @@ export default function Break({
     };
   }, [reduced, onActiveChange, progress]);
 
-  // Copy + scrim: in once the services resolve (p 0.7→0.95), OUT with the
-  // handoff (p 0.965→0.995) — the section's last frames show only the crest on
-  // the transparent world, so nothing (no black gradient band, no text) lingers
-  // while it scrolls out under the next beat.
+  // Copy + scrim: in as the crest completes (p 0.62→0.8, just before the HOLD),
+  // OUT with the handoff (p 0.965→0.995) — the section's last frames show only
+  // the crest on the transparent world, so nothing (no black gradient band, no
+  // text) lingers while it scrolls out under the next beat.
   const endFade = reduced ? 1 : 1 - Math.min(1, Math.max(0, (p - 0.965) / 0.03));
-  const copyOpacity = (reduced ? 1 : Math.min(1, Math.max(0, (p - 0.7) / 0.25))) * endFade;
+  const copyOpacity = (reduced ? 1 : Math.min(1, Math.max(0, (p - 0.62) / 0.18))) * endFade;
 
   return (
     <section
@@ -144,11 +144,11 @@ export default function Break({
             {/* stage caption — narrates what the animation is doing right now */}
             {!reduced && (
               <p className="mt-4 max-w-md font-mono text-xs uppercase tracking-[0.18em] text-lavender">
-                {p < 0.18
+                {p < 0.16
                   ? "one legacy codebase · years of coupling"
-                  : p < 0.46
+                  : p < 0.4
                     ? "agents break it along its seams"
-                    : p < 0.84
+                    : p < 0.72
                       ? "independent services · each owned, tested, deployable"
                       : "rebuilt as one: dark titan"}
               </p>
