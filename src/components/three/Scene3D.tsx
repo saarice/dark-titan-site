@@ -3,6 +3,7 @@ import { Canvas } from "@react-three/fiber";
 import { EffectComposer, Bloom } from "@react-three/postprocessing";
 import MonolithSolid from "./MonolithSolid";
 import LogoSolid from "./LogoSolid";
+import CrestForge from "./CrestForge";
 import { useScrollProgress } from "../../hooks/useScrollProgress";
 import { useMonolithX, type TrackStop } from "../../hooks/useSectionFocus";
 import { usePointer } from "../../hooks/usePointer";
@@ -51,7 +52,7 @@ export default function Scene3D({ paused = false }: { paused?: boolean }) {
     <div className="fixed inset-0" style={{ zIndex: 0, pointerEvents: "none" }} aria-hidden>
       <Canvas
         camera={{ position: [0, 0, 6.4], fov: 50 }}
-        gl={{ antialias: !isMobile, powerPreference: "high-performance" }}
+        gl={{ antialias: !isMobile, powerPreference: "high-performance", localClippingEnabled: true }}
         dpr={isMobile ? [1, 1.25] : [1, 1.5]}
         frameloop={paused ? "never" : "always"}
       >
@@ -68,6 +69,9 @@ export default function Scene3D({ paused = false }: { paused?: boolean }) {
               monolith takes over for the data sections — a clean cross-fade. */}
           <LogoSolid scroll={scroll} posX={posX} ptr={ptr} reduced={reduced} />
           <MonolithSolid scroll={scroll} posX={posX} ptr={ptr} reduced={reduced} />
+          {/* the light-carve handoff: monolith splits into 4, each block is swept
+              into its crest piece (prototype) */}
+          <CrestForge scroll={scroll} posX={posX} ptr={ptr} reduced={reduced} />
         </Suspense>
 
         <EffectComposer>

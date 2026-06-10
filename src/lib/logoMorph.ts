@@ -77,6 +77,77 @@ export function buildLogoGeometry(targetHeight = 3.6, depth = 55): THREE.BufferG
   return merged;
 }
 
+/**
+ * The crest decomposed into 4 natural pieces (the 8 paths pair up symmetrically):
+ * left wing (0+2), left core (5+7), right wing (1+3), right core (4+6).
+ * Order here = the CrestForge block order: [left-top, left-bottom, right-top, right-bottom].
+ */
+const PIECE_GROUPS: number[][] = [
+  [0, 2], // left wing
+  [5, 7], // left core (spike + blade half)
+  [1, 3], // right wing
+  [4, 6], // right core
+];
+
+/**
+ * Builds the 4 crest pieces as SEPARATE geometries that share ONE global
+ * transform (union bbox → scale → center), so rendering all four at the origin
+ * reproduces exactly the same assembled crest as buildLogoGeometry(targetHeight).
+ * Each piece keeps its world offset baked in.
+ */
+export function buildLogoPieceGeometries(targetHeight = 3.6, depth = 55): THREE.BufferGeometry[] {
+  const loader = new SVGLoader();
+
+  const pieceGeoms = PIECE_GROUPS.map((idxs) => {
+    const svg =
+      `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 498 396">` +
+      idxs.map((i) => `<path d="${CREST_PATHS[i]}"/>`).join("") +
+      `</svg>`;
+    const data = loader.parse(svg);
+    const parts: THREE.BufferGeometry[] = [];
+    for (const path of data.paths) {
+      for (const shape of SVGLoader.createShapes(path)) {
+        parts.push(
+          new THREE.ExtrudeGeometry(shape, {
+            depth,
+            bevelEnabled: true,
+            bevelThickness: 7,
+            bevelSize: 5,
+            bevelSegments: 2,
+            steps: 1,
+          }),
+        );
+      }
+    }
+    const merged = mergeGeometries(parts, false);
+    for (const g of parts) g.dispose();
+    if (!merged) throw new Error("Failed to merge crest piece geometry");
+    merged.scale(1, -1, 1);
+    reverseWinding(merged);
+    return merged;
+  });
+
+  // ONE shared transform from the union bbox (identical to buildLogoGeometry's
+  // scale+center), applied to every piece, so the assembly matches 1:1.
+  const union = new THREE.Box3();
+  for (const g of pieceGeoms) {
+    g.computeBoundingBox();
+    union.union(g.boundingBox!);
+  }
+  const size = new THREE.Vector3();
+  union.getSize(size);
+  const c = new THREE.Vector3();
+  union.getCenter(c);
+  const s = targetHeight / size.y;
+  for (const g of pieceGeoms) {
+    g.translate(-c.x, -c.y, -c.z);
+    g.scale(s, s, s);
+    g.computeVertexNormals();
+    g.computeBoundingBox();
+  }
+  return pieceGeoms;
+}
+
 /** Reverse triangle winding on a non-indexed geometry by swapping each triangle's
  *  2nd and 3rd vertices (position + uv). Used after a mirror so faces stay
  *  outward-facing for FrontSide rendering. */
