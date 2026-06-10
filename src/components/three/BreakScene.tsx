@@ -10,16 +10,17 @@ import { buildLogoGeometry, sampleCrestVoxels } from "../../lib/logoMorph";
 
 /**
  * Beat M — MONOLITH TO MONOLITH (the wow centerpiece).
- * One timed performance (`progress` 0..1, driven by Break.tsx):
+ * One scroll-scrubbed performance (`progress` 0..1, driven by Break.tsx):
  *
- *   t 0    → 0.10  the EXACT site monolith stands whole: two sealed obsidian
- *                  halves, violet slot glow, floor pool. Smooth, solid.
- *   t 0.08 → 0.10  a tremor builds…
- *   t 0.10 → 0.32  EXPLOSION — the slab shatters into tumbling shards
- *   t 0.34 → 0.52  the shards are pulled back under control into an ordered
+ *   t 0    → 0.14  RETURN — the stone that receded into the dark at the
+ *                  principle beat comes BACK: the slab glides forward out of
+ *                  the fog to centre stage (transparent canvas — same world).
+ *   t 0.16 → 0.20  a tremor builds…
+ *   t 0.20 → 0.40  EXPLOSION — the slab shatters into tumbling shards
+ *   t 0.42 → 0.58  the shards are pulled back under control into an ordered
  *                  service grid (the microservices reading; chips overlay)
- *   t 0.58 → 0.90  the services fly in bottom-up and trace the CREST silhouette
- *   t 0.86 → 1.00  the cloud MORPHS into the real solid 3D crest — shards melt
+ *   t 0.62 → 0.88  the services fly in bottom-up and trace the CREST silhouette
+ *   t 0.88 → 1.00  the cloud MORPHS into the real solid 3D crest — shards melt
  *                  into its faces as it fades in, and the seam blade IGNITES.
  *
  * Chaos → governed → brand. Reduced motion: the finished crest, seam lit.
@@ -157,33 +158,36 @@ function Scenery({ progress, reduced }: { progress: React.RefObject<number>; red
         ));
     const clock = state.clock.elapsedTime;
 
-    // ——— the whole slab, until the moment it blows ———
+    // ——— the slab RETURNS from the depth, stands whole, then blows ———
     if (slab.current) {
-      slab.current.visible = !reduced && t < 0.1;
+      slab.current.visible = !reduced && t < 0.2;
+      // entry: glide forward out of the fog to centre stage
+      const entry = easeOutCubic(seg(t, 0, 0.14));
+      slab.current.position.z = -16 * (1 - entry);
       // tremor: a fast, growing shiver right before the blast
-      const tremor = seg(t, 0.05, 0.1);
+      const tremor = seg(t, 0.16, 0.2);
       slab.current.rotation.z = Math.sin(clock * 60) * 0.006 * tremor;
       slab.current.position.x = Math.sin(clock * 47) * 0.015 * tremor;
     }
     if (slabGlowRef.current) {
       // the slot glow flares as the tremor builds — the seam is the fault line
       (slabGlowRef.current.material as THREE.MeshBasicMaterial).opacity =
-        0.85 + Math.sin(clock * 0.9) * 0.1 + seg(t, 0.05, 0.1) * 0.6;
+        0.85 + Math.sin(clock * 0.9) * 0.1 + seg(t, 0.16, 0.2) * 0.6;
     }
 
     // ——— shards: explosion → grid → crest ———
     const inst = shardsRef.current;
     if (inst) {
-      inst.visible = !reduced && t >= 0.1 && t < 0.97;
+      inst.visible = !reduced && t >= 0.2 && t < 0.97;
       if (inst.visible) {
         const vs = (voxel * 0.92) / (HALF_W / 2);
         const vsy = (voxel * 0.92) / (SLAB_H / Math.ceil(shards.length / 4));
         const melt = seg(t, 0.9, 0.97); // shards shrink into the crest faces
         for (let i = 0; i < shards.length; i++) {
           const s = shards[i];
-          const e = easeOutCubic(seg(t, 0.1, 0.32)); // blast out
-          const g = easeInOut(seg(t, 0.34 + s.dB * 0.4, 0.52 + s.dB * 0.4)); // regroup
-          const c = easeInOut(seg(t, 0.58 + s.dB, 0.78 + s.dB)); // build the crest
+          const e = easeOutCubic(seg(t, 0.2, 0.4)); // blast out
+          const g = easeInOut(seg(t, 0.42 + s.dB * 0.4, 0.58 + s.dB * 0.4)); // regroup
+          const c = easeInOut(seg(t, 0.62 + s.dB, 0.82 + s.dB)); // build the crest
 
           dummy.position.lerpVectors(s.packed, s.burst, e);
           dummy.position.lerp(s.grid, g);
@@ -205,7 +209,7 @@ function Scenery({ progress, reduced }: { progress: React.RefObject<number>; red
     }
 
     // ——— the real crest fades in under the converging cloud ———
-    const crestIn = reduced ? 1 : seg(t, 0.86, 0.96);
+    const crestIn = reduced ? 1 : seg(t, 0.88, 0.96);
     if (crestRef.current) {
       crestRef.current.visible = crestIn > 0;
       const sc = 0.96 + 0.04 * crestIn;
@@ -288,11 +292,13 @@ export default function BreakScene({ progress, reduced }: { progress: React.RefO
   return (
     <Canvas
       camera={{ position: [0, 0, 7.4], fov: 50 }}
-      gl={{ antialias: !isMobile, powerPreference: "high-performance" }}
+      gl={{ antialias: !isMobile, powerPreference: "high-performance", alpha: true }}
       dpr={isMobile ? [1, 1.25] : [1, 1.5]}
       frameloop={reduced ? "demand" : "always"}
     >
-      <color attach="background" args={["#0A0A0C"]} />
+      {/* NO background color — the canvas is transparent so the global
+          grid/star backdrop shows through (the break lives in the same world).
+          Fog still swallows the slab at its entry depth. */}
       <fog attach="fog" args={["#0A0A0C", 9, 30]} />
       <ambientLight intensity={0.3} />
       <pointLight position={[0, 2, 6]} intensity={22} color="#B28AFF" distance={32} />

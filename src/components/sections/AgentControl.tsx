@@ -97,12 +97,24 @@ export default function AgentControl() {
                     <div key={i} className="flex items-center gap-2">
                       <span className="font-mono text-[9px] text-faint">{String(i + 1).padStart(2, "0")}</span>
                       <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-slate">
+                        {/* a LIVE timeline: each lane fills like a job executing,
+                            completes, and a new one starts — staggered + varied
+                            durations so the lanes desync like real concurrency.
+                            Runs only while on screen (viewport-gated), pauses
+                            when scrolled away. */}
                         <motion.div
                           className="h-full rounded-full bg-gradient-to-r from-violet to-lavender"
                           initial={{ width: "0%" }}
-                          whileInView={{ width: `${w}%` }}
-                          viewport={{ once: true, margin: "-10%" }}
-                          transition={{ delay: 0.2 + i * 0.07, duration: 1, ease: [0.22, 1, 0.36, 1] }}
+                          whileInView={{ width: ["0%", `${w}%`, `${w}%`] }}
+                          viewport={{ once: false, amount: 0.5 }}
+                          transition={{
+                            delay: 0.2 + i * 0.18,
+                            duration: 1.6 + (i % 3) * 0.6,
+                            times: [0, 0.75, 1],
+                            repeat: Infinity,
+                            repeatDelay: 0.4 + (i % 2) * 0.5,
+                            ease: "easeOut",
+                          }}
                         />
                       </div>
                     </div>

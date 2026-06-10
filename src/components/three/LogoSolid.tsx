@@ -4,7 +4,6 @@ import * as THREE from "three";
 import { buildLogoGeometry } from "../../lib/logoMorph";
 import { useObsidianMaterial } from "./obsidian";
 import { useBladeGlow, usePoolGlow } from "./glows";
-import { smoothstep } from "../../lib/choreography";
 
 /**
  * The solid 3D Dark Titan crest. Shares the monolith's MeshStandardMaterial,
@@ -18,15 +17,17 @@ import { smoothstep } from "../../lib/choreography";
  * assembles in at the Factory section.
  */
 export default function LogoSolid({
-  scroll,
   posX,
   ptr,
   reduced,
+  live = false,
 }: {
-  scroll: React.RefObject<number>;
   posX: React.RefObject<number>;
   ptr: React.RefObject<{ x: number; y: number }>;
   reduced: boolean;
+  /** true from the Break finale to the bottom of the page — the crest scales in
+   *  and rides the track; flips off if the user scrubs back up the Break */
+  live?: boolean;
 }) {
   const camera = useThree((s) => s.camera);
 
@@ -71,16 +72,17 @@ export default function LogoSolid({
   const rotX = useRef(0);
   const posXCur = useRef(0);
   const posYCur = useRef(0);
+  const liveCur = useRef(0);
 
   useFrame((state, delta) => {
     const t = state.clock.elapsedTime;
-    const p = reduced ? 0 : scroll.current ?? 0;
 
-    // The crest scales in as the monolith fades out — a clean cross-fade (Saar's
-    // pick; the CrestForge light-carve alternative is parked on branch
-    // crest-forge-prototype). Reduced motion shows only the monolith (the hero
-    // reading), so the crest stays hidden.
-    const present = reduced ? 0 : smoothstep(0.16, 0.24, p);
+    // The crest exists only from the Break's finale onward (`live`, signalled by
+    // the Break scrub) — it scales in where the forge left it and rides the
+    // track to the bottom. Scrubbing back up the Break dismisses it. Reduced
+    // motion shows only the monolith, so the crest stays hidden.
+    liveCur.current = THREE.MathUtils.damp(liveCur.current, live && !reduced ? 1 : 0, 4, delta);
+    const present = liveCur.current;
     if (inner.current) inner.current.scale.setScalar(present);
 
     // Seam glow + floor pool fade out with the crest. The blade also SCALES with

@@ -2,7 +2,7 @@ import { useMemo, useRef } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
 import { Environment, Lightformer, ContactShadows, Grid, RoundedBox } from "@react-three/drei";
 import * as THREE from "three";
-import { sceneStateFor, smoothstep } from "../../lib/choreography";
+import { sceneStateFor } from "../../lib/choreography";
 import { useObsidianMaterial } from "./obsidian";
 import { useSlotGlow, usePoolGlow } from "./glows";
 
@@ -88,17 +88,43 @@ export default function MonolithSolid({
   const posXCur = useRef(0);
   const posYCur = useRef(0);
 
+  // The stone's EXIT: it rides every beat to the principle statement, lands
+  // centred there, then recedes BACK into the fog. Driven by the #principle
+  // section's viewport position (measured, not a hardcoded scroll fraction, so
+  // it survives content changes). Fully scroll-reversible.
+  const principleEl = useRef<HTMLElement | null>(null);
+  const lastScroll = useRef(-1);
+  const recedeT = useRef(0);
+  const recedeZ = useRef(0);
+
   useFrame((state, delta) => {
     const t = state.clock.elapsedTime;
     const p = reduced ? 0 : scroll.current ?? 0;
     const s = sceneStateFor(p);
 
-    // The solid stone owns the hero, then fades/scales out — and nothing
-    // replaces it (the crest appears only in the Break finale). The grid, stars
-    // and environment stay as the data sections' backdrop. Reduced motion keeps
-    // the static monolith.
-    const appear = reduced ? 1 : 1 - smoothstep(0.14, 0.2, p);
-    if (stoneGroup.current) stoneGroup.current.scale.setScalar(appear);
+    // Recede progress: 0 until the principle section's centre crosses the
+    // viewport middle, 1 once it has scrolled well past. The rect is only
+    // re-read when the scroll actually moved (cheap); z is damped for glide.
+    if (!reduced && p !== lastScroll.current) {
+      lastScroll.current = p;
+      if (!principleEl.current) principleEl.current = document.getElementById("principle");
+      const el = principleEl.current;
+      if (el) {
+        const r = el.getBoundingClientRect();
+        const vh = window.innerHeight;
+        const c = (r.top + r.bottom) / 2;
+        recedeT.current = THREE.MathUtils.clamp((vh / 2 - c) / (vh * 0.55), 0, 1);
+      }
+    }
+    const recede = reduced ? 0 : recedeT.current;
+    recedeZ.current = THREE.MathUtils.damp(recedeZ.current, -recede * 16, 3, delta);
+    if (stoneGroup.current) {
+      stoneGroup.current.position.z = recedeZ.current;
+      // fully swallowed by the fog — stop drawing it (nothing replaces it until
+      // the Break forges the crest)
+      stoneGroup.current.visible = reduced || recede < 0.995;
+      stoneGroup.current.scale.setScalar(1);
+    }
 
     // Soft pulse on the slot glow + floor pool (whole, never breaks).
     if (glowRef.current) {
@@ -163,10 +189,10 @@ export default function MonolithSolid({
         <meshStandardMaterial color="#544a78" metalness={0.4} roughness={0.6} envMapIntensity={1} />
       </instancedMesh>
 
-      {/* The solid stone, scaled in by `appear` once the morph cloud has gathered
-          it. Everything that *is* the stone lives in here; the grid, stars and
-          reflection environment stay outside so they're present from the start. */}
-      <group ref={stoneGroup} scale={0}>
+      {/* The solid stone. Everything that *is* the stone lives in here (so the
+          principle-recede moves it back as one), while the grid, stars and
+          reflection environment stay outside — present the whole page. */}
+      <group ref={stoneGroup}>
         {/* two obsidian halves with a fixed slot - reads as one sealed stone */}
         <RoundedBox
           args={[HALF_W, SLAB_H, DEPTH]}

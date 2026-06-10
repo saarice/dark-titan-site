@@ -299,7 +299,10 @@ export default function Pipeline() {
                   {/* card */}
                   <div
                     className={[
-                      "absolute top-1/2 w-[calc(100vw-7rem)] rounded-xl border p-4 backdrop-blur-sm transition-all duration-500",
+                      // mobile width accounts for: px-6 container pad + the
+                      // left-14 node column + ml-5 + right pad (was 7rem — the
+                      // cards clipped ~12px off the right edge at 390px)
+                      "absolute top-1/2 w-[calc(100vw-8.75rem)] rounded-xl border p-4 backdrop-blur-sm transition-all duration-500",
                       "left-full ml-5", // mobile + even desktop: right
                       cardRight ? "md:left-full md:ml-5 md:right-auto md:mr-0" : "md:left-auto md:right-full md:ml-0 md:mr-5",
                       "md:w-[min(40vw,300px)]",
