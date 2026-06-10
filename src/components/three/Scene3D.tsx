@@ -26,7 +26,7 @@ const TRACK: TrackStop[] = [
   { id: "flows", x: -1.9 }, // Beat 13
   { id: "break", x: 0 }, // Beat M — global scene paused here; centred on approach
   { id: "tempo", x: 1.9 }, // Beat 14 build replay
-  { id: "offer-table", x: -1.9 }, // Beat 16 the offer at a glance
+  { id: "offer-table", x: 3.3 }, // Beat 16 — table spans the page; stone parks at the right edge
   { id: "contact", x: 0 }, // Beat 18 closing CTA, centred
 ];
 
