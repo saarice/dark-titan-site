@@ -2,7 +2,7 @@ import { Suspense } from "react";
 import { Canvas } from "@react-three/fiber";
 import { EffectComposer, Bloom } from "@react-three/postprocessing";
 import MonolithSolid from "./MonolithSolid";
-import LogoSolid from "./LogoSolid";
+import ForgeStage from "./ForgeStage";
 import { useScrollProgress } from "../../hooks/useScrollProgress";
 import { useMonolithX, type TrackStop } from "../../hooks/useSectionFocus";
 import { usePointer } from "../../hooks/usePointer";
@@ -36,12 +36,11 @@ const TRACK: TrackStop[] = [
  * Fixed full-screen WebGL layer behind all content, driven by scroll.
  */
 export default function Scene3D({
-  paused = false,
   breakProgress,
 }: {
-  paused?: boolean;
-  /** the Break scrub's raw progress (shared ref) — LogoSolid fades in over the
-   *  exact window the Break's crest fades out, so the handoff is seamless */
+  /** the Break section's scrub progress (shared ref) — drives the ForgeStage
+   *  performance, which lives HERE so the forged crest is literally the same
+   *  object that rides to the bottom of the page (no handoff, no second canvas) */
   breakProgress: React.RefObject<number>;
 }) {
   const scroll = useScrollProgress();
@@ -57,7 +56,6 @@ export default function Scene3D({
         camera={{ position: [0, 0, 6.4], fov: 50 }}
         gl={{ antialias: !isMobile, powerPreference: "high-performance" }}
         dpr={isMobile ? [1, 1.25] : [1, 1.5]}
-        frameloop={paused ? "never" : "always"}
       >
         <color attach="background" args={["#0A0A0C"]} />
         <fog attach="fog" args={["#0A0A0C", 8, 30]} />
@@ -74,7 +72,7 @@ export default function Scene3D({
               brand to the bottom. (CrestForge light-carve alternative is parked
               on branch crest-forge-prototype.) */}
           <MonolithSolid scroll={scroll} posX={posX} ptr={ptr} reduced={reduced} />
-          <LogoSolid posX={posX} ptr={ptr} reduced={reduced} breakProgress={breakProgress} />
+          <ForgeStage progress={breakProgress} posX={posX} ptr={ptr} reduced={reduced} />
         </Suspense>
 
         <EffectComposer>

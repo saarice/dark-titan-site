@@ -25,13 +25,9 @@ import Footer from "./components/sections/Footer";
  */
 export default function App() {
   const [loading, setLoading] = useState(true);
-  // Beat M pins a full-screen 3D scene; pause the global canvas while it owns
-  // the viewport. No hide needed: the stone recedes away at the Chaos turn, so
-  // the Break's monolith is the only stone in sight.
-  const [breakActive, setBreakActive] = useState(false);
-  // The Break scrub's raw progress, SHARED with the global scene: its crest
-  // opacity-fades in over the exact window the Break's crest fades out, so the
-  // handoff is a perfect in-place cross-dissolve (and reverses on scroll-up).
+  // The Break section's scrub progress, shared with the global canvas: the
+  // whole monolith→crest performance (ForgeStage) plays THERE, so the forged
+  // crest is the same object that rides to the bottom — one canvas, no handoff.
   const breakProgress = useRef(0);
 
   return (
@@ -41,7 +37,7 @@ export default function App() {
       </AnimatePresence>
 
       {/* fixed WebGL backdrop - decorative, behind everything */}
-      <Scene3D paused={breakActive} breakProgress={breakProgress} />
+      <Scene3D breakProgress={breakProgress} />
 
       <Nav />
 
@@ -59,8 +55,8 @@ export default function App() {
         {/* wired into what you already run */}
         <Integrations />
         <PreBakedFlows />
-        {/* the centerpiece — monolith to monolith */}
-        <Break onActiveChange={setBreakActive} progress={breakProgress} />
+        {/* the centerpiece — monolith to monolith (3D in the global canvas) */}
+        <Break progress={breakProgress} />
         {/* proof in motion + the offer */}
         <Tempo />
         <OfferTable />

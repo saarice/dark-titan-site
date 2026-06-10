@@ -1,59 +1,30 @@
-import { lazy, Suspense, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useReducedMotion } from "../../hooks/useReducedMotion";
-
-// Lazy-load the heavy r3f scene so it only costs when the user nears Beat M.
-const BreakScene = lazy(() => import("../three/BreakScene"));
 
 // The resulting microservices that resolve out of the monolith.
 const SERVICES = ["gateway", "auth", "payments", "billing", "search", "events"];
 
 /**
- * Beat M (archetype F) — the monolith → microservices → crest break, the
- * centerpiece. SCROLL-SCRUBBED over a pinned ~2-screen runway: the monolith
- * (which receded into the dark at the principle beat) returns from the depth,
- * trembles, shatters, regroups as a service grid and forges the crest — all
- * advancing exactly with the scroll, never before you arrive, rewinding when
- * you scroll back. The scene canvas is TRANSPARENT: the global grid/star
- * backdrop stays part of the world (no black slab).
- *
- * The scrub's raw progress is written into the SHARED `progress` ref (owned by
- * App): the Break scene reads it for the performance, and the global scene's
- * crest fades in over the exact window this scene's crest fades out — a
- * perfect in-place cross-dissolve, reversing on scroll-up.
- * Reduced-motion shows the resolved end-state.
+ * Beat M's scroll runway + overlay copy. The 3D performance itself (monolith
+ * returns → shatters → service grid → crest) lives in the GLOBAL canvas
+ * (three/ForgeStage), driven by the `progress` ref this section writes — so the
+ * forged crest is literally the same object that rides to the bottom of the
+ * page. This section only pins the viewport for the scrub and narrates it.
  */
 export default function Break({
-  onActiveChange,
   progress,
 }: {
-  /** true while the section is pinned — the global canvas pauses its frameloop */
-  onActiveChange?: (v: boolean) => void;
-  /** the scrub progress ref, shared with Scene3D/LogoSolid for the handoff */
+  /** the scrub progress ref, shared with Scene3D's ForgeStage */
   progress: React.RefObject<number>;
 }) {
   const reduced = useReducedMotion();
   const sectionRef = useRef<HTMLElement>(null);
   const [p, setP] = useState(reduced ? 1 : 0);
-  const [mounted, setMounted] = useState(reduced);
-  const activeRef = useRef(false);
 
-  // Mount the scene a viewport-and-a-half early so shaders compile before the
-  // show starts; the scrub itself only moves once the section is pinned.
   useEffect(() => {
     if (reduced) return;
     const el = sectionRef.current;
     if (!el) return;
-
-    const mountIO = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting) {
-          setMounted(true);
-          mountIO.disconnect();
-        }
-      },
-      { rootMargin: "150% 0px" },
-    );
-    mountIO.observe(el);
 
     let raf = 0;
     const onScroll = () => {
@@ -65,14 +36,6 @@ export default function Break({
         const np = total > 0 ? Math.min(1, Math.max(0, -rect.top / total)) : 0;
         progress.current = np;
         setP(np);
-        // pause the global backdrop only while the break owns the screen — but
-        // RESUME it for the finale (np ≥ 0.95): its crest must be rendering to
-        // cross-dissolve in under this canvas during the handoff
-        const active = rect.top <= 2 && rect.bottom >= window.innerHeight - 2 && np < 0.95;
-        if (active !== activeRef.current) {
-          activeRef.current = active;
-          onActiveChange?.(active);
-        }
       });
     };
     onScroll();
@@ -80,18 +43,15 @@ export default function Break({
     window.addEventListener("resize", onScroll);
 
     return () => {
-      mountIO.disconnect();
       window.removeEventListener("scroll", onScroll);
       window.removeEventListener("resize", onScroll);
       if (raf) cancelAnimationFrame(raf);
-      onActiveChange?.(false);
     };
-  }, [reduced, onActiveChange, progress]);
+  }, [reduced, progress]);
 
   // Copy + scrim: in as the crest completes (p 0.62→0.8, just before the HOLD),
-  // OUT with the handoff (p 0.965→0.995) — the section's last frames show only
-  // the crest on the transparent world, so nothing (no black gradient band, no
-  // text) lingers while it scrolls out under the next beat.
+  // OUT near the end of the runway — the stage exits clean, and the crest (in
+  // the global canvas) simply keeps going.
   const endFade = reduced ? 1 : 1 - Math.min(1, Math.max(0, (p - 0.965) / 0.03));
   const copyOpacity = (reduced ? 1 : Math.min(1, Math.max(0, (p - 0.62) / 0.18))) * endFade;
 
@@ -109,22 +69,12 @@ export default function Break({
             : "sticky top-0 h-screen overflow-hidden"
         }
       >
-        {/* 3D layer — transparent canvas, the global backdrop shows through */}
-        <div className="absolute inset-0">
-          {mounted && (
-            <Suspense fallback={null}>
-              <BreakScene progress={progress} reduced={reduced} />
-            </Suspense>
-          )}
-        </div>
-
         {/* overlay — the modernization story is stated UP FRONT (eyebrow + title),
             a stage caption narrates the performance, and the resolved services
-            land at the end. */}
+            land at the end. The 3D plays in the global canvas behind. */}
         <div className="pointer-events-none relative z-10 flex h-full min-h-screen flex-col justify-between px-6 py-20 md:px-10">
           {/* bottom scrim keeps the copy legible over the constellation — it
-              exists only while the copy does (the canvas is transparent now, so
-              a constant band would read as a stray black gradient) */}
+              exists only while the copy does */}
           <div
             className="pointer-events-none absolute inset-x-0 bottom-0 h-[45%]"
             style={{
