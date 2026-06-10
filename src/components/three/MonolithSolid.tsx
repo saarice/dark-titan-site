@@ -126,12 +126,13 @@ export default function MonolithSolid({
       debrisRef.current.instanceMatrix.needsUpdate = true;
     }
 
-    // Scroll rotation only. Pointer-follow + idle sway removed — testers found
-    // the backdrop chasing the mouse / drifting on its own distracting (Efi,
-    // 2026-06-09). Only scroll moves the stone now.
-    void ptr;
-    rotY.current = THREE.MathUtils.damp(rotY.current, p * 0.28, 3, delta);
-    rotX.current = THREE.MathUtils.damp(rotX.current, 0, 3, delta);
+    // Pointer sway + gentle scroll rotation (restored 2026-06-10 — Saar wants
+    // the stone following the mouse; overrides the earlier tester note).
+    const ptX = reduced ? 0 : ptr.current?.x ?? 0;
+    const ptY = reduced ? 0 : ptr.current?.y ?? 0;
+    const sway = reduced ? 0 : Math.sin(t * 0.22) * 0.06;
+    rotY.current = THREE.MathUtils.damp(rotY.current, sway + p * 0.28 + ptX * 0.16, 3, delta);
+    rotX.current = THREE.MathUtils.damp(rotX.current, ptY * 0.07, 3, delta);
 
     // Lateral position is choreographed per section (right -> centre -> left ...)
     // by useMonolithX. Reduced motion parks the stone at its hero spot.

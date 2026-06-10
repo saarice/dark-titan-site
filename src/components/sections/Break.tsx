@@ -8,8 +8,8 @@ const BreakScene = lazy(() => import("../three/BreakScene"));
 const SERVICES = ["gateway", "auth", "payments", "billing", "search", "events"];
 
 // One viewing: the break plays as a timed performance, not a scroll scrub.
-// Three acts (break → services → crest build) need the longer runtime.
-const DURATION_MS = 5200;
+// Monolith → explosion → services → solid crest needs the full runtime.
+const DURATION_MS = 6500;
 
 /**
  * Beat M (v2 archetype F) — the monolith → microservices break, the centerpiece.
@@ -118,11 +118,11 @@ export default function Break({ onActiveChange }: { onActiveChange?: (v: boolean
             {/* stage caption — narrates what the animation is doing right now */}
             {!reduced && (
               <p className="mt-4 max-w-md font-mono text-xs uppercase tracking-[0.18em] text-lavender">
-                {p < 0.28
+                {p < 0.1
                   ? "one legacy codebase · years of coupling"
-                  : p < 0.5
-                    ? "agents carve it along its seams"
-                    : p < 0.85
+                  : p < 0.42
+                    ? "agents break it along its seams"
+                    : p < 0.8
                       ? "independent services · each owned, tested, deployable"
                       : "rebuilt as one: dark titan"}
               </p>

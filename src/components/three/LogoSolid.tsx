@@ -109,13 +109,14 @@ export default function LogoSolid({
     // only appears as you move the mouse. A whisper of idle sway keeps it alive.
     // Mostly frontal (faces the viewer), only partly turned toward the camera so
     // it doesn't read as a 3/4 view leaning to the side.
-    // Pointer-follow and idle sway removed — testers found the backdrop chasing
-    // the mouse (and drifting on its own) distracting. The crest now holds a
-    // calm, fixed orientation; only scroll moves it. (Feedback via Efi, 2026-06-09.)
-    void ptr;
+    // Pointer-follow + whisper of idle sway (restored 2026-06-10 — Saar wants
+    // the crest tracking the mouse; overrides the earlier tester note).
     const faceCam = Math.atan2(-posXCur.current, camera.position.z || 6.4) * 0.45;
-    rotY.current = THREE.MathUtils.damp(rotY.current, faceCam, 3, delta);
-    rotX.current = THREE.MathUtils.damp(rotX.current, 0, 3, delta);
+    const ptX = reduced ? 0 : ptr.current?.x ?? 0;
+    const ptY = reduced ? 0 : ptr.current?.y ?? 0;
+    const sway = reduced ? 0 : Math.sin(t * 0.22) * 0.02;
+    rotY.current = THREE.MathUtils.damp(rotY.current, faceCam + sway + ptX * 0.35, 3, delta);
+    rotX.current = THREE.MathUtils.damp(rotX.current, ptY * 0.1, 3, delta);
 
     if (group.current) {
       group.current.rotation.y = rotY.current;

@@ -5,14 +5,11 @@ import Scene3D from "./components/three/Scene3D";
 import Nav from "./components/Nav";
 import PillarRail from "./components/PillarRail";
 import Hero from "./components/sections/Hero";
-import Chaos from "./components/sections/Chaos";
 import TwoWays from "./components/sections/TwoWays";
 import PillarDivider from "./components/sections/PillarDivider";
 import Pipeline from "./components/sections/Pipeline";
 import AgentControl from "./components/sections/AgentControl";
 import Factory from "./components/sections/Factory";
-import Scale from "./components/sections/Scale";
-import OneInstance from "./components/sections/OneInstance";
 import Manifesto from "./components/sections/Manifesto";
 import Integrations from "./components/sections/Integrations";
 import PreBakedFlows from "./components/sections/PreBakedFlows";
@@ -44,8 +41,6 @@ export default function App() {
           { label: "Process as code", id: "process" },
           { label: "Agent control", id: "agents" },
           { label: "Runtime control UI", id: "runtime" },
-          { label: "Scale on Kubernetes", id: "scale" },
-          { label: "One instance", id: "team" },
         ]}
       />
       <PillarRail
@@ -57,10 +52,8 @@ export default function App() {
       />
 
       <main className="relative z-10 overflow-x-clip">
-        {/* Beat 1 — hero */}
+        {/* Beat 1 — hero. (Chaos/MORE-NOISE beat cut 2026-06-10: scroll tax) */}
         <Hero revealed={!loading} />
-        {/* Beat 2 — pain → turn */}
-        <Chaos />
         {/* Beat 3 — orientation: two ways */}
         <TwoWays />
 
@@ -72,12 +65,11 @@ export default function App() {
           title="As Infrastructure"
           sub="Not a black box you hand the keys to."
         />
-        {/* Beats 5–9 — the five infrastructure capabilities */}
+        {/* Beats 5–7 — infrastructure capabilities (Scale + OneInstance cut
+            2026-06-10 per Saar: shorter page, keep the value demos) */}
         <Pipeline />
         <AgentControl />
         <Factory />
-        <Scale />
-        <OneInstance />
         {/* Beat 10 — the Infrastructure Principle (pillar payoff) */}
         <Manifesto />
 

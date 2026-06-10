@@ -16,14 +16,11 @@ import { useReducedMotion } from "../../hooks/useReducedMotion";
  */
 const TRACK: TrackStop[] = [
   { id: "home", x: 2.2 }, // hero: copy left, monolith centred opposite it (not pushed to the edge)
-  { id: "chaos", x: 2.2 }, // pain beat — stone on the RIGHT, the type stack reads from the left
   { id: "offer", x: 1.9 }, // two-ways orientation
   { id: "pillar-infra", x: 0 }, // Pillar I statement — commanding, centred
   { id: "process", x: -0.5 }, // Beat 5 process as code — crest centred in the gap (text left, timeline right)
   { id: "agents", x: 1.9 }, // Beat 6 agent control
   { id: "runtime", x: -1.9 }, // Beat 7 runtime UI
-  { id: "scale", x: 1.9 }, // Beat 8 scale on K8s
-  { id: "team", x: -1.9 }, // Beat 9 one instance
   { id: "principle", x: 0 }, // Beat 10 — Infrastructure Principle, centred climax
   { id: "pillar-eco", x: 0 }, // Pillar II statement — centred
   { id: "integrations", x: 1.9 }, // Beat 12
