@@ -19,7 +19,15 @@ const DURATION_MS = 6500;
  * heavy r3f scenes animating at once). Reduced-motion shows the resolved
  * end-state, no animation.
  */
-export default function Break({ onActiveChange }: { onActiveChange?: (v: boolean) => void }) {
+export default function Break({
+  onActiveChange,
+  onNearChange,
+}: {
+  onActiveChange?: (v: boolean) => void;
+  /** true while ANY part of the section is on screen — the global backdrop
+   *  stone hides so the break's monolith is the only stone in sight */
+  onNearChange?: (v: boolean) => void;
+}) {
   const reduced = useReducedMotion();
   const sectionRef = useRef<HTMLElement>(null);
   const progress = useRef(reduced ? 1 : 0);
@@ -27,6 +35,7 @@ export default function Break({ onActiveChange }: { onActiveChange?: (v: boolean
   const [mounted, setMounted] = useState(reduced);
   const startedRef = useRef(reduced);
   const activeRef = useRef(false);
+  const nearRef = useRef(false);
 
   // Drive the performance: mount early, play once when ~half the section shows.
   useEffect(() => {
@@ -71,6 +80,12 @@ export default function Break({ onActiveChange }: { onActiveChange?: (v: boolean
           activeRef.current = active;
           onActiveChange?.(active);
         }
+        // and hide it the moment the break peeks into view at all — otherwise
+        // two monoliths share the viewport (reads as a duplication bug)
+        if (e.isIntersecting !== nearRef.current) {
+          nearRef.current = e.isIntersecting;
+          onNearChange?.(e.isIntersecting);
+        }
       },
       { threshold: [0, 0.45, 0.5, 1] },
     );
@@ -81,8 +96,9 @@ export default function Break({ onActiveChange }: { onActiveChange?: (v: boolean
       playIO.disconnect();
       cancelAnimationFrame(raf);
       onActiveChange?.(false);
+      onNearChange?.(false);
     };
-  }, [reduced, onActiveChange]);
+  }, [reduced, onActiveChange, onNearChange]);
 
   const copyOpacity = reduced ? 1 : Math.min(1, Math.max(0, (p - 0.7) / 0.25));
 

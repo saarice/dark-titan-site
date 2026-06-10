@@ -2,15 +2,17 @@ import { useEffect, useRef, useState } from "react";
 import { useReducedMotion } from "../../hooks/useReducedMotion";
 
 /**
- * The luminous pipeline. A real `flow.yaml` run, executed as you scroll:
- * a signal travels the central spine (the monolith seam, extended) and each
- * stage node ignites in turn — implement → review → loop → pause → ship.
+ * The luminous pipeline. A real `flow.yaml` run that EXECUTES ON ITS OWN:
+ * when the section comes into view the signal travels the central spine (the
+ * monolith seam, extended) over ~9s and each stage node ignites in turn —
+ * implement → review → loop → pause → ship. No scroll-scrubbing (Saar,
+ * 2026-06-10 — same rule as the Break: animations play, scroll just arrives).
  *
- * Single source of truth: scroll progress `p` (0..1) over a tall pinned
- * region. `fill` (the signal height) and every node's state are derived from
- * it, so nothing can drift. Reduced motion shows the final, fully-shipped
- * frame with no scroll scrubbing.
+ * Single source of truth: played progress `p` (0..1). `fill` (the signal
+ * height) and every node's state are derived from it, so nothing can drift.
+ * Reduced motion shows the final, fully-shipped frame.
  */
+const DURATION_MS = 9000;
 
 type Stage = {
   key: string;
@@ -125,30 +127,42 @@ type NodeState = "idle" | "lit" | "passed";
 
 export default function Pipeline() {
   const reduced = useReducedMotion();
-  const wrapRef = useRef<HTMLDivElement>(null);
+  const sectionRef = useRef<HTMLElement>(null);
   const [p, setP] = useState(reduced ? 1 : 0);
+  const startedRef = useRef(reduced);
 
+  // Play the run once, when roughly half the section is on screen.
   useEffect(() => {
     if (reduced) return;
+    const el = sectionRef.current;
+    if (!el) return;
     let raf = 0;
-    const onScroll = () => {
-      if (raf) return;
-      raf = requestAnimationFrame(() => {
-        raf = 0;
-        const el = wrapRef.current;
-        if (!el) return;
-        const total = el.offsetHeight - window.innerHeight;
-        const next = total > 0 ? Math.min(1, Math.max(0, -el.getBoundingClientRect().top / total)) : 0;
-        setP(next);
-      });
+
+    const play = () => {
+      const t0 = performance.now();
+      const tick = (now: number) => {
+        const t = Math.min(1, (now - t0) / DURATION_MS);
+        setP(t);
+        if (t < 1) raf = requestAnimationFrame(tick);
+      };
+      raf = requestAnimationFrame(tick);
     };
-    onScroll();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    window.addEventListener("resize", onScroll);
+
+    const io = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].intersectionRatio >= 0.45 && !startedRef.current) {
+          startedRef.current = true;
+          play();
+          io.disconnect();
+        }
+      },
+      { threshold: [0.45] },
+    );
+    io.observe(el);
+
     return () => {
-      window.removeEventListener("scroll", onScroll);
-      window.removeEventListener("resize", onScroll);
-      if (raf) cancelAnimationFrame(raf);
+      io.disconnect();
+      cancelAnimationFrame(raf);
     };
   }, [reduced]);
 
@@ -166,21 +180,20 @@ export default function Pipeline() {
   const statusOf = (s: Stage, st: NodeState) => (st === "passed" ? s.done : st === "lit" ? s.run : s.idle);
 
   return (
-    <section id="process" className="relative">
+    <section id="process" ref={sectionRef} className="relative">
       {/* readability scrim over the WebGL backdrop */}
       <div
         className="pointer-events-none absolute inset-0 -z-[1]"
         style={{ background: "radial-gradient(70% 55% at 68% 45%, rgba(10,10,12,0.9), rgba(10,10,12,0) 75%)" }}
       />
 
-      {/* tall scroll region; pinned stage inside. 440vh → 300vh: testers said
-          the scroll-gated run felt like a slideshow; same five stages, less runway. */}
-      <div ref={wrapRef} style={{ height: reduced ? "auto" : "300vh" }}>
+      {/* one screen — the run plays on its own; no pinned scroll region */}
+      <div>
         <div
           className={
             reduced
               ? "px-6 py-28 md:px-10"
-              : "sticky top-0 flex min-h-screen flex-col justify-center overflow-hidden px-6 py-20 md:px-10"
+              : "flex min-h-screen flex-col justify-center overflow-hidden px-6 py-20 md:px-10"
           }
         >
           {/* Same centred page grid as every other section (Hero/Factory/Trust

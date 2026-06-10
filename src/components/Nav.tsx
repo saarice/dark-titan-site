@@ -2,11 +2,12 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import Logo from "./Logo";
 
-// Each link points at its beat's section id. ("Offer" dropped with the TwoWays
-// beat, 2026-06-10 — the offer-at-a-glance table is "Why".)
+// Each link points at its beat's section id. The Infrastructure/Ecosystem
+// pillar split is gone (Saar, 2026-06-10) — links name the value directly.
 const LINKS: [string, string][] = [
-  ["Infrastructure", "pillar-infra"],
-  ["Ecosystem", "pillar-eco"],
+  ["Platform", "process"],
+  ["Integrations", "integrations"],
+  ["Modernize", "break"],
   ["Why", "offer-table"],
 ];
 

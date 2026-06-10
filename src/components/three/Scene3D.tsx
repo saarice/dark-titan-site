@@ -16,25 +16,34 @@ import { useReducedMotion } from "../../hooks/useReducedMotion";
  */
 const TRACK: TrackStop[] = [
   { id: "home", x: 2.2 }, // hero: copy left, monolith centred opposite it (not pushed to the edge)
-  { id: "pillar-infra", x: 0 }, // Pillar I statement — commanding, centred
-  { id: "process", x: -0.5 }, // Beat 5 process as code — crest centred in the gap (text left, timeline right)
-  { id: "agents", x: 1.9 }, // Beat 6 agent control
-  { id: "runtime", x: -1.9 }, // Beat 7 runtime UI
-  { id: "principle", x: 0 }, // Beat 10 — Infrastructure Principle, centred climax
-  { id: "pillar-eco", x: 0 }, // Pillar II statement — centred
-  { id: "integrations", x: 1.9 }, // Beat 12
-  { id: "flows", x: -1.9 }, // Beat 13
-  { id: "break", x: 0 }, // Beat M — global scene paused here; centred on approach
-  { id: "tempo", x: 1.9 }, // Beat 14 build replay
-  { id: "offer-table", x: 3.3 }, // Beat 16 — table spans the page; stone parks at the right edge
-  { id: "contact", x: 0 }, // Beat 18 closing CTA, centred
+  { id: "chaos", x: 2.2 }, // pain beat — stone on the RIGHT, the type stack reads from the left
+  { id: "process", x: -0.5 }, // process as code — crest centred in the gap (text left, timeline right)
+  { id: "agents", x: 1.9 }, // agent control
+  { id: "runtime", x: -1.9 }, // runtime UI
+  { id: "scale", x: 1.9 }, // scale on K8s
+  { id: "team", x: -1.9 }, // one instance
+  { id: "principle", x: 0 }, // Infrastructure Principle, centred climax
+  { id: "integrations", x: 1.9 },
+  { id: "flows", x: -1.9 },
+  { id: "break", x: 0 }, // centerpiece — global scene hides on approach (Break drives it)
+  { id: "tempo", x: 1.9 }, // build replay
+  { id: "offer-table", x: 3.3 }, // table spans the page; stone parks at the right edge
+  { id: "contact", x: 0 }, // closing CTA, centred
 ];
 
 /**
  * Fixed full-screen WebGL layer behind all content, driven by scroll.
  * Renders the single sealed obsidian monolith (the only hero reading).
  */
-export default function Scene3D({ paused = false }: { paused?: boolean }) {
+export default function Scene3D({
+  paused = false,
+  hidden = false,
+}: {
+  paused?: boolean;
+  /** fades the whole backdrop out (used while the Break beat is on screen, so
+   *  its monolith is the only stone in sight) */
+  hidden?: boolean;
+}) {
   const scroll = useScrollProgress();
   const posX = useMonolithX(TRACK);
   const ptr = usePointer();
@@ -43,7 +52,11 @@ export default function Scene3D({ paused = false }: { paused?: boolean }) {
   const isMobile = typeof window !== "undefined" && window.innerWidth < 768;
 
   return (
-    <div className="fixed inset-0" style={{ zIndex: 0, pointerEvents: "none" }} aria-hidden>
+    <div
+      className="fixed inset-0 transition-opacity duration-700"
+      style={{ zIndex: 0, pointerEvents: "none", opacity: hidden ? 0 : 1 }}
+      aria-hidden
+    >
       <Canvas
         camera={{ position: [0, 0, 6.4], fov: 50 }}
         gl={{ antialias: !isMobile, powerPreference: "high-performance" }}
