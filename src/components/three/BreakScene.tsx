@@ -1,6 +1,6 @@
 import { Suspense, useMemo, useRef } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
-import { Environment, Lightformer, RoundedBox } from "@react-three/drei";
+import { Environment, Lightformer, Preload, RoundedBox } from "@react-three/drei";
 import { EffectComposer, Bloom } from "@react-three/postprocessing";
 import * as THREE from "three";
 import { useObsidianMaterial } from "./obsidian";
@@ -47,7 +47,9 @@ function Blocks({ progress, reduced }: { progress: React.RefObject<number>; redu
       const gc = i % 4;
       const gr = Math.floor(i / 4);
       const target = new THREE.Vector3((gc - 1.5) * 1.18, (gr - 1.5) * 1.0, ((gc + gr) % 2) * 0.35 - 0.17);
-      arr.push({ packed, target, delay: (i / N) * 0.42, rot: ((i % 3) - 1) * 0.12 });
+      // Tighter stagger (0.42 → 0.22): with the long window most blocks sat
+      // frozen through the first half of the scrub and the break felt stuck.
+      arr.push({ packed, target, delay: (i / N) * 0.22, rot: ((i % 3) - 1) * 0.12 });
     }
     return arr;
   }, []);
@@ -55,13 +57,17 @@ function Blocks({ progress, reduced }: { progress: React.RefObject<number>; redu
   useFrame((_, delta) => {
     if (reduced) return; // static resolved end-state (positions set via the position prop)
     const want = THREE.MathUtils.clamp(progress.current ?? 0, 0, 1);
-    cur.current = THREE.MathUtils.damp(cur.current, want, 6, delta);
-    const t = cur.current;
+    // Softer damp (6 → 4.5): scroll arrives in discrete steps; the lower lambda
+    // glides between them instead of visibly stepping with each wheel tick.
+    cur.current = THREE.MathUtils.damp(cur.current, want, 4.5, delta);
+    // Choreography completes at 88% of the pin, not the very last pixel — the
+    // tail otherwise read as the animation hanging unfinished ("stuck").
+    const t = Math.min(1, cur.current / 0.88);
     for (let i = 0; i < N; i++) {
       const mesh = refs.current[i];
       if (!mesh) continue;
       const b = blocks[i];
-      const local = THREE.MathUtils.clamp((t - b.delay) / (1 - 0.42), 0, 1);
+      const local = THREE.MathUtils.clamp((t - b.delay) / (1 - 0.22), 0, 1);
       const e = easeInOut(local);
       mesh.position.lerpVectors(b.packed, b.target, e);
       // a gentle arc up-and-out during transit; settles flat (ordered) at the end
@@ -113,6 +119,9 @@ export default function BreakScene({ progress, reduced }: { progress: React.RefO
           <Lightformer intensity={2.2} color="#7C4AF0" position={[3, 0, 5]} scale={[3, 8, 1]} />
           <Lightformer intensity={1} color="#AEB4C7" position={[0, 4, -2]} scale={[9, 4, 1]} />
         </Environment>
+        {/* compile shaders + upload textures at mount (1.5 viewports before the
+            pin), so the first scrubbed frames don't hitch on first render */}
+        <Preload all />
       </Suspense>
 
       <EffectComposer>
