@@ -93,11 +93,11 @@ export default function MonolithSolid({
     const p = reduced ? 0 : scroll.current ?? 0;
     const s = sceneStateFor(p);
 
-    // The solid stone owns the hero + the pain beat, then hands off HARD to the
-    // CrestForge at p=0.095: the forge's 4 quadrant blocks are pixel-identical to
-    // this sealed stone, so the swap is invisible — from there the forge carves
-    // them into the crest. Reduced motion keeps the static monolith.
-    const appear = reduced ? 1 : 1 - smoothstep(0.085, 0.095, p);
+    // The solid stone owns the hero, then fades/scales out as the crest logo
+    // takes over for the data sections — a clean cross-fade (Saar's pick; the
+    // CrestForge light-carve alternative is parked on branch
+    // crest-forge-prototype). Reduced motion keeps the static monolith.
+    const appear = reduced ? 1 : 1 - smoothstep(0.14, 0.2, p);
     if (stoneGroup.current) stoneGroup.current.scale.setScalar(appear);
 
     // Soft pulse on the slot glow + floor pool (whole, never breaks).

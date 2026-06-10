@@ -76,11 +76,11 @@ export default function LogoSolid({
     const t = state.clock.elapsedTime;
     const p = reduced ? 0 : scroll.current ?? 0;
 
-    // The crest takes over from the CrestForge the moment its carve completes
-    // (P1 = 0.272): the forge's assembled pieces and this crest are coincident at
-    // that scroll, so the takeover reads as one object. Reduced motion shows only
-    // the monolith (the hero reading), so the crest stays hidden.
-    const present = reduced ? 0 : smoothstep(0.266, 0.272, p);
+    // The crest scales in as the monolith fades out — a clean cross-fade (Saar's
+    // pick; the CrestForge light-carve alternative is parked on branch
+    // crest-forge-prototype). Reduced motion shows only the monolith (the hero
+    // reading), so the crest stays hidden.
+    const present = reduced ? 0 : smoothstep(0.16, 0.24, p);
     if (inner.current) inner.current.scale.setScalar(present);
 
     // Seam glow + floor pool fade out with the crest. The blade also SCALES with
