@@ -3,7 +3,6 @@ import { useFrame, useThree } from "@react-three/fiber";
 import * as THREE from "three";
 import { buildLogoGeometry } from "../../lib/logoMorph";
 import { useObsidianMaterial } from "./obsidian";
-import { useBladeGlow, usePoolGlow } from "./glows";
 
 /**
  * The solid 3D Dark Titan crest. Shares the monolith's MeshStandardMaterial,
@@ -52,15 +51,12 @@ export default function LogoSolid({
     color: "#140f20",
   });
 
-  const bladeGlow = useBladeGlow();
-  const poolGlow = usePoolGlow();
   const dims = useMemo(() => {
     geom.computeBoundingBox();
     const bb = geom.boundingBox!;
     return {
       seamHeight: (bb.max.y - bb.min.y) * 0.94,
       frontZ: bb.max.z + 0.03,
-      bottomY: bb.min.y,
     };
   }, [geom]);
 
@@ -69,8 +65,6 @@ export default function LogoSolid({
   const group = useRef<THREE.Group>(null);
   const inner = useRef<THREE.Group>(null);
   const channel = useRef<THREE.Mesh>(null);
-  const seam = useRef<THREE.Mesh>(null);
-  const pool = useRef<THREE.Mesh>(null);
   const rotY = useRef(0);
   const rotX = useRef(0);
   const posXCur = useRef(0);
@@ -98,17 +92,10 @@ export default function LogoSolid({
     if (channel.current) {
       (channel.current.material as THREE.MeshBasicMaterial).opacity = 0.92 * present;
     }
-
-    // Seam glow + floor pool fade with the same value.
-    if (seam.current) {
-      (seam.current.material as THREE.MeshBasicMaterial).opacity =
-        (0.55 + Math.sin(t * 0.9) * 0.08) * present;
-      seam.current.scale.setScalar(1);
-    }
-    if (pool.current) {
-      (pool.current.material as THREE.MeshBasicMaterial).opacity =
-        (0.4 + Math.sin(t * 0.8) * 0.05) * present;
-    }
+    // NOTE: deliberately NO blade glow / floor pool here — the light show
+    // belongs to the Break's forge; the crest that rides the rest of the page
+    // is the clean obsidian mark (the stray beam + glowing circle that tagged
+    // along after the handoff were exactly this, removed 2026-06-10).
 
     const posXTarget = reduced ? 1.9 : posX.current ?? 0;
     // Vertical placement: sits a touch below centre so the crest reads centred
@@ -154,35 +141,6 @@ export default function LogoSolid({
           <meshBasicMaterial color="#05030a" transparent opacity={0.92} toneMapped={false} />
         </mesh>
       </group>
-
-      {/* Seam glow OUTSIDE `inner`: a deep, luminous slit of light sitting in the
-          carved channel — the throughline the crest and monolith share. */}
-      <mesh ref={seam} position={[0, 0, dims.frontZ]}>
-        {/* Kept within the crest's height + inside the dark channel width, so the
-            blade of light sits IN the slit and never pokes out past the logo. */}
-        <planeGeometry args={[0.18, dims.seamHeight * 0.96]} />
-        <meshBasicMaterial
-          map={bladeGlow}
-          color="#9A4DFF"
-          transparent
-          opacity={1}
-          depthWrite={false}
-          blending={THREE.AdditiveBlending}
-          toneMapped={false}
-        />
-      </mesh>
-
-      {/* Violet pool spilling onto the floor under the crest, like the monolith. */}
-      <mesh ref={pool} rotation={[-Math.PI / 2, 0, 0]} position={[0, dims.bottomY + 0.04, 0.1]}>
-        <planeGeometry args={[2.1, 2.1]} />
-        <meshBasicMaterial
-          map={poolGlow}
-          transparent
-          depthWrite={false}
-          blending={THREE.AdditiveBlending}
-          toneMapped={false}
-        />
-      </mesh>
     </group>
   );
 }

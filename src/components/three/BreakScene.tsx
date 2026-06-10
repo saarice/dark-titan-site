@@ -97,6 +97,7 @@ function Scenery({ progress, reduced }: { progress: React.RefObject<number>; red
   const shardsRef = useRef<THREE.InstancedMesh>(null);
   const crestRef = useRef<THREE.Group>(null);
   const bladeRef = useRef<THREE.Mesh>(null);
+  const poolRef = useRef<THREE.Mesh>(null);
   const cur = useRef(reduced ? 1 : 0);
   const dummy = useMemo(() => new THREE.Object3D(), []);
 
@@ -236,6 +237,14 @@ function Scenery({ progress, reduced }: { progress: React.RefObject<number>; red
       (bladeRef.current.material as THREE.MeshBasicMaterial).opacity =
         on * handOut * (0.62 + Math.sin(clock * 0.9) * 0.08);
     }
+    // the floor pool belongs to this stage: in with the slab's return, OUT with
+    // the handoff — otherwise it lingers as a stray glowing circle after the
+    // crest has moved on
+    if (poolRef.current) {
+      (poolRef.current.material as THREE.MeshBasicMaterial).opacity = reduced
+        ? 0.9
+        : 0.9 * seg(t, 0.02, 0.12) * handOut;
+    }
   });
 
   return (
@@ -294,10 +303,10 @@ function Scenery({ progress, reduced }: { progress: React.RefObject<number>; red
         </mesh>
       </group>
 
-      {/* floor pool — under the slab, stays for the crest */}
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -SLAB_H / 2 + 0.02, 0.12]}>
+      {/* floor pool — under the slab; fades out with the handoff */}
+      <mesh ref={poolRef} rotation={[-Math.PI / 2, 0, 0]} position={[0, -SLAB_H / 2 + 0.02, 0.12]}>
         <planeGeometry args={[2.4, 2.4]} />
-        <meshBasicMaterial map={poolGlow} transparent depthWrite={false} blending={THREE.AdditiveBlending} toneMapped={false} />
+        <meshBasicMaterial map={poolGlow} transparent opacity={0} depthWrite={false} blending={THREE.AdditiveBlending} toneMapped={false} />
       </mesh>
     </group>
   );

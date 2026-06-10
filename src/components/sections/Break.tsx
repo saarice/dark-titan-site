@@ -88,7 +88,12 @@ export default function Break({
     };
   }, [reduced, onActiveChange, progress]);
 
-  const copyOpacity = reduced ? 1 : Math.min(1, Math.max(0, (p - 0.7) / 0.25));
+  // Copy + scrim: in once the services resolve (p 0.7→0.95), OUT with the
+  // handoff (p 0.965→0.995) — the section's last frames show only the crest on
+  // the transparent world, so nothing (no black gradient band, no text) lingers
+  // while it scrolls out under the next beat.
+  const endFade = reduced ? 1 : 1 - Math.min(1, Math.max(0, (p - 0.965) / 0.03));
+  const copyOpacity = (reduced ? 1 : Math.min(1, Math.max(0, (p - 0.7) / 0.25))) * endFade;
 
   return (
     <section
@@ -117,10 +122,16 @@ export default function Break({
             a stage caption narrates the performance, and the resolved services
             land at the end. */}
         <div className="pointer-events-none relative z-10 flex h-full min-h-screen flex-col justify-between px-6 py-20 md:px-10">
-          {/* bottom scrim keeps the copy legible over the constellation */}
+          {/* bottom scrim keeps the copy legible over the constellation — it
+              exists only while the copy does (the canvas is transparent now, so
+              a constant band would read as a stray black gradient) */}
           <div
             className="pointer-events-none absolute inset-x-0 bottom-0 h-[45%]"
-            style={{ background: "linear-gradient(to top, rgba(10,10,12,0.92) 14%, rgba(10,10,12,0.55) 50%, rgba(10,10,12,0) 100%)" }}
+            style={{
+              background: "linear-gradient(to top, rgba(10,10,12,0.92) 14%, rgba(10,10,12,0.55) 50%, rgba(10,10,12,0) 100%)",
+              opacity: copyOpacity,
+              transition: "opacity 0.25s linear",
+            }}
           />
 
           <div className="relative mx-auto w-full max-w-[1200px]">

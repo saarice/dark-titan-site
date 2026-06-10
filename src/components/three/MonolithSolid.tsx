@@ -97,6 +97,10 @@ export default function MonolithSolid({
   const lastScroll = useRef(-1);
   const recedeT = useRef(0);
   const recedeZ = useRef(0);
+  // 0 while the pain lines play (stone stays at the TRACK's x, right of the
+  // type), ramping to 1 as the Chaos hard-cut hits — pulling the stone to
+  // CENTRE exactly for the turn line, right before it recedes.
+  const centerPull = useRef(0);
 
   useFrame((state, delta) => {
     const t = state.clock.elapsedTime;
@@ -115,6 +119,11 @@ export default function MonolithSolid({
         const r = el.getBoundingClientRect();
         const vh = window.innerHeight;
         recedeT.current = THREE.MathUtils.clamp((vh * 1.05 - r.bottom) / (vh * 0.55), 0, 1);
+        // pin progress through the Chaos sticky runway: the GSAP hard cut lands
+        // at ~0.73, so the stone starts gliding centre-ward exactly with it
+        const pin = Math.max(1, r.height - vh);
+        const pp = THREE.MathUtils.clamp(-r.top / pin, 0, 1);
+        centerPull.current = THREE.MathUtils.clamp((pp - 0.72) / 0.23, 0, 1);
       }
     }
     const recede = reduced ? 0 : recedeT.current;
@@ -162,8 +171,9 @@ export default function MonolithSolid({
     rotX.current = THREE.MathUtils.damp(rotX.current, ptY * 0.07, 3, delta);
 
     // Lateral position is choreographed per section (right -> centre -> left ...)
-    // by useMonolithX. Reduced motion parks the stone at its hero spot.
-    const posXTarget = reduced ? 1.9 : posX.current ?? 0;
+    // by useMonolithX; centerPull overrides it toward 0 for the Chaos turn line.
+    // Reduced motion parks the stone at its hero spot.
+    const posXTarget = reduced ? 1.9 : (posX.current ?? 0) * (1 - centerPull.current);
     // Centred against the hero copy (the monolith only shows through hero+Chaos
     // now, then hands off to the crest) — sits a touch below centre rather than
     // floating high near the nav.

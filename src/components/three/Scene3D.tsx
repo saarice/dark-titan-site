@@ -17,7 +17,7 @@ import { useReducedMotion } from "../../hooks/useReducedMotion";
  */
 const TRACK: TrackStop[] = [
   { id: "home", x: 2.2 }, // hero: copy left, monolith centred opposite it (not pushed to the edge)
-  { id: "chaos", x: 0 }, // pain beat — the stone glides to CENTRE, standing centred behind the turn line
+  { id: "chaos", x: 2.2 }, // pain beat — stone stays RIGHT of the type stack; MonolithSolid pulls it to centre only for the turn line
   { id: "process", x: 0 }, // (the stone has receded by here — kept centred so the exit stays straight back)
   { id: "agents", x: 1.9 }, // agent control
   { id: "runtime", x: -1.9 }, // runtime UI
