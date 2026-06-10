@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { AnimatePresence, MotionConfig } from "framer-motion";
 import LoadingScreen from "./components/LoadingScreen";
 import Scene3D from "./components/three/Scene3D";
@@ -26,12 +26,13 @@ import Footer from "./components/sections/Footer";
 export default function App() {
   const [loading, setLoading] = useState(true);
   // Beat M pins a full-screen 3D scene; pause the global canvas while it owns
-  // the viewport. No hide needed: the stone recedes away at the principle beat,
-  // so the Break's monolith is the only stone in sight — and once its forge
-  // completes, `crestLive` hands the crest to the global scene for the rest of
-  // the page.
+  // the viewport. No hide needed: the stone recedes away at the Chaos turn, so
+  // the Break's monolith is the only stone in sight.
   const [breakActive, setBreakActive] = useState(false);
-  const [crestLive, setCrestLive] = useState(false);
+  // The Break scrub's raw progress, SHARED with the global scene: its crest
+  // opacity-fades in over the exact window the Break's crest fades out, so the
+  // handoff is a perfect in-place cross-dissolve (and reverses on scroll-up).
+  const breakProgress = useRef(0);
 
   return (
     <MotionConfig reducedMotion="user">
@@ -40,7 +41,7 @@ export default function App() {
       </AnimatePresence>
 
       {/* fixed WebGL backdrop - decorative, behind everything */}
-      <Scene3D paused={breakActive} crestLive={crestLive} />
+      <Scene3D paused={breakActive} breakProgress={breakProgress} />
 
       <Nav />
 
@@ -59,7 +60,7 @@ export default function App() {
         <Integrations />
         <PreBakedFlows />
         {/* the centerpiece — monolith to monolith */}
-        <Break onActiveChange={setBreakActive} onCrestChange={setCrestLive} />
+        <Break onActiveChange={setBreakActive} progress={breakProgress} />
         {/* proof in motion + the offer */}
         <Tempo />
         <OfferTable />

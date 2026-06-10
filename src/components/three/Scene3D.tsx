@@ -37,12 +37,12 @@ const TRACK: TrackStop[] = [
  */
 export default function Scene3D({
   paused = false,
-  crestLive = false,
+  breakProgress,
 }: {
   paused?: boolean;
-  /** true from the Break finale onward — the crest joins the backdrop and rides
-   *  the track to the bottom of the page (scrubbing back up dismisses it) */
-  crestLive?: boolean;
+  /** the Break scrub's raw progress (shared ref) — LogoSolid fades in over the
+   *  exact window the Break's crest fades out, so the handoff is seamless */
+  breakProgress: React.RefObject<number>;
 }) {
   const scroll = useScrollProgress();
   const posX = useMonolithX(TRACK);
@@ -74,7 +74,7 @@ export default function Scene3D({
               brand to the bottom. (CrestForge light-carve alternative is parked
               on branch crest-forge-prototype.) */}
           <MonolithSolid scroll={scroll} posX={posX} ptr={ptr} reduced={reduced} />
-          <LogoSolid posX={posX} ptr={ptr} reduced={reduced} live={crestLive} />
+          <LogoSolid posX={posX} ptr={ptr} reduced={reduced} breakProgress={breakProgress} />
         </Suspense>
 
         <EffectComposer>

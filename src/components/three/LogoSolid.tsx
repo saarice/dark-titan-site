@@ -20,14 +20,16 @@ export default function LogoSolid({
   posX,
   ptr,
   reduced,
-  live = false,
+  breakProgress,
 }: {
   posX: React.RefObject<number>;
   ptr: React.RefObject<{ x: number; y: number }>;
   reduced: boolean;
-  /** true from the Break finale to the bottom of the page — the crest scales in
-   *  and rides the track; flips off if the user scrubs back up the Break */
-  live?: boolean;
+  /** the Break scrub's raw progress (0..1). This crest OPACITY-fades in over
+   *  the exact window (0.97→1) and with the exact damping that the Break's own
+   *  crest fades OUT, so the two are perfectly complementary at every scroll
+   *  position — the handoff reads as one element. Scrubbing back up reverses it. */
+  breakProgress: React.RefObject<number>;
 }) {
   const camera = useThree((s) => s.camera);
 
@@ -66,31 +68,42 @@ export default function LogoSolid({
 
   const group = useRef<THREE.Group>(null);
   const inner = useRef<THREE.Group>(null);
+  const channel = useRef<THREE.Mesh>(null);
   const seam = useRef<THREE.Mesh>(null);
   const pool = useRef<THREE.Mesh>(null);
   const rotY = useRef(0);
   const rotX = useRef(0);
   const posXCur = useRef(0);
   const posYCur = useRef(0);
-  const liveCur = useRef(0);
+  const progCur = useRef(0);
 
   useFrame((state, delta) => {
     const t = state.clock.elapsedTime;
 
-    // The crest exists only from the Break's finale onward (`live`, signalled by
-    // the Break scrub) — it scales in where the forge left it and rides the
-    // track to the bottom. Scrubbing back up the Break dismisses it. Reduced
-    // motion shows only the monolith, so the crest stays hidden.
-    liveCur.current = THREE.MathUtils.damp(liveCur.current, live && !reduced ? 1 : 0, 4, delta);
-    const present = liveCur.current;
-    if (inner.current) inner.current.scale.setScalar(present);
+    // Mirror the Break scene EXACTLY: damp the same raw progress with the same
+    // lambda (4.5), apply the same fade window (0.97→1). The Break's crest does
+    // 1−fade, this one does fade — complementary at every instant, both
+    // directions. Full scale always; OPACITY does the reveal (a growing crest
+    // next to a fading one would read as a swap).
+    progCur.current = THREE.MathUtils.damp(
+      progCur.current,
+      reduced ? 0 : THREE.MathUtils.clamp(breakProgress.current ?? 0, 0, 1),
+      4.5,
+      delta,
+    );
+    const present = THREE.MathUtils.clamp((progCur.current - 0.97) / 0.03, 0, 1);
+    if (group.current) group.current.visible = present > 0.002;
+    if (inner.current) inner.current.scale.setScalar(1);
+    material.opacity = present;
+    if (channel.current) {
+      (channel.current.material as THREE.MeshBasicMaterial).opacity = 0.92 * present;
+    }
 
-    // Seam glow + floor pool fade out with the crest. The blade also SCALES with
-    // `present` so it grows/shrinks locked to the crest (never detaches mid-assembly).
+    // Seam glow + floor pool fade with the same value.
     if (seam.current) {
       (seam.current.material as THREE.MeshBasicMaterial).opacity =
         (0.55 + Math.sin(t * 0.9) * 0.08) * present;
-      seam.current.scale.setScalar(present);
+      seam.current.scale.setScalar(1);
     }
     if (pool.current) {
       (pool.current.material as THREE.MeshBasicMaterial).opacity =
@@ -129,14 +142,14 @@ export default function LogoSolid({
   });
 
   return (
-    <group ref={group}>
+    <group ref={group} visible={false}>
       {/* Only the faces live in `inner`, so only they squash into the seam. */}
       <group ref={inner}>
         <mesh geometry={geom} material={material} castShadow />
         {/* A dark recessed channel carved down the centre, so the two halves of
             the crest read as split by a deep gap with the light sitting in it
-            (rides + scales with the crest; no change to the logo's position). */}
-        <mesh position={[0, 0, dims.frontZ - 0.02]}>
+            (fades with the crest; no change to the logo's position). */}
+        <mesh ref={channel} position={[0, 0, dims.frontZ - 0.02]}>
           <planeGeometry args={[0.1, dims.seamHeight * 1.02]} />
           <meshBasicMaterial color="#05030a" transparent opacity={0.92} toneMapped={false} />
         </mesh>

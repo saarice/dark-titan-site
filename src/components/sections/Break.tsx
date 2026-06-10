@@ -16,34 +16,31 @@ const SERVICES = ["gateway", "auth", "payments", "billing", "search", "events"];
  * you scroll back. The scene canvas is TRANSPARENT: the global grid/star
  * backdrop stays part of the world (no black slab).
  *
- * When the forge completes (p ≥ 0.96) it signals `onCrestChange(true)` — the
- * global scene's crest takes over and rides to the bottom of the page.
+ * The scrub's raw progress is written into the SHARED `progress` ref (owned by
+ * App): the Break scene reads it for the performance, and the global scene's
+ * crest fades in over the exact window this scene's crest fades out — a
+ * perfect in-place cross-dissolve, reversing on scroll-up.
  * Reduced-motion shows the resolved end-state.
  */
 export default function Break({
   onActiveChange,
-  onCrestChange,
+  progress,
 }: {
   /** true while the section is pinned — the global canvas pauses its frameloop */
   onActiveChange?: (v: boolean) => void;
-  /** true once the crest has formed — flips back if the user scrubs upward */
-  onCrestChange?: (v: boolean) => void;
+  /** the scrub progress ref, shared with Scene3D/LogoSolid for the handoff */
+  progress: React.RefObject<number>;
 }) {
   const reduced = useReducedMotion();
   const sectionRef = useRef<HTMLElement>(null);
-  const progress = useRef(reduced ? 1 : 0);
   const [p, setP] = useState(reduced ? 1 : 0);
   const [mounted, setMounted] = useState(reduced);
   const activeRef = useRef(false);
-  const crestRef = useRef(false);
 
   // Mount the scene a viewport-and-a-half early so shaders compile before the
   // show starts; the scrub itself only moves once the section is pinned.
   useEffect(() => {
-    if (reduced) {
-      onCrestChange?.(true);
-      return () => onCrestChange?.(false);
-    }
+    if (reduced) return;
     const el = sectionRef.current;
     if (!el) return;
 
@@ -68,18 +65,13 @@ export default function Break({
         const np = total > 0 ? Math.min(1, Math.max(0, -rect.top / total)) : 0;
         progress.current = np;
         setP(np);
-        // pause the global backdrop only while the break owns the screen
-        const active = rect.top <= 2 && rect.bottom >= window.innerHeight - 2;
+        // pause the global backdrop only while the break owns the screen — but
+        // RESUME it for the finale (np ≥ 0.95): its crest must be rendering to
+        // cross-dissolve in under this canvas during the handoff
+        const active = rect.top <= 2 && rect.bottom >= window.innerHeight - 2 && np < 0.95;
         if (active !== activeRef.current) {
           activeRef.current = active;
           onActiveChange?.(active);
-        }
-        // the crest is forged — hand the brand to the global scene (and take it
-        // back if the user scrubs upward past the forge moment)
-        const crest = np >= 0.96;
-        if (crest !== crestRef.current) {
-          crestRef.current = crest;
-          onCrestChange?.(crest);
         }
       });
     };
@@ -93,9 +85,8 @@ export default function Break({
       window.removeEventListener("resize", onScroll);
       if (raf) cancelAnimationFrame(raf);
       onActiveChange?.(false);
-      onCrestChange?.(false);
     };
-  }, [reduced, onActiveChange, onCrestChange]);
+  }, [reduced, onActiveChange, progress]);
 
   const copyOpacity = reduced ? 1 : Math.min(1, Math.max(0, (p - 0.7) / 0.25));
 
