@@ -16,7 +16,6 @@ import { useReducedMotion } from "../../hooks/useReducedMotion";
  */
 const TRACK: TrackStop[] = [
   { id: "home", x: 2.2 }, // hero: copy left, monolith centred opposite it (not pushed to the edge)
-  { id: "offer", x: 1.9 }, // two-ways orientation
   { id: "pillar-infra", x: 0 }, // Pillar I statement — commanding, centred
   { id: "process", x: -0.5 }, // Beat 5 process as code — crest centred in the gap (text left, timeline right)
   { id: "agents", x: 1.9 }, // Beat 6 agent control

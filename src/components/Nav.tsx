@@ -2,9 +2,9 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import Logo from "./Logo";
 
-// Maps the new value-offer arc (§4). Each link points at its beat's section id.
+// Each link points at its beat's section id. ("Offer" dropped with the TwoWays
+// beat, 2026-06-10 — the offer-at-a-glance table is "Why".)
 const LINKS: [string, string][] = [
-  ["Offer", "offer"],
   ["Infrastructure", "pillar-infra"],
   ["Ecosystem", "pillar-eco"],
   ["Why", "offer-table"],
