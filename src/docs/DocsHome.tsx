@@ -70,26 +70,32 @@ const DESCRIPTIONS: Record<string, string> = {
   Examples: "Ready-made task definitions to copy from.",
 };
 
-/** Reference-order opener: h1, big centred logo, quote, bold lead, muted lead. */
+/**
+ * The opener, ONE centred axis (the reference works because its logo IS the
+ * hero visual): hero-scale lockup as the title, "Documentation" beneath it,
+ * the quoted brand line, then the lead split bold/muted. No competing left
+ * headline — the h1 stays for semantics, visually the lockup carries it.
+ */
 export function DocsHomeHero() {
   return (
-    <div className="pt-10">
-      <h1 className="font-display text-h3 leading-tight tracking-tight text-cloud md:text-[2.5rem]">
-        DarkTitan Documentation
-      </h1>
+    <div className="pt-14 text-center">
+      <h1 className="sr-only">DarkTitan Documentation</h1>
 
-      <div className="mx-auto mt-10 flex justify-center">
-        <Logo variant="lockup" className="h-10 md:h-12" />
+      <div className="flex justify-center">
+        <Logo variant="lockup" className="h-12 md:h-16" />
       </div>
+      <p aria-hidden className="mt-5 font-display text-2xl tracking-tight text-cloud md:text-3xl">
+        Documentation
+      </p>
 
-      <blockquote className="mx-auto mt-8 w-fit border-l-2 border-steel pl-4 font-mono text-sm italic text-muted">
+      <blockquote className="mx-auto mt-7 w-fit border-l-2 border-steel pl-4 text-left font-mono text-sm italic text-muted">
         “Lights off. Code out.” — The Agent Factory
       </blockquote>
 
-      <p className="mx-auto mt-7 max-w-2xl text-center text-base font-semibold leading-relaxed text-cloud">
+      <p className="mx-auto mt-9 max-w-2xl text-base font-semibold leading-relaxed text-cloud">
         DarkTitan is an autonomous software pipeline tool.
       </p>
-      <p className="mx-auto mt-3 max-w-2xl text-center leading-relaxed text-muted">
+      <p className="mx-auto mt-3 max-w-2xl leading-relaxed text-muted">
         Write a YAML flow, point it at your codebase, and let Claude Code agents execute each
         stage — implement, review, test, refactor — without interruption.
       </p>
