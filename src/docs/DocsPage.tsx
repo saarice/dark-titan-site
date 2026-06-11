@@ -29,14 +29,13 @@ export default function DocsPage() {
   if (shownSlug !== slug) {
     setShownSlug(slug);
     setMd(null);
-    setMissing(!isHome && !loaderFor(slug));
+    setMissing(!loaderFor(slug));
     setMenuOpen(false);
   }
 
   useEffect(() => {
     document.title = `${docTitle(slug) ?? "Docs"} · DarkTitan Docs`;
     if (!hash) window.scrollTo(0, 0);
-    if (isHome) return; // the home renders its own component, no markdown
     let stale = false;
     loaderFor(slug)?.().then((text) => {
       if (!stale) setMd(text);
@@ -45,7 +44,7 @@ export default function DocsPage() {
       stale = true;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps -- hash deep-links are handled below
-  }, [slug, isHome]);
+  }, [slug]);
 
   // deep-link: once the article is in, jump to the #heading from the URL
   useEffect(() => {
@@ -132,9 +131,7 @@ export default function DocsPage() {
 
         {/* content */}
         <main className="min-w-0 flex-1 pb-24">
-          {isHome ? (
-            <DocsHome />
-          ) : missing ? (
+          {missing ? (
             <div className="pt-16">
               <h1 className="font-display text-h3 text-cloud">Page not found</h1>
               <p className="mt-4 text-muted">
@@ -144,16 +141,26 @@ export default function DocsPage() {
                 Back to docs home
               </Link>
             </div>
-          ) : md === null ? (
-            <p className="pt-16 font-mono text-xs uppercase tracking-[0.2em] text-faint">Loading…</p>
           ) : (
-            <article className="docs-prose max-w-3xl pt-10">
-              <Markdown md={md} />
-            </article>
+            <>
+              {/* the home keeps the card landing AND the Introduction content
+                  below it (reference style) — the md's own h1+tagline are
+                  trimmed there, the hero already says it */}
+              {isHome && <DocsHome />}
+              {md === null ? (
+                isHome ? null : (
+                  <p className="pt-16 font-mono text-xs uppercase tracking-[0.2em] text-faint">Loading…</p>
+                )
+              ) : (
+                <article className={`docs-prose max-w-3xl ${isHome ? "pt-16" : "pt-10"}`}>
+                  <Markdown md={isHome ? trimToFirstH2(md) : md} />
+                </article>
+              )}
+            </>
           )}
 
           {/* pager */}
-          {!isHome && !missing && (prev || next) && (
+          {!missing && (prev || next) && (
             <nav aria-label="Docs pager" className="mt-16 flex max-w-3xl justify-between gap-4 border-t border-slate pt-6">
               {prev ? (
                 <Link to={`/docs${prev.slug ? `/${prev.slug}` : ""}`} className="group text-sm text-muted transition-colors hover:text-cloud">
@@ -174,7 +181,7 @@ export default function DocsPage() {
         </main>
 
         {/* "On this page" rail — scroll-spy TOC, wide screens only */}
-        {!isHome && !missing && headings.length >= 2 && (
+        {!missing && headings.length >= 2 && (
           <aside className="hidden w-52 flex-none xl:block" aria-label="On this page">
             <OnThisPage headings={headings} />
           </aside>
@@ -246,6 +253,13 @@ function OnThisPage({ headings }: { headings: DocHeading[] }) {
       </ul>
     </nav>
   );
+}
+
+/** drop everything before the first "## " — on the home the md's own h1 +
+ *  tagline duplicate the hero, so the article starts at "What is DarkTitan?" */
+function trimToFirstH2(md: string): string {
+  const i = md.indexOf("\n## ");
+  return i === -1 ? md : md.slice(i + 1);
 }
 
 /** flatten a heading's children to plain text (for the anchor id) */
