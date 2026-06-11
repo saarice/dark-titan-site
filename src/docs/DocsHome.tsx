@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import { Link } from "react-router-dom";
 import { DOCS_NAV } from "./manifest";
-import Logo from "../components/Logo";
+import fullLogo from "../assets/brand/darktitan-web.svg";
 
 /**
  * The docs landing, one-to-one with the reference structure (OpenClaw docs):
@@ -71,10 +71,10 @@ const DESCRIPTIONS: Record<string, string> = {
 };
 
 /**
- * The opener, ONE centred axis (the reference works because its logo IS the
- * hero visual): hero-scale lockup as the title, "Documentation" beneath it,
- * the quoted brand line, then the lead split bold/muted. No competing left
- * headline — the h1 stays for semantics, visually the lockup carries it.
+ * The opener, ONE centred axis and CLEAN: the full stacked brand logo (crest +
+ * wordmark) is the hero visual, "Documentation" names the page, one muted lead
+ * (index.md's tagline, verbatim) — no quote block, no extra captions. The h1
+ * stays for semantics, visually the logo carries it.
  */
 export function DocsHomeHero() {
   return (
@@ -82,22 +82,22 @@ export function DocsHomeHero() {
       <h1 className="sr-only">DarkTitan Documentation</h1>
 
       <div className="flex justify-center">
-        <Logo variant="lockup" className="h-12 md:h-16" />
+        <img
+          src={fullLogo}
+          alt=""
+          aria-hidden
+          draggable={false}
+          className="h-44 w-auto select-none md:h-52"
+        />
       </div>
-      <p aria-hidden className="mt-5 font-display text-2xl tracking-tight text-cloud md:text-3xl">
+      <p aria-hidden className="mt-7 font-display text-2xl tracking-tight text-cloud md:text-3xl">
         Documentation
       </p>
 
-      <blockquote className="mx-auto mt-7 w-fit border-l-2 border-steel pl-4 text-left font-mono text-sm italic text-muted">
-        “Lights off. Code out.” — The Agent Factory
-      </blockquote>
-
-      <p className="mx-auto mt-9 max-w-2xl text-base font-semibold leading-relaxed text-cloud">
-        DarkTitan is an autonomous software pipeline tool.
-      </p>
-      <p className="mx-auto mt-3 max-w-2xl leading-relaxed text-muted">
-        Write a YAML flow, point it at your codebase, and let Claude Code agents execute each
-        stage — implement, review, test, refactor — without interruption.
+      <p className="mx-auto mt-5 max-w-2xl leading-relaxed text-muted">
+        DarkTitan is an autonomous software pipeline tool. Write a YAML flow, point it at your
+        codebase, and let Claude Code agents execute each stage — implement, review, test,
+        refactor — without interruption.
       </p>
     </div>
   );
