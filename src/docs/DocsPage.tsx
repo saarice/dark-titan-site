@@ -150,14 +150,9 @@ export default function DocsPage() {
             // pager) — without it, wide screens showed a centred hero over a
             // left-hugging article and full-width cards: three different axes.
             <div className="mx-auto w-full max-w-3xl">
-              {/* home order (one-to-one with the reference): hero → section
-                  cards → the Introduction content */}
-              {isHome && (
-                <>
-                  <DocsHomeHero />
-                  <DocsHomeCards />
-                </>
-              )}
+              {/* home order: hero → the Introduction content → the section
+                  cards close the page (standing in for the old Quick links) */}
+              {isHome && <DocsHomeHero />}
               {articleMd === null ? (
                 isHome ? null : (
                   <p className="pt-16 font-mono text-xs uppercase tracking-[0.2em] text-faint">Loading…</p>
@@ -167,6 +162,7 @@ export default function DocsPage() {
                   <Markdown md={articleMd} />
                 </article>
               )}
+              {isHome && articleMd !== null && <DocsHomeCards />}
             </div>
           )}
 
