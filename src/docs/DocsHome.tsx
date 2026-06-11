@@ -1,12 +1,14 @@
 import type { ReactNode } from "react";
 import { Link } from "react-router-dom";
 import { DOCS_NAV } from "./manifest";
+import Logo from "../components/Logo";
 
 /**
- * The docs landing pieces — flat and digital: hairline borders, mono details,
- * geometric line icons, violet accents. No 3D illustrations, no gradients, no
- * shadows. The HERO opens the page (search lives in the header only); the
- * CARDS close it, standing in for the old "Quick links" section.
+ * The docs landing, one-to-one with the reference structure (OpenClaw docs):
+ * h1 → big centred logo → quoted tagline → bold lead → muted lead → card grid
+ * → the Introduction article below (rendered by DocsPage). Flat and digital:
+ * hairline borders, geometric line icons, violet accents — no 3D art, no
+ * gradients, no shadows. The lead copy is index.md's own tagline, split.
  */
 
 const ICON_CLS = "h-6 w-6 text-violet";
@@ -68,93 +70,55 @@ const DESCRIPTIONS: Record<string, string> = {
   Examples: "Ready-made task definitions to copy from.",
 };
 
-// quick links under the grid — the pages people actually land on first
-const POPULAR: { label: string; slug: string }[] = [
-  { label: "Quick Start", slug: "quick-start" },
-  { label: "darktitan run", slug: "cli/run" },
-  { label: "Your First Flow", slug: "guides/first-flow" },
-  { label: "flow.yaml schema", slug: "yaml" },
-];
-
-/** The home opener: eyebrow, title, one-line promise. Search is in the header. */
+/** Reference-order opener: h1, big centred logo, quote, bold lead, muted lead. */
 export function DocsHomeHero() {
   return (
-    <div className="pt-12">
-      <p className="font-mono text-[11px] uppercase tracking-[0.3em] text-violet">
-        DarkTitan · Docs
-      </p>
-      <h1 className="mt-3 font-display text-4xl tracking-tight text-cloud md:text-5xl">
-        Documentation
+    <div className="pt-10">
+      <h1 className="font-display text-h3 leading-tight tracking-tight text-cloud md:text-[2.5rem]">
+        DarkTitan Documentation
       </h1>
-      <p className="mt-4 max-w-xl text-base leading-relaxed text-muted">
-        Everything you need to run governed, autonomous engineering — install, define flows,
-        govern agents, ship.
+
+      <div className="mx-auto mt-10 flex justify-center">
+        <Logo variant="lockup" className="h-10 md:h-12" />
+      </div>
+
+      <blockquote className="mx-auto mt-8 w-fit border-l-2 border-steel pl-4 font-mono text-sm italic text-muted">
+        “Lights off. Code out.” — The Agent Factory
+      </blockquote>
+
+      <p className="mx-auto mt-7 max-w-2xl text-center text-base font-semibold leading-relaxed text-cloud">
+        DarkTitan is an autonomous software pipeline tool.
+      </p>
+      <p className="mx-auto mt-3 max-w-2xl text-center leading-relaxed text-muted">
+        Write a YAML flow, point it at your codebase, and let Claude Code agents execute each
+        stage — implement, review, test, refactor — without interruption.
       </p>
     </div>
   );
 }
 
-/** The home closer: section cards (the old md "Quick links", done properly). */
+/** Reference-style cards, right under the hero: icon top-left, title, line. */
 export function DocsHomeCards() {
   return (
-    <div className="mt-16 border-t border-slate pt-8">
-      <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-faint">
-        Browse the docs
-      </p>
-
-      {/* section cards — flat, digital, hairline-bordered */}
-      <div className="mt-5 grid gap-3.5 sm:grid-cols-2 xl:grid-cols-3">
-        {DOCS_NAV.map((group, gi) => {
-          const first = group.items.find((it) => it.slug !== "") ?? group.items[0];
-          return (
-            <Link
-              key={group.section}
-              to={`/docs${first.slug ? `/${first.slug}` : ""}`}
-              className="group flex flex-col rounded-xl border border-steel bg-charcoal/50 p-5 transition-colors hover:border-violet/60 hover:bg-charcoal/80"
-            >
-              <div className="flex items-center justify-between">
-                {ICONS[group.section]}
-                <span className="font-mono text-[10px] tracking-[0.2em] text-faint">
-                  {String(gi + 1).padStart(2, "0")}
-                </span>
-              </div>
-              <h2 className="mt-4 font-display text-lg leading-tight text-cloud">
-                {group.section}
-              </h2>
-              <p className="mt-2 flex-1 text-[13.5px] leading-relaxed text-muted">
-                {DESCRIPTIONS[group.section]}
-              </p>
-              <div className="mt-5 flex items-center justify-between border-t border-slate pt-3">
-                <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-faint">
-                  {group.items.length} {group.items.length === 1 ? "page" : "pages"}
-                </span>
-                <span className="font-mono text-[11px] uppercase tracking-[0.14em] text-violet">
-                  Open
-                  <span className="ml-1 inline-block transition-transform duration-200 group-hover:translate-x-0.5">
-                    →
-                  </span>
-                </span>
-              </div>
-            </Link>
-          );
-        })}
-      </div>
-
-      {/* popular shortcuts */}
-      <div className="mt-10 flex flex-wrap items-center gap-x-3 gap-y-2 border-t border-slate pt-5">
-        <span className="font-mono text-[10px] uppercase tracking-[0.22em] text-faint">
-          Popular
-        </span>
-        {POPULAR.map((p) => (
+    <div className="mt-12 grid gap-4 sm:grid-cols-2">
+      {DOCS_NAV.map((group) => {
+        const first = group.items.find((it) => it.slug !== "") ?? group.items[0];
+        return (
           <Link
-            key={p.slug}
-            to={`/docs/${p.slug}`}
-            className="rounded-full border border-steel px-3 py-1.5 font-mono text-[11px] text-muted transition-colors hover:border-violet/60 hover:text-cloud"
+            key={group.section}
+            to={`/docs${first.slug ? `/${first.slug}` : ""}`}
+            className="group rounded-xl border border-slate bg-charcoal/40 p-6 transition-colors hover:border-violet/60 hover:bg-charcoal/70"
           >
-            {p.label}
+            {ICONS[group.section]}
+            <h2 className="mt-4 font-display text-lg leading-tight text-cloud">
+              {group.section}
+            </h2>
+            <p className="mt-2 text-[13.5px] leading-relaxed text-muted">
+              {DESCRIPTIONS[group.section]}
+            </p>
           </Link>
-        ))}
-      </div>
+        );
+      })}
     </div>
   );
 }

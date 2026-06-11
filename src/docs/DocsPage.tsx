@@ -147,19 +147,23 @@ export default function DocsPage() {
             </div>
           ) : (
             <>
-              {/* home order: hero → Introduction content → the section cards
-                  (standing in for the md's old "Quick links") */}
-              {isHome && <DocsHomeHero />}
+              {/* home order (one-to-one with the reference): hero → section
+                  cards → the Introduction content */}
+              {isHome && (
+                <>
+                  <DocsHomeHero />
+                  <DocsHomeCards />
+                </>
+              )}
               {articleMd === null ? (
                 isHome ? null : (
                   <p className="pt-16 font-mono text-xs uppercase tracking-[0.2em] text-faint">Loading…</p>
                 )
               ) : (
-                <article className={`docs-prose max-w-3xl ${isHome ? "pt-12" : "pt-10"}`}>
+                <article className={`docs-prose max-w-3xl ${isHome ? "pt-14" : "pt-10"}`}>
                   <Markdown md={articleMd} />
                 </article>
               )}
-              {isHome && articleMd !== null && <DocsHomeCards />}
             </>
           )}
 
