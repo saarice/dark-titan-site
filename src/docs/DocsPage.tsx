@@ -1,28 +1,24 @@
-import { useEffect, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { Link, useLocation, useParams } from "react-router-dom";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import Logo from "../components/Logo";
 import { DOCS_NAV, docNeighbors, docTitle } from "./manifest";
+import { extractHeadings, loaderFor, slugifyHeading, type DocHeading } from "./searchIndex";
+import DocsSearch from "./DocsSearch";
+import DocsHome from "./DocsHome";
 
 /**
- * The product docs (#/docs/...), carried over from the old docs site
- * (darktitan.develeap.com) and restyled to the landing page's brand: same
- * palette, Archivo Black headings, Plex body/mono. Deliberately NO 3D scene —
- * docs are for reading. Content is lazy-loaded per page from src/content/docs.
+ * The product docs (/docs/...), restyled to the landing brand. Three-column
+ * reading layout: section sidebar · article · "On this page" rail (scroll-spy).
+ * The docs home is a card landing with the open search front-and-centre; the
+ * header carries the compact search everywhere else (Ctrl/⌘K). Content is
+ * lazy-loaded per page from src/content/docs.
  */
-const PAGES = import.meta.glob("../content/docs/**/*.md", {
-  query: "?raw",
-  import: "default",
-}) as Record<string, () => Promise<string>>;
-
-function loaderFor(slug: string): (() => Promise<string>) | undefined {
-  const key = `../content/docs/${slug === "" ? "index" : slug}.md`;
-  return PAGES[key] ?? PAGES[`../content/docs/${slug}/index.md`];
-}
-
 export default function DocsPage() {
   const slug = (useParams()["*"] ?? "").replace(/\/+$/, "");
+  const { hash } = useLocation();
+  const isHome = slug === "";
   const [md, setMd] = useState<string | null>(null);
   const [missing, setMissing] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -33,13 +29,14 @@ export default function DocsPage() {
   if (shownSlug !== slug) {
     setShownSlug(slug);
     setMd(null);
-    setMissing(!loaderFor(slug));
+    setMissing(!isHome && !loaderFor(slug));
     setMenuOpen(false);
   }
 
   useEffect(() => {
-    window.scrollTo(0, 0);
     document.title = `${docTitle(slug) ?? "Docs"} · DarkTitan Docs`;
+    if (!hash) window.scrollTo(0, 0);
+    if (isHome) return; // the home renders its own component, no markdown
     let stale = false;
     loaderFor(slug)?.().then((text) => {
       if (!stale) setMd(text);
@@ -47,16 +44,25 @@ export default function DocsPage() {
     return () => {
       stale = true;
     };
-  }, [slug]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- hash deep-links are handled below
+  }, [slug, isHome]);
 
+  // deep-link: once the article is in, jump to the #heading from the URL
+  useEffect(() => {
+    if (md === null || !hash) return;
+    const id = decodeURIComponent(hash.slice(1));
+    requestAnimationFrame(() => document.getElementById(id)?.scrollIntoView());
+  }, [md, hash]);
+
+  const headings = useMemo(() => (md ? extractHeadings(md) : []), [md]);
   const { prev, next } = docNeighbors(slug);
 
   return (
     <div className="min-h-screen bg-obsidian font-body text-cloud">
-      {/* slim docs header */}
+      {/* slim docs header — logo · open search · site link */}
       <header className="fixed inset-x-0 top-0 z-50 border-b border-slate bg-charcoal/80 backdrop-blur-xl">
-        <div className="mx-auto flex max-w-[1400px] items-center justify-between px-5 py-3 md:px-8">
-          <div className="flex items-center gap-3">
+        <div className="mx-auto flex max-w-[1480px] items-center gap-4 px-5 py-3 md:px-8">
+          <div className="flex flex-none items-center gap-3">
             <Link to="/" aria-label="Dark Titan home" className="block">
               <Logo variant="lockup" className="h-5" />
             </Link>
@@ -64,10 +70,13 @@ export default function DocsPage() {
               docs
             </span>
           </div>
-          <div className="flex items-center gap-4">
+          <div className="flex min-w-0 flex-1 justify-center">
+            <DocsSearch variant="header" hotkey={!isHome} />
+          </div>
+          <div className="flex flex-none items-center gap-4">
             <Link
               to="/"
-              className="font-mono text-xs uppercase tracking-[0.15em] text-muted transition-colors hover:text-cloud"
+              className="hidden font-mono text-xs uppercase tracking-[0.15em] text-muted transition-colors hover:text-cloud sm:block"
             >
               ← Site
             </Link>
@@ -83,7 +92,7 @@ export default function DocsPage() {
         </div>
       </header>
 
-      <div className="mx-auto flex max-w-[1400px] gap-10 px-5 pt-20 md:px-8">
+      <div className="mx-auto flex max-w-[1480px] gap-10 px-5 pt-20 md:px-8">
         {/* sidebar — fixed column on desktop, slide-down panel on mobile */}
         <aside
           className={`${
@@ -123,7 +132,9 @@ export default function DocsPage() {
 
         {/* content */}
         <main className="min-w-0 flex-1 pb-24">
-          {missing ? (
+          {isHome ? (
+            <DocsHome />
+          ) : missing ? (
             <div className="pt-16">
               <h1 className="font-display text-h3 text-cloud">Page not found</h1>
               <p className="mt-4 text-muted">
@@ -142,7 +153,7 @@ export default function DocsPage() {
           )}
 
           {/* pager */}
-          {!missing && (prev || next) && (
+          {!isHome && !missing && (prev || next) && (
             <nav aria-label="Docs pager" className="mt-16 flex max-w-3xl justify-between gap-4 border-t border-slate pt-6">
               {prev ? (
                 <Link to={`/docs${prev.slug ? `/${prev.slug}` : ""}`} className="group text-sm text-muted transition-colors hover:text-cloud">
@@ -161,20 +172,117 @@ export default function DocsPage() {
             </nav>
           )}
         </main>
+
+        {/* "On this page" rail — scroll-spy TOC, wide screens only */}
+        {!isHome && !missing && headings.length >= 2 && (
+          <aside className="hidden w-52 flex-none xl:block" aria-label="On this page">
+            <OnThisPage headings={headings} />
+          </aside>
+        )}
       </div>
     </div>
   );
 }
 
-/** Markdown → brand-styled elements. Internal /docs links stay in the router. */
+/** Right-rail table of contents with a scroll-spy active state. */
+function OnThisPage({ headings }: { headings: DocHeading[] }) {
+  const [active, setActive] = useState("");
+  const raf = useRef(0);
+
+  useEffect(() => {
+    const update = () => {
+      let cur = "";
+      for (const h of headings) {
+        const el = document.getElementById(h.id);
+        if (el && el.getBoundingClientRect().top <= 130) cur = h.id;
+      }
+      setActive(cur);
+    };
+    const onScroll = () => {
+      cancelAnimationFrame(raf.current);
+      raf.current = requestAnimationFrame(update);
+    };
+    update();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll);
+    return () => {
+      cancelAnimationFrame(raf.current);
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+    };
+  }, [headings]);
+
+  return (
+    <nav className="sticky top-20 max-h-[calc(100vh-6rem)] overflow-y-auto pb-10 pt-10">
+      <p className="mb-3 font-mono text-[10px] uppercase tracking-[0.22em] text-faint">
+        On this page
+      </p>
+      <ul className="space-y-0.5 border-l border-slate">
+        {headings.map((h) => {
+          const isActive = h.id === active;
+          return (
+            <li key={h.id}>
+              <a
+                href={`#${h.id}`}
+                aria-current={isActive ? "location" : undefined}
+                onClick={(e) => {
+                  e.preventDefault();
+                  document.getElementById(h.id)?.scrollIntoView({ behavior: "smooth" });
+                  history.replaceState(null, "", `#${h.id}`);
+                }}
+                className={`-ml-px block border-l py-1 text-[12.5px] leading-snug transition-colors ${
+                  h.level === 3 ? "pl-7" : "pl-4"
+                } ${
+                  isActive
+                    ? "border-violet text-lavender"
+                    : "border-transparent text-faint hover:border-steel hover:text-cloud"
+                }`}
+              >
+                {h.text}
+              </a>
+            </li>
+          );
+        })}
+      </ul>
+    </nav>
+  );
+}
+
+/** flatten a heading's children to plain text (for the anchor id) */
+function textOf(node: ReactNode): string {
+  if (typeof node === "string" || typeof node === "number") return String(node);
+  if (Array.isArray(node)) return node.map(textOf).join("");
+  if (node && typeof node === "object" && "props" in node) {
+    return textOf((node.props as { children?: ReactNode }).children);
+  }
+  return "";
+}
+
+/** Markdown → brand-styled elements. h2/h3 get anchor ids matching the TOC. */
 function Markdown({ md }: { md: string }) {
   return (
     <ReactMarkdown
       remarkPlugins={[remarkGfm]}
       components={{
         h1: (p) => <h1 className="font-display text-h3 leading-tight tracking-tight text-cloud md:text-[2.5rem]" {...p} />,
-        h2: (p) => <h2 className="mt-12 border-b border-slate pb-2 font-display text-xl tracking-tight text-cloud md:text-2xl" {...p} />,
-        h3: (p) => <h3 className="mt-8 font-display text-base text-cloud md:text-lg" {...p} />,
+        h2: ({ children, ...p }) => (
+          <h2
+            id={slugifyHeading(textOf(children))}
+            className="mt-12 scroll-mt-24 border-b border-slate pb-2 font-display text-xl tracking-tight text-cloud md:text-2xl"
+            {...p}
+          >
+            {children}
+          </h2>
+        ),
+        h3: ({ children, ...p }) => (
+          <h3
+            id={slugifyHeading(textOf(children))}
+            className="mt-8 scroll-mt-24 font-display text-base text-cloud md:text-lg"
+            {...p}
+          >
+            {children}
+          </h3>
+        ),
         p: (p) => <p className="mt-4 leading-relaxed text-muted" {...p} />,
         ul: (p) => <ul className="mt-4 list-disc space-y-1.5 pl-6 leading-relaxed text-muted marker:text-violet" {...p} />,
         ol: (p) => <ol className="mt-4 list-decimal space-y-1.5 pl-6 leading-relaxed text-muted marker:text-violet" {...p} />,
