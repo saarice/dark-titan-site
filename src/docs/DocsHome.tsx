@@ -1,12 +1,12 @@
 import type { ReactNode } from "react";
 import { Link } from "react-router-dom";
 import { DOCS_NAV } from "./manifest";
-import DocsSearch from "./DocsSearch";
 
 /**
- * The docs landing — reference-style (big title + OPEN search + section cards)
- * but FLAT and digital: hairline borders, mono details, geometric line icons,
- * violet accents. No 3D illustrations, no gradients, no shadows.
+ * The docs landing pieces — flat and digital: hairline borders, mono details,
+ * geometric line icons, violet accents. No 3D illustrations, no gradients, no
+ * shadows. The HERO opens the page (search lives in the header only); the
+ * CARDS close it, standing in for the old "Quick links" section.
  */
 
 const ICON_CLS = "h-6 w-6 text-violet";
@@ -76,28 +76,34 @@ const POPULAR: { label: string; slug: string }[] = [
   { label: "flow.yaml schema", slug: "yaml" },
 ];
 
-export default function DocsHome() {
+/** The home opener: eyebrow, title, one-line promise. Search is in the header. */
+export function DocsHomeHero() {
   return (
-    <div className="pt-10">
-      {/* hero — title + the open search, front and centre */}
-      <div className="mx-auto max-w-2xl text-center">
-        <p className="font-mono text-[11px] uppercase tracking-[0.3em] text-violet">
-          DarkTitan · Docs
-        </p>
-        <h1 className="mt-3 font-display text-4xl tracking-tight text-cloud md:text-5xl">
-          Documentation
-        </h1>
-        <p className="mt-4 text-base leading-relaxed text-muted">
-          Everything you need to run governed, autonomous engineering — install, define flows,
-          govern agents, ship.
-        </p>
-        <div className="mt-7">
-          <DocsSearch variant="hero" hotkey={false} />
-        </div>
-      </div>
+    <div className="pt-12">
+      <p className="font-mono text-[11px] uppercase tracking-[0.3em] text-violet">
+        DarkTitan · Docs
+      </p>
+      <h1 className="mt-3 font-display text-4xl tracking-tight text-cloud md:text-5xl">
+        Documentation
+      </h1>
+      <p className="mt-4 max-w-xl text-base leading-relaxed text-muted">
+        Everything you need to run governed, autonomous engineering — install, define flows,
+        govern agents, ship.
+      </p>
+    </div>
+  );
+}
+
+/** The home closer: section cards (the old md "Quick links", done properly). */
+export function DocsHomeCards() {
+  return (
+    <div className="mt-16 border-t border-slate pt-8">
+      <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-faint">
+        Browse the docs
+      </p>
 
       {/* section cards — flat, digital, hairline-bordered */}
-      <div className="mt-14 grid gap-3.5 sm:grid-cols-2 xl:grid-cols-3">
+      <div className="mt-5 grid gap-3.5 sm:grid-cols-2 xl:grid-cols-3">
         {DOCS_NAV.map((group, gi) => {
           const first = group.items.find((it) => it.slug !== "") ?? group.items[0];
           return (

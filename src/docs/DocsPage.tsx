@@ -6,7 +6,7 @@ import Logo from "../components/Logo";
 import { DOCS_NAV, docNeighbors, docTitle } from "./manifest";
 import { extractHeadings, loaderFor, slugifyHeading, type DocHeading } from "./searchIndex";
 import DocsSearch from "./DocsSearch";
-import DocsHome from "./DocsHome";
+import { DocsHomeHero, DocsHomeCards } from "./DocsHome";
 
 /**
  * The product docs (/docs/...), restyled to the landing brand. Three-column
@@ -53,7 +53,11 @@ export default function DocsPage() {
     requestAnimationFrame(() => document.getElementById(id)?.scrollIntoView());
   }, [md, hash]);
 
-  const headings = useMemo(() => (md ? extractHeadings(md) : []), [md]);
+  // on the home the article is the Introduction minus its h1+tagline (the hero
+  // says it) and minus "Quick links" (the cards below stand in for it) — the
+  // TOC is extracted from what's actually rendered
+  const articleMd = useMemo(() => (md && isHome ? homeArticle(md) : md), [md, isHome]);
+  const headings = useMemo(() => (articleMd ? extractHeadings(articleMd) : []), [articleMd]);
   const { prev, next } = docNeighbors(slug);
 
   return (
@@ -70,7 +74,7 @@ export default function DocsPage() {
             </span>
           </div>
           <div className="flex min-w-0 flex-1 justify-center">
-            <DocsSearch variant="header" hotkey={!isHome} />
+            <DocsSearch variant="header" />
           </div>
           <div className="flex flex-none items-center gap-4">
             <Link
@@ -143,19 +147,19 @@ export default function DocsPage() {
             </div>
           ) : (
             <>
-              {/* the home keeps the card landing AND the Introduction content
-                  below it (reference style) — the md's own h1+tagline are
-                  trimmed there, the hero already says it */}
-              {isHome && <DocsHome />}
-              {md === null ? (
+              {/* home order: hero → Introduction content → the section cards
+                  (standing in for the md's old "Quick links") */}
+              {isHome && <DocsHomeHero />}
+              {articleMd === null ? (
                 isHome ? null : (
                   <p className="pt-16 font-mono text-xs uppercase tracking-[0.2em] text-faint">Loading…</p>
                 )
               ) : (
-                <article className={`docs-prose max-w-3xl ${isHome ? "pt-16" : "pt-10"}`}>
-                  <Markdown md={isHome ? trimToFirstH2(md) : md} />
+                <article className={`docs-prose max-w-3xl ${isHome ? "pt-12" : "pt-10"}`}>
+                  <Markdown md={articleMd} />
                 </article>
               )}
+              {isHome && articleMd !== null && <DocsHomeCards />}
             </>
           )}
 
@@ -255,11 +259,13 @@ function OnThisPage({ headings }: { headings: DocHeading[] }) {
   );
 }
 
-/** drop everything before the first "## " — on the home the md's own h1 +
- *  tagline duplicate the hero, so the article starts at "What is DarkTitan?" */
-function trimToFirstH2(md: string): string {
+/** The home's article view of index.md: drop everything before the first "## "
+ *  (the h1 + tagline duplicate the hero) and drop the "Quick links" section
+ *  (the card grid below replaces it). */
+function homeArticle(md: string): string {
   const i = md.indexOf("\n## ");
-  return i === -1 ? md : md.slice(i + 1);
+  const fromFirstH2 = i === -1 ? md : md.slice(i + 1);
+  return fromFirstH2.replace(/^## Quick links\s*$[\s\S]*?(?=^## |\n*$(?![\s\S]))/m, "");
 }
 
 /** flatten a heading's children to plain text (for the anchor id) */
