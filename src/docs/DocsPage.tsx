@@ -146,7 +146,10 @@ export default function DocsPage() {
               </Link>
             </div>
           ) : (
-            <>
+            // ONE shared, centred column for everything (hero, cards, article,
+            // pager) — without it, wide screens showed a centred hero over a
+            // left-hugging article and full-width cards: three different axes.
+            <div className="mx-auto w-full max-w-3xl">
               {/* home order (one-to-one with the reference): hero → section
                   cards → the Introduction content */}
               {isHome && (
@@ -160,16 +163,16 @@ export default function DocsPage() {
                   <p className="pt-16 font-mono text-xs uppercase tracking-[0.2em] text-faint">Loading…</p>
                 )
               ) : (
-                <article className={`docs-prose max-w-3xl ${isHome ? "pt-14" : "pt-10"}`}>
+                <article className={`docs-prose ${isHome ? "pt-14" : "pt-10"}`}>
                   <Markdown md={articleMd} />
                 </article>
               )}
-            </>
+            </div>
           )}
 
           {/* pager */}
           {!missing && (prev || next) && (
-            <nav aria-label="Docs pager" className="mt-16 flex max-w-3xl justify-between gap-4 border-t border-slate pt-6">
+            <nav aria-label="Docs pager" className="mx-auto mt-16 flex w-full max-w-3xl justify-between gap-4 border-t border-slate pt-6">
               {prev ? (
                 <Link to={`/docs${prev.slug ? `/${prev.slug}` : ""}`} className="group text-sm text-muted transition-colors hover:text-cloud">
                   <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-faint">← Previous</span>
